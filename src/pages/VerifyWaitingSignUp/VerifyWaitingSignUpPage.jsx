@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
+import Modal from "../../components/common/Modal";
 import "./VerifyWaitingSignUpPage.css";
-import Modal from "../../components/Common/Modal";
+import backgroundImageUrl from "../../images/bgeventhunting.png";
+import emailSendingImgUrl from "../../images/emailsending.jpg";
 
 const VerifyWaitingSignUpPage = () => {
   const location = useLocation();
@@ -99,8 +101,11 @@ const VerifyWaitingSignUpPage = () => {
           type={modal.type}
         />
       )}
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="login-container">
+      <div
+        style={{ backgroundImage: `url(${backgroundImageUrl})` }}
+        className="flex justify-center items-center min-h-screen"
+      >
+        <div className="verify-container shadow-2xl">
           <div className="left-panel">
             <div className="text-content">
               <h1>
@@ -111,25 +116,32 @@ const VerifyWaitingSignUpPage = () => {
           </div>
 
           <div className="right-panel">
-            <div className="verify-container">
-              <span className="verify-icon">✉️</span>
-              <h2 className="verify-title">Kiểm tra hộp thư của bạn</h2>
-              <p className="verify-text">
-                Chúng tôi đã gửi link xác thực đến <b>{email}</b>. <br />
-                Hệ thống sẽ tự động đăng nhập sau khi bạn xác nhận trong mail.
-              </p>
-
-              <button
-                className="login-button"
-                onClick={handleResend}
-                disabled={loading}
-              >
-                {loading ? "Đang gửi..." : "Gửi lại email xác thực"}
-              </button>
-              <Link to="/login" className="resend-link">
-                Quay lại đăng nhập
-              </Link>
-            </div>
+            <img
+              src={emailSendingImgUrl}
+              style={{
+                width: "280px",
+                height: "auto",
+                minWidth: "35px", 
+                display: "block",
+                objectFit: "contain",
+              }}
+              className="verify-icon"
+              alt="email-icon"
+            />
+            <h2 className="verify-title">Kiểm tra hộp thư của bạn</h2>
+            <p className="verify-text">
+              Chúng tôi đã gửi link xác thực đến <b>{email}</b>. <br />
+            </p>
+            <button
+              className="verify-button"
+              onClick={handleResend}
+              disabled={loading}
+            >
+              {loading ? "Đang gửi..." : "Gửi lại email xác thực"}
+            </button>
+            <Link to="/login" className="resend-link">
+              Quay lại đăng nhập
+            </Link>
           </div>
         </div>
       </div>

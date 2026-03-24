@@ -13,7 +13,7 @@ import StatusBadge from "../../../components/common/StatusBadge";
 const ticketTierSchema = z
   .object({
     id: z.string(),
-    status: z.enum(["ACTIVE", "INACTIVE","SUSPENDED"]).default("ACTIVE"),
+    status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).default("ACTIVE"),
     name: z.string().min(1, "Tên tier không được để trống"),
     price: z.coerce.number().min(0, "Giá không được âm"),
     limitQuantity: z.coerce.number().min(1, "Số lượng tối thiểu là 1"),
@@ -55,7 +55,7 @@ const ticketTypeSchema = z.object({
     required_error: "Vui lòng chọn hình thức chỗ ngồi",
   }),
   totalQuantity: z.coerce.number().min(1, "Số lượng tối thiểu là 1"),
-  sectionId: z.string().optional(),
+  sectionId: z.string().optional().nullable(),
   ticketTiers: z
     .array(ticketTierSchema)
     .min(1, "Phải có ít nhất một đợt mở bán (Tier)")
@@ -531,18 +531,31 @@ function UpdateShow() {
       const isValid = await trigger("shows");
       if (!isValid) return;
       const show = methods.getValues(`shows.${index}`);
-
       const payload = {
         ...show,
         id: show.id?.includes("-") ? null : show.id,
-        ticketTypes: show.ticketTypes.map((type) => ({
-          ...type,
-          id: type.id?.includes("-") ? null : type.id,
-          ticketTiers: type.ticketTiers.map((tier) => ({
-            ...tier,
-            id: tier.id?.includes("-") ? null : tier.id,
-          })),
-        })),
+        ticketTypes: show.ticketTypes.map((type) => {
+          const mappedType = {
+            ...type,
+            id: type.id?.includes("-") ? null : type.id,
+            ticketTiers: type.ticketTiers.map((tier) => ({
+              ...tier,
+              id: tier.id?.includes("-") ? null : tier.id,
+            })),
+          };
+          if (
+            show.seatMapType === "SECTION_WITH_SEATS" &&
+            type.seatingType === "SEATED"
+          ) {
+            mappedType.seats = type.seats?.map((seat) => ({
+              ...seat,
+              id: seat?.id?.includes("-") ? null : seat.id,
+            }));
+          } else {
+            delete mappedType.seats;
+          }
+          return mappedType;
+        }),
       };
       if (isLoading) return;
       if (!payload.id) {
@@ -790,7 +803,7 @@ function UpdateShow() {
           onConfirm={handleConfirmStatus}
         />
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div class="max-w-7xl mx-auto space-y-8">
+          <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="pl-2 text-xl font-bold text-slate-800 flex items-center">
                 Thời Gian
@@ -874,7 +887,7 @@ function UpdateShow() {
                             name={`seatMapType-${show.id}`}
                             className="mt-1 w-4 h-4 text-emerald-600"
                             checked={show.seatMapType === type.id}
-                            disabled={isStatusLocked}
+                            disabled={true}
                             onChange={() =>
                               updateShow(show.id, { seatMapType: type.id })
                             }

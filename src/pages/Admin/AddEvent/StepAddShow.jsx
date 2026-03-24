@@ -72,6 +72,7 @@ function StepAddShow() {
       id: crypto.randomUUID(),
       ticketTypes: [],
       seatMapType: "NONE",
+      status: "DRAFT",
       seatMapSvg: "",
     };
     const newShowsList = [...shows, newShow];

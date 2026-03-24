@@ -1,38 +1,51 @@
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
   margin: 0;
 }
 
 .event-illustration {
-  max-width: 100%; 
-  height: auto;  
+  max-width: 100%;
+  height: auto;
+  opacity: 90%;
 }
 
 .login-container {
   display: flex;
-  min-height: 90vh; 
+  min-height: 90vh;
   max-width: 90vw;
   overflow: hidden;
   border-radius: 30px;
   margin-top: -1rem !important;
 }
 
-.left-panel {
-  flex: 1; 
-  background: linear-gradient(135deg, #48308B 0%, #764BA2 100%);
-  color: white;
+.login-container .left-panel {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s ease-in;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 50px;
-  position: relative; 
-  
-  overflow: hidden; 
 }
 
-.left-panel::before {
-  content: '';
+@media (min-width: 1024px) {
+  .login-container .left-panel {
+    display: flex;
+    width: auto;
+    opacity: 1;
+    flex: 1;
+    background: linear-gradient(135deg, #10b981 0%, #064e3b 100%);
+    color: white;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+    position: relative;
+    overflow: hidden;
+  }
+}
+
+.login-container .left-panel::before {
+  content: "";
   position: absolute;
   top: -50px;
   left: -50px;
@@ -43,27 +56,27 @@ body {
   filter: blur(20px);
 }
 
-.left-panel .text-content {
+.login-container .left-panel .text-content {
   max-width: 400px;
   z-index: 1;
   justify-content: center;
 }
 
-.left-panel h1 {
+.login-container .left-panel h1 {
   font-size: 2.8rem;
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: 20px;
 }
 
-.left-panel p {
+.login-container .left-panel p {
   font-size: 1.1rem;
   line-height: 1.6;
   opacity: 0.9;
 }
 
-.right-panel {
-  flex: 1; 
+.login-container .right-panel {
+  flex: 1;
   background: #ffffff;
   display: flex;
   justify-content: center;
@@ -71,13 +84,13 @@ body {
   padding: 50px;
 }
 
-.login-form {
+.login-container .login-form {
   width: 100%;
-  max-width: 350px; 
+  max-width: 350px;
 }
 
 .form-group {
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
@@ -87,7 +100,7 @@ body {
   color: #888;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
-  text-align: left; 
+  text-align: left;
 }
 
 .form-group input {
@@ -96,7 +109,7 @@ body {
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 1rem;
-  box-sizing: border-box; 
+  box-sizing: border-box;
   outline: none;
 }
 
@@ -105,7 +118,7 @@ body {
   padding: 15px;
   border: none;
   border-radius: 5px;
-  background-color: #6d44c4; /* Màu tím của nút */
+  background-color: #10b981;
   color: white;
   font-size: 1rem;
   font-weight: 600;
@@ -117,9 +130,8 @@ body {
 }
 
 .login-button:hover {
-  background-color: #5a37a0;
+  background-color: #059669;
 }
-
 
 input:focus {
   outline: none;
@@ -149,7 +161,7 @@ input:focus {
   border-color: #646cff;
 }
 
-.google-login-button img{
+.google-login-button img {
   margin-right: 15px;
 }
 .forgot-password-link:hover {
@@ -157,22 +169,13 @@ input:focus {
 }
 
 @media (max-width: 768px) {
-  .login-container {
-    flex-direction: column; 
-  }
-  
-  .left-panel {
-    padding: 40px 20px;
-    min-height: 30vh;
-    text-align: center;
-  }
-  
-  .right-panel {
+  .login-container .right-panel {
     padding: 40px 20px;
     min-height: 70vh;
+    min-width: 60vw;
   }
 
-  .left-panel h1 {
+  .login-container .left-panel h1 {
     font-size: 2rem;
   }
 }

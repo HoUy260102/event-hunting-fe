@@ -1,43 +1,150 @@
-import dayjs from "dayjs";
-import "dayjs/locale/vi";
 import { useEffect, useRef, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import { useParams } from "react-router-dom";
 import ShowItem from "../../components/EventInfor/ShowItem";
-const formatShowTime = (startStr, endStr) => {
-  const start = dayjs(startStr).locale("vi");
-  const end = dayjs(endStr).locale("vi");
-  if (start.isSame(end, "day")) {
-    return `${start.format("HH:mm")} - ${end.format("HH:mm")}, ${start.format("DD/MM/YYYY")}`;
-  }
-  return `${start.format("HH:mm, DD/MM")} - ${end.format("HH:mm, DD/MM/YYYY")}`;
-};
+import { formatShowTime } from "../../utils/format";
+import EventSkeleton from "../../components/EventInfor/EventSkeleton";
+import { useAuth } from "../../hooks/useAuth";
 
 function EventInfor() {
+  const showSectionRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true);
   const cutoutClass =
     "absolute left-[355px] w-[30px] h-[30px] bg-[#121212] rounded-full z-10 hidden md:block";
   const [isExpanded, setIsExpanded] = useState(false);
   const [event, setEvent] = useState(false);
   const [shows, setShows] = useState([]);
   const contentRef = useRef(null);
+  const {requireAuth} = useAuth();
   const { id } = useParams();
   useEffect(() => {
     const fetchEvent = async () => {
       try {
+        setIsLoading(true);
         const eventRes = await axiosClient.get(`/events/${id}/info`);
         setEvent(eventRes.data);
         setShows(eventRes.data?.shows);
         console.log("Data xịn nè:", eventRes.data);
       } catch (error) {
         console.error(error.message);
+      } finally {
+        setIsLoading(false); 
       }
     };
     if (id) {
       fetchEvent();
     }
   }, [id]);
+
+  const scrollToShows = () => {
+    showSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const handleBuy = (show) => {
+    requireAuth(`/event/${id}/show/${show.id}/booking`);
+  };
+  
+  const renderBuyButton = () => {
+    const baseClass = "w-full py-3 font-bold rounded-lg transition-colors";
+
+    if (!shows || shows.length === 0) {
+      return (
+        <div className={`${baseClass} bg-gray-600 text-white text-center`}>
+          Chưa có lịch diễn
+        </div>
+      );
+    }
+
+    if (shows.length > 1) {
+      return (
+        <button
+          onClick={scrollToShows}
+          className={`${baseClass} bg-[#2DC275] text-black hover:bg-[#22A05E]`}
+        >
+          Vui lòng chọn lịch diễn
+        </button>
+      );
+    }
+    const status = shows[0]?.status;
+    switch (status) {
+      case "ON_SALE":
+        return (
+          <button
+            onClick={() => {
+              handleBuy(shows[0])
+            }}
+            className={`${baseClass} bg-[#2DC275] text-black hover:bg-[#22A05E]`}
+          >
+            Mua vé ngay
+          </button>
+        );
+
+      case "SOLD_OUT":
+        return (
+          <div className={`${baseClass} bg-gray-600 text-white text-center`}>
+            Hết vé
+          </div>
+        );
+
+      case "UPCOMING":
+        return (
+          <div className={`${baseClass} bg-blue-600 text-white text-center`}>
+            Sắp diễn ra
+          </div>
+        );
+
+      case "HAPPENING":
+        return (
+          <div className={`${baseClass} bg-orange-500 text-white text-center`}>
+            Đang diễn ra
+          </div>
+        );
+
+      case "FINISHED":
+        return (
+          <div className={`${baseClass} bg-gray-800 text-gray-400 text-center`}>
+            Đã kết thúc
+          </div>
+        );
+
+      case "CANCELLED":
+        return (
+          <div className={`${baseClass} bg-red-700 text-white text-center`}>
+            Đã hủy
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const otherShowCount = shows?.length > 1 ? shows.length - 1 : 0;
+  
+  if (isLoading) return <EventSkeleton />;
   return (
     <>
+      <style>{`
+        .ck-content {
+          color: white !important;
+        }
+        
+        .ck-content span[style*="color"] {
+          color: inherit; 
+        }
+
+        .ck-content .text-align-center { text-align: center; }
+        .ck-content .text-align-right { text-align: right; }
+        .ck-content .text-align-justify { text-align: justify; }
+
+        .ck-content h1, .ck-content h2, .ck-content h3, .ck-content strong {
+          color: white !important;
+          font-weight: bold;
+        }
+      `}</style>
       <div className="w-full min-h-screen bg-[#121212] text-white antialiased">
         <main className="flex-1 overflow-y-auto px-6 lg:px-12 py-8 mx-auto max-w-9xl w-full">
           <div className="space-y-10">
@@ -45,11 +152,8 @@ function EventInfor() {
               {/* PHẦN RĂNG CƯA (CUTOUT) */}
               <div className={`${cutoutClass} -top-[15px]`}></div>
               <div className={`${cutoutClass} -bottom-[15px]`}></div>
-
               {/* ĐƯỜNG KẺ ĐỨT (DASHED LINE) */}
-              <div className="absolute left-[380px] top-5 bottom-5 border-l-2 border-dashed border-white/10 hidden md:block"></div>
               <div className="absolute left-[370px] top-5 bottom-5 border-l-2 border-dashed border-white/10 hidden md:block"></div>
-
               <div className="w-full md:max-h-[471px] md:w-[375px] p-8 flex flex-col justify-between relative z-20">
                 <div>
                   <h2 className="text-2xl font-extrabold mb-6">
@@ -61,7 +165,7 @@ function EventInfor() {
                         className="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
-                        stroke-width="2"
+                        strokeWidth="2"
                         viewBox="0 0 24 24"
                       >
                         <rect
@@ -80,12 +184,20 @@ function EventInfor() {
                         {formatShowTime(event?.startTime, event?.endTime)}
                       </span>
                     </div>
+                    {otherShowCount > 0 && (
+                      <button
+                        onClick={scrollToShows}
+                        className="ml-8 text-xs px-2 py-[2px] border border-white bg-transparent text-white hover:bg-white/10 w-fit"
+                      >
+                        +{otherShowCount} ngày khác
+                      </button>
+                    )}
                     <div className="flex items-start gap-3">
                       <svg
                         className="w-5 h-5 text-[#2DC275] mt-1 shrink-0"
                         fill="none"
                         stroke="currentColor"
-                        stroke-width="2"
+                        strokeWidth="2"
                         viewBox="0 0 24 24"
                       >
                         <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
@@ -107,9 +219,7 @@ function EventInfor() {
                       {event?.minPrice?.toLocaleString("vi-VN")} đ
                     </span>
                   </div>
-                  <button className="w-full py-3 bg-[#2DC275] text-black font-bold rounded-lg hover:bg-[#22A05E] transition-colors shadow-lg shadow-[#2DC275]/20">
-                    Mua vé ngay
-                  </button>
+                  {renderBuyButton()}
                 </div>
               </div>
 
@@ -138,7 +248,7 @@ function EventInfor() {
                           ? `${contentRef.current?.scrollHeight}px`
                           : "250px",
                       }}
-                      className="space-y-4 text-gray-300 leading-relaxed text-sm md:text-base transition-all duration-500 ease-in-out overflow-hidden"
+                      className="ck-content space-y-4 text-gray-300 leading-relaxed text-sm md:text-base transition-all duration-500 ease-in-out overflow-hidden"
                       dangerouslySetInnerHTML={{
                         __html: event.descriptionHtml,
                       }}
@@ -193,9 +303,14 @@ function EventInfor() {
                   </div>
                 </div>
 
-                <div className="bg-[#1E1E21] rounded-2xl overflow-hidden">
+                <div
+                  ref={showSectionRef}
+                  className="bg-[#1E1E21] rounded-2xl overflow-hidden"
+                >
                   <div className="px-6 py-6 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h2 className="text-xl font-bold">Thông tin suất diễn và vé</h2>
+                    <h2 className="text-xl font-bold">
+                      Thông tin suất diễn và vé
+                    </h2>
                   </div>
 
                   {shows.map((show) => {
@@ -203,7 +318,7 @@ function EventInfor() {
                       <ShowItem
                         key={show.id}
                         show={show}
-                        formatShowTime={formatShowTime}
+                        handleBuy={handleBuy}
                       />
                     );
                   })}

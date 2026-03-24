@@ -1,74 +1,12 @@
 import { useState } from "react";
 import TicketTypeItem from "./TicketTypeItem";
-const ShowStatusButton = ({ status, onBuy }) => {
-  const baseClass = "px-6 py-2 font-bold rounded-lg text-sm transition-all";
-  switch (status) {
-    case "ON_SALE":
-      return (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onBuy) onBuy();
-          }}
-          className={`${baseClass} bg-[#2DC275] text-black hover:bg-[#22A05E] shadow-lg active:scale-95`}
-        >
-          Mua vé ngay
-        </button>
-      );
-
-    case "SOLD_OUT":
-      return (
-        <div
-          className={`${baseClass} bg-gray-600 text-white cursor-default text-center`}
-        >
-          Hết vé
-        </div>
-      );
-
-    case "UPCOMING":
-      return (
-        <div
-          className={`${baseClass} bg-blue-600 text-white cursor-default text-center`}
-        >
-          Sắp diễn ra
-        </div>
-      );
-
-    case "HAPPENING":
-      return (
-        <div
-          className={`${baseClass} bg-orange-500 text-white cursor-default text-center animate-pulse`}
-        >
-          Đang diễn ra
-        </div>
-      );
-
-    case "FINISHED":
-      return (
-        <div
-          className={`${baseClass} bg-gray-800 text-gray-400 cursor-default text-center`}
-        >
-          Đã kết thúc
-        </div>
-      );
-
-    case "CANCELLED":
-      return (
-        <div
-          className={`${baseClass} bg-red-700 text-white cursor-default text-center opacity-70`}
-        >
-          Đã hủy
-        </div>
-      );
-
-    default:
-      return null;
-  }
-};
-
-const ShowItem = ({ show, formatShowTime }) => {
+import { formatShowTime } from "../../utils/format";
+import ShowStatusButton from "./ShowStatusButton";
+const ShowItem = ({ show, handleBuy }) => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const onBuy = () => {
+    handleBuy(show);
+  };
   return (
     <div className="rounded-xl border border-white/5 overflow-hidden bg-[#1E1E21] mb-4">
       {/* Header của Show */}
@@ -82,9 +20,7 @@ const ShowItem = ({ show, formatShowTime }) => {
           </span>
           <span className="text-gray-500 text-xs">{isOpen ? "▲" : "▼"}</span>
         </div>
-        <ShowStatusButton
-          status={show?.showTimeStatus}
-        />
+        <ShowStatusButton status={show?.status} onBuy={onBuy} />
       </div>
 
       {/* Danh sách Ticket Types xổ xuống */}

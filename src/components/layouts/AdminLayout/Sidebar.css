@@ -19,12 +19,16 @@
   align-items: center;
   justify-content: space-between;
 }
-.sidebar-header .header-logo img {
-  width: 46px;
-  height: 46px;
+.sidebar-header .header-logo div {
+  width: 45px;
+  height: 45px;
   display: block;
   object-fit: contain;
   border-radius: 50%;
+  background-color: #EEF2FF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .sidebar-header .sidebar-toggler,
 .sidebar-menu-button {

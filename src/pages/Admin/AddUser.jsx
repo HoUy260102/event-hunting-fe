@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import axiosClient from "../../api/axiosClient";
 import Modal from "../../components/common/Modal";
+import { useHeader } from "../../hooks/useHeader";
 const schema = z
   .object({
     name: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
@@ -49,6 +50,7 @@ const schema = z
     path: ["confirmPassword"],
   });
 function AddUser() {
+  const { setTitle } = useHeader();
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
@@ -101,6 +103,11 @@ function AddUser() {
     };
     fetchRoles();
   }, []);
+
+  useEffect(() => {
+    setTitle("Quản lý tài khoản");
+  }, []);
+
   return (
     <>
       {modal.isOpen && (

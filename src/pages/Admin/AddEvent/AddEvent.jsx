@@ -7,6 +7,7 @@ import TicketTypeModal from "../../../components/modals/TicketTypeModal";
 import StepAddEventInf from "./StepAddEventInf";
 import StepAddShow from "./StepAddShow";
 import Modal from "../../../components/common/Modal";
+import { useHeader } from "../../../hooks/useHeader";
 const ticketTierSchema = z
   .object({
     id: z.string(),
@@ -50,6 +51,18 @@ const ticketTypeSchema = z.object({
     required_error: "Vui lòng chọn hình thức chỗ ngồi",
   }),
   totalQuantity: z.coerce.number().min(1, "Số lượng tối thiểu là 1"),
+  seats: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        seatCode: z.string(),
+        rowName: z.string(),
+        seatNumber: z.string(),
+      }),
+    )
+    .optional()
+    .default([]),
+  seatMapSvg: z.string().optional(),
   sectionId: z.string().optional(),
   ticketTiers: z
     .array(ticketTierSchema)
@@ -201,6 +214,17 @@ const showSchema = z
             path: ["ticketTypes", tIdx, "sectionId"],
           });
         }
+
+        //Kiểm tra có gửi danh sách ghế không
+        if (data.seatMapType === "SECTION_WITH_SEATS" && ticketType.seatingType === "SEATED") {
+          if (!ticketType.seats || ticketType.seats.length === 0) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Loại vé này bắt buộc phải có danh sách ghế chi tiết",
+              path: ["ticketTypes", tIdx, "seats"],
+            });
+          }
+        }
       });
     }
   });
@@ -270,6 +294,7 @@ const schemas = [
 const fullSchema = schemas.reduce((acc, curr) => acc.merge(curr), z.object({}));
 
 function AddEvent() {
+  const { setTitle } = useHeader();
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
@@ -279,6 +304,9 @@ function AddEvent() {
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
   const [provinces, setProvinces] = useState([]);
   const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    setTitle("Quản lý sự kiện");
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -498,7 +526,7 @@ function AddEvent() {
             .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           `}</style>
           </header>
-          <div class="w-full flex-1 overflow-y-auto custom-scrollbar pt-8">
+          <div className="w-full flex-1 overflow-y-auto custom-scrollbar pt-8">
             {currentStep === 1 && (
               <StepAddEventInf
                 provinces={provinces}

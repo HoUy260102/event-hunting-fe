@@ -1,28 +1,24 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import axiosClient from "../../api/axiosClient";
 import Modal from "../../components/common/Modal";
+import { useHeader } from "../../hooks/useHeader";
 const schema = z.object({
   name: z
     .string()
     .trim()
     .min(1, "Tên chủ đề phải có ít nhất 1 ký tự")
     .nonempty("Tên chủ đề là bắt buộc"),
-    
-  description: z
-    .string()
-    .trim()
-    .optional()
-    .or(z.literal("")), 
 
-  status: z
-    .string()
-    .nonempty("Vui lòng chọn trạng thái hoạt động"),
+  description: z.string().trim().optional().or(z.literal("")),
+
+  status: z.string().nonempty("Vui lòng chọn trạng thái hoạt động"),
 });
 
 function AddCategory() {
+  const { setTitle } = useHeader();
   const [modal, setModal] = useState({
     isOpen: false,
     title: "",
@@ -61,6 +57,10 @@ function AddCategory() {
       console.error("Tạo user thất bại:", error.message);
     }
   };
+
+  useEffect(() => {
+    setTitle("Quản lý chủ đề");
+  }, []);
 
   return (
     <>

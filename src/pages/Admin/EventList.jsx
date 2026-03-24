@@ -13,7 +13,11 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import { useCan } from "../../hooks/useCan";
 import CategoryDetailModal from "../../components/modals/CategoryDetailModal";
 import EventOverviewModal from "./EventOverview";
+import { useHeader } from "../../hooks/useHeader";
+import TableSkeleton from "../../components/common/TableSkeleton";
 function EventList() {
+  const { setTitle } = useHeader();
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
   const [events, setEvents] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -30,7 +34,7 @@ function EventList() {
   const closeConfirmModal = () =>
     setConfirmModal((prev) => ({ ...prev, isOpen: false }));
   const can = useCan();
-  const fetchCategories = async (
+  const fetchEvents = async (
     pageNo = 1,
     keyword = "",
     status = "ALL",
@@ -38,6 +42,7 @@ function EventList() {
     provinceId = "",
   ) => {
     try {
+      setIsLoadingEvents(true);
       const result = await axiosClient.get("/events/search", {
         params: {
           page: pageNo,
@@ -48,12 +53,14 @@ function EventList() {
           provinceId: provinceId,
         },
       });
-      setEvents(result?.data?.content);
+      setEvents(result?.data?.content || []);
       setTotalElements(result?.data?.totalElements || 0);
       setTotalPages(result?.data?.totalPages || 0);
       setCurrentPage(result?.data?.number + 1 || 1);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error.message);
+    } finally {
+      setIsLoadingEvents(false);
     }
   };
   useEffect(() => {
@@ -70,6 +77,7 @@ function EventList() {
       }
     };
     fetchData();
+    setTitle("Quản lý sự kiện");
   }, []);
   const [filters, setFilters] = useState({
     keyword: searchParams.get("keyword") || "",
@@ -107,7 +115,7 @@ function EventList() {
     const status = searchParams.get("status") || "ALL";
     const categoryId = searchParams.get("categoryId") || "";
     const provinceId = searchParams.get("provinceId") || "";
-    fetchCategories(page, keyword, status, categoryId, provinceId);
+    fetchEvents(page, keyword, status, categoryId, provinceId);
   }, [searchParams]);
 
   useEffect(() => {
@@ -279,7 +287,7 @@ function EventList() {
       <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
-            Quản lý sự kiện
+            Danh sách sự kiện
           </h2>
           <p className="mt-1 text-sm text-[#6b7280] dark:text-[#a1aebf]"></p>
         </div>
@@ -293,79 +301,106 @@ function EventList() {
           Thêm mới sự kiện
         </button>
       </div>
-      <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-4 mb-6">
-        <div className="flex md:flex-wrap flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <span className="material-symbols-outlined text-[#6b7280] dark:text-[#a1aebf]">
-                search
-              </span>
+      <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-5 mb-6">
+        <div className="flex flex-col gap-3">
+          {/* HÀNG 1: Tìm kiếm chính và Thể loại */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2 relative">
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <span className="material-symbols-outlined text-[20px] text-[#6b7280] dark:text-[#a1aebf]">
+                    search
+                  </span>
+                </div>
+                <input
+                  className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none"
+                  placeholder="Nhập tên sự kiện hoặc địa điểm..."
+                  value={filters.keyword}
+                  type="text"
+                  onChange={(e) =>
+                    handleFilterChange("keyword", e.target.value)
+                  }
+                />
+              </div>
             </div>
-            <input
-              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
-              placeholder="Search..."
-              value={filters.keyword}
-              type="text"
-              onChange={(e) => {
-                handleFilterChange("keyword", e.target.value);
-              }}
-            />
+
+            <div className="md:col-span-1">
+              <select
+                value={filters.categoryId || ""}
+                onChange={(e) =>
+                  handleFilterChange("categoryId", e.target.value)
+                }
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+              >
+                <option value="">Tất cả thể loại</option>
+                {categories.map((cate) => (
+                  <option key={cate?.id} value={cate?.id}>
+                    {cate?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="flex gap-4 relative flex-1">
-            <select
-              value={filters.categoryId || ""}
-              onChange={(e) => {
-                handleFilterChange("categoryId", e.target.value);
-              }}
-              className="block w-full md:w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
-            >
-              <option value="">Chọn thể loại</option>
-              {categories.map((cate) => (
-                <option key={cate?.id} value={cate?.id}>
-                  {cate?.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="flex md:flex-wrap flex-col md:flex-row gap-4 mt-2">
-          <div className="flex gap-4 relative flex-1">
-            <select
-              value={filters.provinceId || ""}
-              onChange={(e) => {
-                handleFilterChange("provinceId", e.target.value);
-              }}
-              className="block w-full md:w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
-            >
-              <option value="">Chọn tỉnh thành</option>
-              {provinces.map((provin) => (
-                <option key={provin?.id} value={provin?.id}>
-                  {provin?.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filters.status || "ALL"}
-              onChange={(e) => {
-                handleFilterChange("status", e.target.value);
-              }}
-              className="block w-full md:w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="DRAFT">Bản nháp</option>
-              <option value="PUBLISHED">Công khai</option>
-              <option value="REJECTED">Đã từ chối</option>
-              <option value="CANCELLED">Đã hủy</option>
-              <option value="UPCOMING">Sắp diễn ra</option>
-              <option value="HAPPENING">Đang diễn ra</option>
-              <option value="FINISHED">Kết thúc</option>
-            </select>
-            <button
-              onClick={applyFilters}
-              className="inline-flex items-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20"
-            >
-              Tìm kiếm
-            </button>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div className="md:col-span-1">
+              <select
+                value={filters.provinceId || ""}
+                onChange={(e) =>
+                  handleFilterChange("provinceId", e.target.value)
+                }
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+              >
+                <option value="">Toàn quốc</option>
+                {provinces.map((provin) => (
+                  <option key={provin?.id} value={provin?.id}>
+                    {provin?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="md:col-span-1">
+              <select
+                value={filters.status || "ALL"}
+                onChange={(e) => handleFilterChange("status", e.target.value)}
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+              >
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="DRAFT">Bản nháp</option>
+                <option value="PUBLISHED">Công khai</option>
+                <option value="UPCOMING">Sắp diễn ra</option>
+                <option value="HAPPENING">Đang diễn ra</option>
+                <option value="FINISHED">Kết thúc</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-1 flex gap-2">
+              <button
+                onClick={() => {
+                  setFilters({
+                    keyword: "",
+                    status: "ALL",
+                    categoryId: "",
+                    provinceId: "",
+                    page: 1,
+                  });
+                  setSearchParams({});
+                }}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none"
+              >
+                Xóa
+              </button>
+              <button
+                onClick={applyFilters}
+                className="whitespace-nowrap flex-[2] flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-4 rounded-lg text-sm transition-all active:scale-[0.98] shadow-md shadow-[#46ec13]/20"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  search
+                </span>
+                Tìm kiếm
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -422,69 +457,70 @@ function EventList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e5e7eb] dark:divide-[#2a4225] bg-white dark:bg-[#1c2e18]">
-              {events?.map((event) => {
-                return (
-                  <tr
-                    key={event?.id}
-                    className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
-                  >
-                    <td className="font-[500] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="line-clamp-2 font-medium"
-                        title={event?.id}
-                      >
-                        {event?.id}
-                      </div>
-                    </td>
-                    <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div className="line-clamp-2" title={event?.name}>
-                        {event?.name}
-                      </div>
-                    </td>
-                    <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="line-clamp-2"
-                        title={event?.category?.name}
-                      >
-                        {event?.category?.name}
-                      </div>
-                    </td>
-                    <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="max-w-[250px] line-clamp-2"
-                        title={event?.province?.name}
-                      >
-                        {event?.province?.name}
-                      </div>
-                    </td>
-                    <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="max-w-[250px] line-clamp-2"
-                        title={event?.location}
-                      >
-                        {event?.location}
-                      </div>
-                    </td>
-                    <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="max-w-[250px] line-clamp-2"
-                        title={event?.organizerName}
-                      >
-                        {event?.organizerName}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {renderStatusBadge(event?.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <ActionMenu
-                        actions={menuActions(event)}
-                        data={event}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
+              {isLoadingEvents ? (
+                <TableSkeleton rows={5} columns={7} />
+              ) : (
+                events?.map((event) => {
+                  return (
+                    <tr
+                      key={event?.id}
+                      className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
+                    >
+                      <td className="font-[500] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div
+                          className="line-clamp-2 font-medium"
+                          title={event?.id}
+                        >
+                          {event?.id}
+                        </div>
+                      </td>
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div className="line-clamp-2" title={event?.name}>
+                          {event?.name}
+                        </div>
+                      </td>
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div
+                          className="line-clamp-2"
+                          title={event?.category?.name}
+                        >
+                          {event?.category?.name}
+                        </div>
+                      </td>
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div
+                          className="max-w-[250px] line-clamp-2"
+                          title={event?.province?.name}
+                        >
+                          {event?.province?.name}
+                        </div>
+                      </td>
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div
+                          className="max-w-[250px] line-clamp-2"
+                          title={event?.location}
+                        >
+                          {event?.location}
+                        </div>
+                      </td>
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div
+                          className="max-w-[250px] line-clamp-2"
+                          title={event?.organizerName}
+                        >
+                          {event?.organizerName}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {renderStatusBadge(event?.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <ActionMenu actions={menuActions(event)} data={event} />
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

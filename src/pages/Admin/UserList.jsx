@@ -11,33 +11,15 @@ import UserDetailModal from "../../components/modals/UserDetailModal";
 import axiosClient from "../../api/axiosClient";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { useCan } from "../../hooks/useCan";
+import { useHeader } from "../../hooks/useHeader";
+import TableSkeleton from "../../components/common/TableSkeleton";
 function UserList() {
+  const { setTitle } = useHeader();
   const [roles, setRoles] = useState([]);
-  const [users, setUsers] = useState([
-    {
-      id: "USR-2024-001",
-      name: "Nguyễn Văn Admin",
-      email: "admin.test@gmail.com",
-      phone: "0987.654.321",
-      address: "123 Đường Lê Lợi, TP. Huế",
-      role: "ADMIN",
-      avatar:
-        "https://ui-avatars.com/api/?name=Admin&background=46ec13&color=111b0d",
-      firstName: "Admin",
-      lastName: "Nguyễn Văn",
-      language: "Tiếng Việt (VN)",
-      bio: "Đây là tài khoản quản trị viên dùng để kiểm tra giao diện Modal chi tiết người dùng.",
-      department: "Quản trị hệ thống",
-      reportsTo: "CEO Office",
-      createdAt: "20/01/2024 08:30",
-      updatedAt: "22/01/2026 10:30",
-      createdBy: "SYS-AUTO",
-      updatedBy: "SYS-AUTO",
-      deletedAt: null,
-    },
-  ]);
+  const [users, setUsers] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [totalElements, setTotalElements] = useState(0);
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -58,6 +40,7 @@ function UserList() {
     roleId = "",
   ) => {
     try {
+      setIsLoadingUsers(true);
       const result = await axiosClient.get("/users/search", {
         params: {
           page: pageNo,
@@ -73,6 +56,8 @@ function UserList() {
       setCurrentPage(result?.data?.number + 1 || 1);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error.message);
+    } finally {
+      setIsLoadingUsers(false);
     }
   };
   const iconMap = {
@@ -256,7 +241,9 @@ function UserList() {
     }
     return actions;
   };
-
+  useEffect(() => {
+    setTitle("Quản lý tài khoản");
+  }, []);
   return (
     <>
       <ConfirmModal
@@ -269,7 +256,7 @@ function UserList() {
       <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
-            Quản lý tài khoản
+            Danh sách tài khoản
           </h2>
           <p className="mt-1 text-sm text-[#6b7280] dark:text-[#a1aebf]"></p>
         </div>
@@ -385,82 +372,80 @@ function UserList() {
                 >
                   Trạng thái
                 </th>
-                {/* <th
-                  className="px-6 py-3 text-left text-xs font-bold text-[#6b7280] dark:text-[#a1aebf] uppercase tracking-wider"
-                  scope="col"
-                >
-                  Last Login
-                </th> */}
                 <th className="relative px-6 py-3" scope="col">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e5e7eb] dark:divide-[#2a4225] bg-white dark:bg-[#1c2e18]">
-              {users?.map((user) => {
-                return (
-                  <tr
-                    key={user?.id}
-                    className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
-                  >
-                    <td className="font-[500] px-6 py-4 whitespace-nowrap text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="line-clamp-2 font-medium"
-                        title={user?.id}
-                      >
-                        {user?.id}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0">
-                          <img
-                            alt="Jane Cooper"
-                            className="h-10 w-10 rounded-full object-cover"
-                            src={
-                              user?.avatar?.url ||
-                              "https://lh3.googleusercontent.com/aida-public/AB6AXuBcw8KMoGbROEOgguVoH4b2SgTpWKpbP3raacQwODFSN_-DHBWY3L9v3QAQnZ_b7fOCn-WtmAiW1Ex_vLGXSs1SfdQTtg57pXVuIMD21wmaL-8vpYDCmNOtmj107fHj6UPor8y0rjwg8OGRCY0xF4xOvdY_yXhzVjU6qaPLtP6QUmblmNhdl23NWynXqWRL4zZVVb57gPdan6US-6ewZhfwdwSUoqFwGzN7i7e7xvNvVj5ApiZQRF3HSGdQM-KGvLBHkXjhugJEFXGw"
-                            }
-                          />
+              {isLoadingUsers ? (
+                <TableSkeleton rows={5} columns={7}></TableSkeleton>
+              ) : (
+                users?.map((user) => {
+                  return (
+                    <tr
+                      key={user?.id}
+                      className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
+                    >
+                      <td className="font-[500] px-6 py-4 whitespace-nowrap text-sm text-black dark:text-[#a1aebf]">
+                        <div
+                          className="line-clamp-2 font-medium"
+                          title={user?.id}
+                        >
+                          {user?.id}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-bold text-[#111b0d] dark:text-white">
-                            {user?.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 flex-shrink-0">
+                            <img
+                              alt="Jane Cooper"
+                              className="h-10 w-10 rounded-full object-cover"
+                              src={
+                                user?.avatar?.url ||
+                                "https://lh3.googleusercontent.com/aida-public/AB6AXuBcw8KMoGbROEOgguVoH4b2SgTpWKpbP3raacQwODFSN_-DHBWY3L9v3QAQnZ_b7fOCn-WtmAiW1Ex_vLGXSs1SfdQTtg57pXVuIMD21wmaL-8vpYDCmNOtmj107fHj6UPor8y0rjwg8OGRCY0xF4xOvdY_yXhzVjU6qaPLtP6QUmblmNhdl23NWynXqWRL4zZVVb57gPdan6US-6ewZhfwdwSUoqFwGzN7i7e7xvNvVj5ApiZQRF3HSGdQM-KGvLBHkXjhugJEFXGw"
+                              }
+                            />
                           </div>
-                          <div className="text-sm text-[#6b7280] dark:text-[#a1aebf]">
-                            {user?.email}
+                          <div className="ml-4">
+                            <div className="text-sm font-bold text-[#111b0d] dark:text-white">
+                              {user?.name}
+                            </div>
+                            <div className="text-sm text-[#6b7280] dark:text-[#a1aebf]">
+                              {user?.email}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="font-[400] px-6 py-4 whitespace-nowrap text-sm text-black dark:text-[#a1aebf]">
-                      {user?.phone}
-                    </td>
-                    <td className="font-[400] px-6 py-4 whitespace-nowrap text-sm text-black dark:text-[#a1aebf]">
-                      {user?.address}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {iconMap[user?.role?.name]}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {user?.deletedAt === null ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-bold text-green-700 dark:text-green-300 border border-transparent dark:border-green-800">
-                          <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>{" "}
-                          Active
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-300 border border-transparent dark:border-red-800">
-                          <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>{" "}
-                          Inactive
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <ActionMenu actions={menuActions(user)} data={user} />
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td className="font-[400] px-6 py-4 whitespace-nowrap text-sm text-black dark:text-[#a1aebf]">
+                        {user?.phone}
+                      </td>
+                      <td className="font-[400] px-6 py-4 whitespace-nowrap text-sm text-black dark:text-[#a1aebf]">
+                        {user?.address}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {iconMap[user?.role?.name]}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {user?.deletedAt === null ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-bold text-green-700 dark:text-green-300 border border-transparent dark:border-green-800">
+                            <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>{" "}
+                            Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-300 border border-transparent dark:border-red-800">
+                            <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>{" "}
+                            Inactive
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <ActionMenu actions={menuActions(user)} data={user} />
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

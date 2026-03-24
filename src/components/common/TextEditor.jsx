@@ -15,6 +15,11 @@ import {
   ImageUpload,
   Undo,
   FileRepository,
+  Alignment,
+  ImageToolbar,
+  ImageCaption,
+  ImageStyle,
+  ImageResize,
 } from "ckeditor5";
 
 import "ckeditor5/ckeditor5.css";
@@ -38,7 +43,7 @@ function MyCustomUploadAdapterPlugin(editor) {
               })
               .then((response) => {
                 const fileData = response.data; // Giả sử trả về { id: "abc", url: "http://..." }
-                
+
                 // Nối fileId vào URL giống như cách bạn làm với mockId lúc nãy
                 const finalUrl = `${fileData.url}?fileId=${fileData.id}`;
                 console.log("Dán ID thật vào URL:", finalUrl);
@@ -53,7 +58,6 @@ function MyCustomUploadAdapterPlugin(editor) {
           });
         });
       },
-
     };
   };
 }
@@ -78,13 +82,22 @@ const TextEditor = ({ value, onChange, placeholder }) => {
             Table,
             Image,
             ImageUpload,
+            ImageToolbar,
+            ImageStyle,
+            ImageResize,
             Undo,
             FileRepository,
+            Alignment,
           ],
           extraPlugins: [MyCustomUploadAdapterPlugin],
           placeholder: placeholder || "Nhập nội dung...",
           toolbar: [
             "heading",
+            "|",
+            "alignment:left",
+            "alignment:center",
+            "alignment:right",
+            "alignment:justify",
             "|",
             "bold",
             "italic",
@@ -98,6 +111,19 @@ const TextEditor = ({ value, onChange, placeholder }) => {
             "undo",
             "redo",
           ],
+          alignment: {
+            options: ["left", "center", "right", "justify"],
+          },
+          image: {
+            toolbar: [
+              "imageStyle:inline",
+              "imageStyle:block",
+              "imageStyle:side",
+              "|",
+              "toggleImageCaption",
+              "imageTextAlternative",
+            ],
+          },
         }}
         onChange={(event, editor) => {
           const htmlData = editor.getData();

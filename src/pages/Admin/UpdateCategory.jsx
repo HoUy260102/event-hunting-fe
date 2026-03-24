@@ -149,8 +149,8 @@ function UpdateCategory() {
                   <input
                     {...register("description")}
                     type="text"
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.email ? "border-red-500 ring-1 ring-red-500" : ""}`}
-                    placeholder="Nhập địa chỉ email..."
+                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.description ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                    placeholder="Nhập mô tả..."
                   />
                   {errors.description && (
                     <span className="text-red-500 text-xs ml-4">

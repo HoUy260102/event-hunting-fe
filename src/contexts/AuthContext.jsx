@@ -1,13 +1,18 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 export const AuthContext = createContext(null);
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const openLogin = () => setIsLoginModalOpen(true);
+  const closeLogin = () => setIsLoginModalOpen(false);
+  const navigate = useNavigate();
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const token = localStorage.getItem("accessToken");
@@ -22,7 +27,6 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     let isMounted = true;
-
     const syncPermissions = async () => {
       if (!user?.roleId) return;
       try {
@@ -50,7 +54,7 @@ const AuthProvider = ({ children }) => {
     return () => {
       isMounted = false;
     };
-  }, [location.pathname, user?.roleId]); 
+  }, [location.pathname, user?.roleId]);
 
   const login = (userData, token, refreshToken) => {
     localStorage.setItem("user", JSON.stringify(userData));
@@ -68,8 +72,28 @@ const AuthProvider = ({ children }) => {
     setPermissions([]);
   };
 
+  const requireAuth = (path) => {
+    if (!user) {
+      openLogin();
+      return;
+    }
+    navigate(path);
+  };
+  
   return (
-    <AuthContext.Provider value={{ user, permissions, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        permissions,
+        login,
+        logout,
+        loading,
+        isLoginModalOpen,
+        openLogin,
+        closeLogin,
+        requireAuth
+      }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );

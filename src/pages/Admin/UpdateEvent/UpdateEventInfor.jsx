@@ -313,7 +313,7 @@ function UpdateEventInfor() {
         }
         onConfirm={handleConfirmStatus}
       />
-      <div class="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-8">
         <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
           {/* Tên sự kiện */}
           <div>
@@ -331,23 +331,23 @@ function UpdateEventInfor() {
             </div>
           </div>
         </section>
-        <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between mb-6">
-            <label class="block text-sm font-semibold text-slate-900">
-              <span class="text-red-500 mr-1">*</span>Upload hình ảnh
+        <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <label className="block text-sm font-semibold text-slate-900">
+              <span className="text-red-500 mr-1">*</span>Upload hình ảnh
             </label>
             {(errors.posterId || errors.bannerId) && (
               <span className="text-red-500 text-xs italic font-medium">
                 Bạn chưa chọn đủ ảnh Poster/Banner
               </span>
             )}
-            <a class="text-xs text-emerald-500 hover:underline" href="#">
+            <a className="text-xs text-emerald-500 hover:underline" href="#">
               Xem vị trí hiển thị các ảnh
             </a>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:h-[400px]">
-            <div class="md:col-span-4 lg:col-span-3">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:h-[400px]">
+            <div className="md:col-span-4 lg:col-span-3">
               <label className="md:h-full h-[250px] relative overflow-hidden border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 flex flex-col items-center justify-center p-6 text-center group cursor-pointer hover:border-emerald-500 transition-colors">
                 <input
                   type="file"

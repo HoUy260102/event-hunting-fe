@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import UpdateEventInfor from "./UpdateEventInfor";
 import UpdateShow from "./UpdateShow";
+import { useHeader } from "../../../hooks/useHeader";
 
 function UpdateEvent() {
+  const { setTitle } = useHeader();
   const steps = [
     { id: 1, title: "Thông tin sự kiện" },
     { id: 2, title: "Thời gian & Loại vé" },
@@ -19,6 +21,9 @@ function UpdateEvent() {
       setCurrentStep((prev) => prev + 1);
     }
   };
+  useEffect(() => {
+    setTitle("Quản lý sự kiện");
+  }, []);
   return (
     <>
       <header className="rounded-xl shadow bg-white border-b border-slate-200 z-10 sticky top-0">
@@ -60,7 +65,6 @@ function UpdateEvent() {
 
           {/* Khối nút bấm */}
           <div className="flex gap-2 md:gap-4 items-center self-center shrink-0">
-            
             <button
               type="button"
               disabled={currentStep >= steps.length}
@@ -79,7 +83,7 @@ function UpdateEvent() {
               .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
       </header>
-      <div class="w-full flex-1 overflow-y-auto custom-scrollbar pt-8">
+      <div className="w-full flex-1 overflow-y-auto custom-scrollbar pt-8">
         {currentStep === 1 && <UpdateEventInfor></UpdateEventInfor>}
         {currentStep === 2 && <UpdateShow></UpdateShow>}
       </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useFormContext } from "react-hook-form";
+import { extractSeatData } from "../../utils/seatMapParser";
 
 function TicketTypeModal({
   isOpen,
@@ -19,9 +20,22 @@ function TicketTypeModal({
         .max(50, "Tên vé tối đa 50 ký tự"),
       totalQuantity: z.coerce.number().min(1, "Số lượng tối thiểu là 1"),
       soldQuantity: z.coerce.number().default(0),
+      seats: z
+        .array(
+          z.object({
+            id: z.string().optional(),
+            seatCode: z.string().optional().nullable(),
+            rowName: z.string().optional().nullable(),
+            seatNumber: z.string().optional().nullable(),
+          }),
+        )
+        .optional()
+        .default([])
+        .nullable(),
       sectionId: z
         .string()
         .optional()
+        .nullable()
         .refine((val) => {
           if (
             (show?.seatMapType === "SECTION_WITH_SEATS" ||
@@ -31,6 +45,7 @@ function TicketTypeModal({
             return false;
           return true;
         }, "Vui lòng chọn khu vực trên sơ đồ"),
+      seatMapSvg: z.string().nullable().optional(),
       seatingType: z.enum(["SEATED", "STANDING"], {
         required_error: "Vui lòng chọn hình thức chỗ ngồi",
       }),
@@ -39,7 +54,9 @@ function TicketTypeModal({
           z.object({
             id: z.string(),
             name: z.string().min(1, "Tên tier không được để trống"),
-            status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).default("ACTIVE"),
+            status: z
+              .enum(["ACTIVE", "INACTIVE", "SUSPENDED"])
+              .default("ACTIVE"),
             price: z.coerce.number().min(0, "Giá không được âm"),
             limitQuantity: z.coerce.number().min(1, "Số lượng tối thiểu là 1"),
             soldQuantity: z.coerce.number().default(0),
@@ -137,6 +154,24 @@ function TicketTypeModal({
           });
         }
       }
+
+      if (show?.seatMapType === "SECTION_WITH_SEATS" && data.seatingType === "SEATED") {
+        if (!data.seats || data.seats.length === 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Vui lòng cấu hình danh sách ghế cho khu vực này",
+            path: ["seats"],
+          });
+        }
+
+        if (!data.seatMapSvg) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Vui lòng tải sơ đồ ghế chi tiết cho khu vực này",
+            path: ["seatMapSvg"],
+          });
+        }
+      }
     });
 
   const {
@@ -150,6 +185,8 @@ function TicketTypeModal({
     minOrder: 1,
     maxOrder: 10,
     sectionId: "",
+    seatMapSvg: "",
+    seats: [],
     ticketTiers: [],
   });
 
@@ -347,7 +384,28 @@ function TicketTypeModal({
       desc: "Khu vực tự do, không chia số ghế.",
     },
   ];
+
+  const handleSvgUpload = (file) => {
+    if (!file || file.type !== "image/svg+xml") {
+      alert("Vui lòng tải lên file định dạng .svg");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const svgContent = e.target.result;
+      const seats = extractSeatData(svgContent);
+      const newData = {
+        ...formData,
+        seatMapSvg: svgContent,
+        seats: seats,
+        totalQuantity: seats.length,
+      };
+      setFormData(newData);
+    };
+    reader.readAsText(file);
+  };
   const isLocked = show?.status !== "DRAFT";
+  console.log("formData:", formData);
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
@@ -398,6 +456,7 @@ function TicketTypeModal({
                 className={`w-full bg-slate-50 border ${errors.totalQuantity ? "border-red-500" : "border-slate-200"} rounded-lg px-4 py-3`}
                 value={formData.totalQuantity}
                 onChange={(e) => validateField("totalQuantity", e.target.value)}
+                disabled={show?.seatMapType === "SECTION_WITH_SEATS"}
               />
               {errors.totalQuantity && (
                 <p className="text-red-500 text-xs mt-1">
@@ -430,7 +489,7 @@ function TicketTypeModal({
           formData.seatingType === type.id
             ? "border-emerald-500 bg-white shadow-md shadow-emerald-100"
             : isLocked
-              ? "border-slate-100 bg-slate-50" // Khi khóa thì cho nền hơi xám
+              ? "border-slate-100 bg-slate-50"
               : "border-white bg-white hover:border-slate-200"
         }`}
                     >
@@ -508,6 +567,94 @@ function TicketTypeModal({
               </div>
             )}
 
+            {/* Svg cho seat */}
+            {show?.seatMapType === "SECTION_WITH_SEATS" && formData.seatingType === "SEATED" && (
+              <div
+                className={`md:col-span-4 mb-8 bg-slate-50/50 p-4 rounded-xl border-2 transition-all ${
+                  errors?.seatMapSvg ? "border-red-400" : "border-slate-200"
+                }`}
+              >
+                <div className="flex flex-col gap-8">
+                  {/* Cột bên trái: Upload Input */}
+                  <div className="flex-1 space-y-4">
+                    <label className="block text-sm font-bold text-slate-800">
+                      Tải lên sơ đồ SVG
+                    </label>
+                    <div className="relative h-30 w-full border-2 border-dashed border-emerald-200 rounded-lg bg-white flex flex-col items-center justify-center hover:bg-emerald-50 transition-colors cursor-pointer group">
+                      <input
+                        type="file"
+                        accept=".svg"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            handleSvgUpload(file);
+                            e.target.value = "";
+                          }
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                      <span className="material-symbols-outlined text-emerald-500 text-3xl mb-2 group-hover:scale-110 transition-transform">
+                        {formData?.seatMapSvg ? "cloud_done" : "upload_file"}
+                      </span>
+                      <p className="text-xs text-slate-500">
+                        {formData?.seatMapSvg
+                          ? "Click để thay đổi sơ đồ khác"
+                          : "Chọn file sơ đồ .svg"}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Cột bên phải: Preview SVG */}
+                  <div className="flex-1">
+                    <label className="block text-sm font-bold text-slate-800 mb-4">
+                      Xem trước sơ đồ theo khu
+                    </label>
+                    <div className="min-h-[12rem] w-full bg-white border border-slate-200 rounded-lg flex items-center justify-center overflow-hidden relative">
+                      {formData?.seatMapSvg ? (
+                        <div
+                          className="p-8 w-full flex items-center justify-center preview-svg-container"
+                          dangerouslySetInnerHTML={{
+                            __html: formData?.seatMapSvg,
+                          }}
+                        />
+                      ) : (
+                        <div className="text-center">
+                          <span className="material-symbols-outlined text-slate-300 text-5xl">
+                            image
+                          </span>
+                          <p className="text-xs text-slate-400 mt-2">
+                            Chưa có sơ đồ để hiển thị
+                          </p>
+                        </div>
+                      )}
+
+                      {formData?.seatMapSvg && (
+                        <button
+                          onClick={() => {
+                            const newData = {
+                              ...formData,
+                              seatMapSvg: "",
+                              seats: [],
+                              totalQuantity: 0,
+                            };
+                            setFormData(newData);
+                          }}
+                          className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-md flex items-center justify-center transition-transform hover:scale-110"
+                        >
+                          <span className="material-symbols-outlined text-sm">
+                            close
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {errors?.seatMapSvg && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {errors?.seatMapSvg}
+                  </p>
+                )}
+              </div>
+            )}
             {/* Thông tin tier vé */}
             <div className="space-y-4 md:col-span-4">
               {formData.ticketTiers?.map((ticketTier, index) => {
@@ -778,67 +925,3 @@ function TicketTypeModal({
 }
 
 export default TicketTypeModal;
-
-// const validateTierOverlap = (currentIndex, allTiers) => {
-//   const current = allTiers[currentIndex];
-//   const startA = new Date(current.saleStartTime).getTime();
-//   const endA = new Date(current.saleEndTime).getTime();
-
-//   if (!startA || !endA || isNaN(startA) || isNaN(endA)) return null;
-
-//   for (let i = 0; i < allTiers.length; i++) {
-//     if (i === currentIndex) continue;
-
-//     const startB = new Date(allTiers[i].saleStartTime).getTime();
-//     const endB = new Date(allTiers[i].saleEndTime).getTime();
-
-//     if (!startB || !endB || isNaN(startB)) continue;
-
-//     if (startA < endB && endA > startB) {
-//       return `Thời gian bị trùng với đợt "${allTiers[i].name || "Tier " + (i + 1)}"`;
-//     }
-//   }
-//   return null;
-// };
-
-// const updateTicketTier = (ticketTierId, updatedData) => {
-//   setFormData((prev) => {
-//     const newTicketTiers = prev.ticketTiers.map((t) =>
-//       t.id === ticketTierId ? { ...t, ...updatedData } : t,
-//     );
-
-//     const currentIndex = newTicketTiers.findIndex(
-//       (t) => t.id === ticketTierId,
-//     );
-
-//     const newData = { ...prev, ticketTiers: newTicketTiers };
-
-//     const result = ticketSchema.safeParse(newData);
-
-//     let newErrors = { ...errors };
-
-//     Object.keys(newErrors).forEach((key) => {
-//       if (key.startsWith(`ticketTiers.${currentIndex}`)) {
-//         delete newErrors[key];
-//       }
-//     });
-
-//     if (!result.success) {
-//       result.error.issues.forEach((issue) => {
-//         const pathKey = issue.path.join(".");
-//         if (pathKey.includes(`ticketTiers.${currentIndex}`)) {
-//           newErrors[pathKey] = issue.message;
-//         }
-//       });
-//     }
-
-// const overlapError = validateTierOverlap(currentIndex, newTicketTiers);
-
-// if (overlapError) {
-//   newErrors[`ticketTiers.${currentIndex}.saleStartTime`] = overlapError;
-// }
-
-//     setErrors(newErrors);
-//     return newData;
-//   });
-// };

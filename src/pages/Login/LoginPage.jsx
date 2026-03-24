@@ -7,6 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import axiosClient from "../../api/axiosClient";
+import backgroundImageUrl from "../../images/bgeventhunting.png";
+import { useState } from "react";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ").nonempty("Email là bắt buộc"),
@@ -20,11 +23,12 @@ function LoginPage() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
+    mode: "onTouched",
   });
 
   const { login } = useAuth();
   const navigate = useNavigate();
-
+  const [isLoading, setIsLoading] = useState(false);
   const toastSuccess = (message) => {
     toast.success(message, {
       position: "top-right",
@@ -69,6 +73,7 @@ function LoginPage() {
 
   const onSubmit = async (data) => {
     try {
+      setIsLoading(true);
       const apiRes = await axiosClient.post("/auth/login", {
         username: data.email,
         password: data.password,
@@ -91,93 +96,117 @@ function LoginPage() {
       }
       toastError(error.message || "Đăng nhập thất bại!");
       console.error("Lỗi chi tiết:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <div className="login-container shadow">
-        <div className="left-panel">
-          <div className="text-content">
-            <h1>Event Hunting</h1>
-            <p>
-              We treat your event like a business with a comprehensive plan to
-              ensure that your event is delivered on time and on budget.
-            </p>
-            <img
-              src={eventIllustration}
-              alt="Event Management Illustration"
-              className="event-illustration"
-            />
-          </div>
-        </div>
-
-        <div className="right-panel">
-          {/* Sử dụng handleSubmit của react-hook-form */}
-          <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
-            <div className="form-group">
-              <label htmlFor="email">EMAIL:</label>
-              <input
-                type="email"
-                id="email"
-                placeholder="Email"
-                {...register("email")} // Đăng ký input với hook form
-              />
-              {errors.email && (
-                <span
-                  className="error-text"
-                  style={{ color: "red", fontSize: "12px" }}
-                >
-                  {errors.email.message}
-                </span>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="password">PASSWORD:</label>
-              <input
-                type="password"
-                id="password"
-                placeholder="Password"
-                {...register("password")} // Đăng ký input với hook form
-              />
-              {errors.password && (
-                <span
-                  className="error-text"
-                  style={{ color: "red", fontSize: "12px" }}
-                >
-                  {errors.password.message}
-                </span>
-              )}
-            </div>
-
-            <button type="submit" className="login-button">
-              Login →
-            </button>
-
-            <button type="button" className="google-login-button">
+    <>
+      <div
+        style={{ backgroundImage: `url(${backgroundImageUrl})` }}
+        className="flex justify-center items-center min-h-screen"
+      >
+        <div className="login-container shadow-2xl">
+          <div className="left-panel">
+            <div className="text-content text-center">
+              <h1>Event Hunting</h1>
+              <p>Săn tìm sự kiện, chạm tới đam mê.</p>
+              <p> Đừng chỉ đứng nhìn, hãy là một phần của những cuộc vui.</p>
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
-                alt="Google logo"
-                className="google-icon"
+                src={eventIllustration}
+                alt="Event Management Illustration"
+                className="event-illustration"
               />
-              Login with Google
-            </button>
+            </div>
+          </div>
 
-            <Link to="/forgot-password" className="forgot-password-link">
-              Forgot password?
-            </Link>
-            <p className="forgot-password-link">
-              Don't have an account?
-              <Link to="/signup" className="">
-                Sign Up?
+          <div className="right-panel">
+            {/* Sử dụng handleSubmit của react-hook-form */}
+            <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
+              <div className="form-group">
+                <label htmlFor="email" className="uppercase">
+                  Email:
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  placeholder="Nhập email..."
+                  {...register("email")} // Đăng ký input với hook form
+                />
+                <div className="error-container" style={{ minHeight: "18px" }}>
+                  {errors.email && (
+                    <span
+                      className="error-text"
+                      style={{ color: "red", fontSize: "12px" }}
+                    >
+                      {errors.email.message}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password" className="uppercase">
+                  Mật khẩu:
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  placeholder="Nhập mật khẩu..."
+                  {...register("password")}
+                />
+                <div className="error-container" style={{ minHeight: "18px" }}>
+                  {errors.password && (
+                    <span
+                      className="error-text"
+                      style={{ color: "red", fontSize: "12px" }}
+                    >
+                      {errors.password.message}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="login-button"
+                disabled={isLoading}
+                style={{
+                  cursor: isLoading ? "not-allowed" : "pointer",
+                }}
+              >
+                {isLoading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <>Đăng nhập →</>
+                )}
+              </button>
+
+              <button type="button" className="google-login-button">
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+                  alt="Google logo"
+                  className="google-icon"
+                />
+                Đăng nhập bằng Google
+              </button>
+
+              <Link to="/forgot-password" className="forgot-password-link">
+                Quên mật khẩu?
               </Link>
-            </p>
-          </form>
+              <p className="forgot-password-link">
+                Bạn chưa có tài khoản?
+                <Link to="/signup" className="">
+                  Đăng ký?
+                </Link>
+              </p>
+            </form>
+          </div>
+          <ToastContainer />
         </div>
-        <ToastContainer />
       </div>
-    </div>
+    </>
   );
 }
 

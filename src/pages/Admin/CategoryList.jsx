@@ -11,8 +11,12 @@ import UserDetailModal from "../../components/modals/UserDetailModal";
 import axiosClient from "../../api/axiosClient";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { useCan } from "../../hooks/useCan";
+import { useHeader } from "../../hooks/useHeader";
 import CategoryDetailModal from "../../components/modals/CategoryDetailModal";
+import TableSkeleton from "../../components/common/TableSkeleton";
 function CategoryList() {
+  const { setTitle } = useHeader();
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [categories, setCategories] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
@@ -32,6 +36,7 @@ function CategoryList() {
   const can = useCan();
   const fetchCategories = async (pageNo = 1, keyword = "", status = "ALL") => {
     try {
+      setIsLoadingCategories(true);
       const result = await axiosClient.get("/categories/search", {
         params: {
           page: pageNo,
@@ -46,6 +51,8 @@ function CategoryList() {
       setCurrentPage(result?.data?.number + 1 || 1);
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu:", error.message);
+    } finally {
+      setIsLoadingCategories(false);
     }
   };
 
@@ -76,6 +83,10 @@ function CategoryList() {
     });
     setSearchParams(params);
   };
+
+  useEffect(() => {
+    setTitle("Quản lý chủ đề");
+  }, []);
 
   useEffect(() => {
     const page = searchParams.get("page") || 1;
@@ -235,12 +246,9 @@ function CategoryList() {
         onConfirm={confirmModal?.onConfirm}
       ></ConfirmModal>
       <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
-            Quản lý chủ đề
-          </h2>
-          <p className="mt-1 text-sm text-[#6b7280] dark:text-[#a1aebf]"></p>
-        </div>
+        <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
+          Danh sách chủ đề
+        </h2>
         <button
           onClick={() => {
             navigate("/admin/add-category");
@@ -332,56 +340,54 @@ function CategoryList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e5e7eb] dark:divide-[#2a4225] bg-white dark:bg-[#1c2e18]">
-              {categories?.map((category) => {
-                return (
-                  <tr
-                    key={category?.id}
-                    className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
-                  >
-                    <td className="font-[500] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="line-clamp-2 font-medium"
-                        title={category?.id}
-                      >
-                        {category?.id}
-                      </div>
-                    </td>
-                    <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="line-clamp-2"
-                        title={category?.name}
-                      >
-                        {category?.name}
-                      </div>
-                    </td>
-                    <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="line-clamp-2"
-                        title={category?.slug}
-                      >
-                        {category?.slug}
-                      </div>
-                    </td>
-                    <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                      <div
-                        className="max-w-[250px] line-clamp-2"
-                        title={category?.description}
-                      >
-                        {category?.description}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {renderStatusBadge(category?.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <ActionMenu
-                        actions={menuActions(category)}
-                        data={category}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
+              {isLoadingCategories ? (
+                <TableSkeleton rows={5} columns={5}></TableSkeleton>
+              ) : (
+                categories?.map((category) => {
+                  return (
+                    <tr
+                      key={category?.id}
+                      className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
+                    >
+                      <td className="font-[500] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div
+                          className="line-clamp-2 font-medium"
+                          title={category?.id}
+                        >
+                          {category?.id}
+                        </div>
+                      </td>
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div className="line-clamp-2" title={category?.name}>
+                          {category?.name}
+                        </div>
+                      </td>
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div className="line-clamp-2" title={category?.slug}>
+                          {category?.slug}
+                        </div>
+                      </td>
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                        <div
+                          className="max-w-[250px] line-clamp-2"
+                          title={category?.description}
+                        >
+                          {category?.description}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {renderStatusBadge(category?.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <ActionMenu
+                          actions={menuActions(category)}
+                          data={category}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

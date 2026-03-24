@@ -1,37 +1,50 @@
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
   margin: 0;
 }
 
 .event-illustration {
-  max-width: 100%; 
-  height: auto;  
+  max-width: 100%;
+  height: auto;
 }
 
-.login-container {
+.signup-container {
   display: flex;
-  min-height: 90vh; 
+  min-height: 90vh;
+  max-width: 90vw;
   overflow: hidden;
   border-radius: 30px;
   margin-top: -1rem !important;
 }
 
-.left-panel {
-  flex: 1; 
-  background: linear-gradient(135deg, #48308B 0%, #764BA2 100%);
-  color: white;
+.signup-container .left-panel {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s ease-in;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 50px;
-  position: relative; 
-  
-  overflow: hidden; 
 }
 
-.left-panel::before {
-  content: '';
+@media (min-width: 1024px) {
+  .signup-container .left-panel {
+    display: flex;
+    width: auto;
+    opacity: 1;
+    flex: 1;
+    background: linear-gradient(135deg, #10b981 0%, #064e3b 100%);
+    color: white;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+}
+
+.signup-container .left-panel::before {
+  content: "";
   position: absolute;
   top: -50px;
   left: -50px;
@@ -42,27 +55,27 @@ body {
   filter: blur(20px);
 }
 
-.left-panel .text-content {
+.signup-container .left-panel .text-content {
   max-width: 400px;
   z-index: 1;
   justify-content: center;
 }
 
-.left-panel h1 {
+.signup-container .left-panel h1 {
   font-size: 2.8rem;
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: 20px;
 }
 
-.left-panel p {
+.signup-container .left-panel p {
   font-size: 1.1rem;
   line-height: 1.6;
   opacity: 0.9;
 }
 
-.right-panel {
-  flex: 1; 
+.signup-container .right-panel {
+  flex: 1;
   background: #ffffff;
   display: flex;
   justify-content: center;
@@ -70,41 +83,41 @@ body {
   padding: 50px;
 }
 
-.login-form {
+.signup-container .login-form {
   width: 100%;
-  max-width: 350px; 
+  max-width: 350px;
 }
 
-.form-group {
-  margin-bottom: 25px;
+.signup-container .form-group {
+  margin-bottom: 20px;
 }
 
-.form-group label {
+.signup-container .form-group label {
   display: block;
   font-size: 0.75rem;
   font-weight: 600;
   color: #888;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
-  text-align: left; 
+  text-align: left;
 }
 
-.form-group input {
+.signup-container .form-group input {
   width: 100%;
   padding: 12px 15px;
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 1rem;
-  box-sizing: border-box; 
+  box-sizing: border-box;
   outline: none;
 }
 
-.login-button {
+.signup-container .signup-button {
   width: 100%;
   padding: 15px;
   border: none;
   border-radius: 5px;
-  background-color: #6d44c4; /* Màu tím của nút */
+  background-color: #10b981; 
   color: white;
   font-size: 1rem;
   font-weight: 600;
@@ -115,10 +128,9 @@ body {
   align-items: center;
 }
 
-.login-button:hover {
-  background-color: #5a37a0;
+.signup-container .signup-button:hover {
+  background-color: #059669;
 }
-
 
 input:focus {
   outline: none;
@@ -133,11 +145,11 @@ input:focus {
   font-size: 0.9rem;
   text-decoration: none;
 }
-.google-login-button {
+.google-signup-button {
   margin-top: 30px;
   width: 100%;
 }
-.google-login-button img{
+.google-signup-button img {
   margin-right: 15px;
 }
 .forgot-password-link:hover {
@@ -145,22 +157,13 @@ input:focus {
 }
 
 @media (max-width: 768px) {
-  .login-container {
-    flex-direction: column; 
-  }
-  
-  .left-panel {
-    padding: 40px 20px;
-    min-height: 30vh;
-    text-align: center;
-  }
-  
-  .right-panel {
+  .signup-container .right-panel {
     padding: 40px 20px;
     min-height: 70vh;
+    min-width: 60vw;
   }
 
-  .left-panel h1 {
+  .signup-container .left-panel h1 {
     font-size: 2rem;
   }
 }
