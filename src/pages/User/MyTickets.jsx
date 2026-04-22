@@ -14,6 +14,7 @@ const MyTickets = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let ignore = false;
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -24,17 +25,21 @@ const MyTickets = () => {
             size: 4,
           },
         });
-        setTickets(res?.data?.content || []);
-        setTotalElements(res?.data?.totalElements || 0);
-        setTotalPages(res?.data?.totalPages || 0);
+        if (!ignore) {
+          setTickets(res?.data?.content || []);
+          setTotalElements(res?.data?.totalElements || 0);
+          setTotalPages(res?.data?.totalPages || 0);
+        }
       } catch (error) {
         console.error("Lỗi khi lấy vé:", error);
       } finally {
-        setLoading(false);
+        if (!ignore) setLoading(false);
       }
     };
-
     fetchData();
+    return () => {
+      ignore = true;
+    }
   }, [isFinished, pageNumber]);
 
   const handleTabChange = (status) => {

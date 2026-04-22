@@ -93,7 +93,9 @@ const TicketCard = ({ ticket, isFinished }) => {
           <div className="mt-5 pt-3 border-t border-[#474848]/10 flex flex-col sm:flex-row items-center justify-between gap-4">
             <button
               type="button"
-              onClick={() => {navigate(`/my-tickets/${ticket?.id}`)}}
+              onClick={() => {
+                navigate(`/my-tickets/${ticket?.id}`);
+              }}
               className="text-[#acabab] hover:text-[#1DB954] transition-colors flex items-center gap-2 text-sm font-bold tracking-wide"
             >
               <span
@@ -103,6 +105,22 @@ const TicketCard = ({ ticket, isFinished }) => {
                 info
               </span>
               Xem chi tiết
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                navigate(`/reservations/${ticket?.reservationId}/summary`);
+              }}
+              className="text-[#acabab] hover:text-[#1DB954] transition-colors flex items-center gap-2 text-sm font-bold tracking-wide"
+            >
+              <span
+                className="material-symbols-outlined text-xl"
+                data-icon="receipt_long"
+              >
+                receipt_long
+              </span>
+              Xem thông tin đơn hàng
             </button>
           </div>
         </div>

@@ -64,6 +64,28 @@ const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
+  const refreshUser = async () => {
+    try {
+      const response = await axiosClient.get("/auth/me");
+      const updatedUser = response.data; 
+
+      if (updatedUser) {
+        setUser(updatedUser);
+        setPermissions(updatedUser.permissions || []);
+        const currentStored = JSON.parse(localStorage.getItem("user") || "{}");
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ ...currentStored, ...updatedUser }),
+        );
+        return updatedUser;
+      }
+    } catch (error) {
+      console.error("Không thể làm mới thông tin user:", error);
+      if (error.status === 401) logout();
+      throw error;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("accessToken");
@@ -79,7 +101,7 @@ const AuthProvider = ({ children }) => {
     }
     navigate(path);
   };
-  
+
   return (
     <AuthContext.Provider
       value={{
@@ -91,7 +113,8 @@ const AuthProvider = ({ children }) => {
         isLoginModalOpen,
         openLogin,
         closeLogin,
-        requireAuth
+        requireAuth,
+        refreshUser, 
       }}
     >
       {!loading && children}

@@ -82,6 +82,12 @@ axiosClient.interceptors.response.use(
         isRefreshing = false;
       }
     }
+    
+    if (error.response?.status === 403) {
+      window.location.href = "/forbidden";
+      return Promise.reject(errorResponse);
+    }
+
     const errorResponse = error.response?.data || {
       status: error.response?.status || 500,
       message: error.message || "Lỗi kết nối server!",

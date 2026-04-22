@@ -83,6 +83,8 @@ function EventOverview() {
               >
                 Chỉnh sửa
               </button>
+
+              
             </div>
 
             {/* --- GRID THÔNG SỐ: Giải quyết chồng lấp --- */}
@@ -110,7 +112,7 @@ function EventOverview() {
               {event?.shows?.length || 0} Suất
             </span>
           </h3>
-          <button className="flex whitespace-nowrap items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-bold hover:bg-green-600">
+          <button className="flex whitespace-nowrap items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-bold hover:bg-green-600">
             <span className="whitespace-nowrap material-symbols-outlined text-sm">
               add
             </span>{" "}

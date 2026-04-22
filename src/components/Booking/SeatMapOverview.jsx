@@ -1,11 +1,17 @@
 import React, { useEffect, useRef } from "react";
 import svgPanZoom from "svg-pan-zoom";
 
-const SeatMapOverview = ({ svgContent, onSectionClick, selectedSectionId }) => {
+const SeatMapOverview = ({
+  svgContent,
+  onSectionClick,
+  selectedSectionId,
+  soldOutSectionIds,
+}) => {
+  console.log(soldOutSectionIds);
   const handleSvgClick = (e) => {
     const sectionElement = e.target.closest('g[id^="section-"]');
     if (sectionElement) {
-      const sectionId = sectionElement.id; // Ví dụ: "section-A"
+      const sectionId = sectionElement.id;
       onSectionClick(sectionId);
     }
   };
@@ -30,6 +36,22 @@ const SeatMapOverview = ({ svgContent, onSectionClick, selectedSectionId }) => {
     panZoomRef.current?.resetZoom();
     panZoomRef.current?.center();
   };
+  useEffect(() => {
+    if (!containerRef.current || !svgContent) return;
+    const sections = containerRef.current.querySelectorAll('g[id^="section-"]');
+    sections.forEach((section) => {
+      const sectionId = section.id;
+      if (soldOutSectionIds && soldOutSectionIds.includes(sectionId)) {
+        section.classList.add("sold-out");
+      } else {
+        section.classList.remove("sold-out");
+      }
+    });
+  }, [svgContent, soldOutSectionIds]);
+  const soldOutSelector =
+    soldOutSectionIds && soldOutSectionIds.length > 0
+      ? soldOutSectionIds.map((id) => `.svg-container #${id}`).join(", ")
+      : null;
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full">
       <div className="flex items-center justify-between mb-4">
@@ -95,6 +117,23 @@ const SeatMapOverview = ({ svgContent, onSectionClick, selectedSectionId }) => {
         }
         .svg-container g[id^="section-"]:hover {
           filter: brightness(0.8);
+        }
+        ${
+          soldOutSelector
+            ? `
+          /* 1. Nhuộm xám toàn bộ thẻ <g> (fill, background, stroke) */
+          ${soldOutSelector} {
+            fill: #4B5563 !important; 
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            pointer-events: none; 
+          }
+          ${soldOutSelector} * {
+            fill: #4B5563 !important;
+            stroke: #9ca3af !important; 
+          }
+        `
+            : ""
         }
         /* Highlight khu vực đang chọn */
         ${

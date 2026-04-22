@@ -13,6 +13,7 @@ import Stomp from "stompjs";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
 import Modal from "../../../components/common/Modal";
 import Step3Payment from "./Step3Payment";
+import { useEventSession } from "../../../hooks/useEventSession";
 
 const customerInfoSchema = z.object({
   fullName: z.string().min(2, "Họ tên quá ngắn"),
@@ -30,6 +31,7 @@ function Booking() {
   const [cart, setCart] = useState([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+  const [soldOutSectionIds, setSoldOutSectionIds] = useState([]);
   const [notiModal, setNotiModal] = useState({
     isOpen: false,
     title: "",
@@ -43,23 +45,30 @@ function Booking() {
     message: "",
     onConfirm: null,
   });
-
+  const { getSession, syncSession } = useEventSession();
   const closeNotiModal = () =>
     setNotiModal((prev) => ({ ...prev, isOpen: false }));
-  const expiryTime = React.useMemo(() => {
-    const key = `booking_expiry_${showId}`;
-    const savedExpiry = localStorage.getItem(key);
-    if (savedExpiry) {
-      const expiry = Number(savedExpiry);
-      if (Date.now() < expiry) {
-        return expiry;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const init = async () => {
+      try {
+        await syncSession(showId);
+        if (isMounted) {
+          console.log("Đã nạp xong token cho show:", showId);
+        }
+      } catch (error) {
+        if (isMounted) console.log("Lỗi:", error.message);
       }
-      localStorage.removeItem(key);
-    }
-    const newExpiry = Date.now() + 10 * 60 * 1000;
-    localStorage.setItem(key, newExpiry);
-    return newExpiry;
-  }, [showId]);
+    };
+
+    init();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [showId, syncSession]);
 
   const ticketTypeMap = useMemo(() => {
     const map = new Map();
@@ -73,8 +82,11 @@ function Booking() {
 
   const seatMap = useMemo(() => {
     const map = new Map();
+    const soldOutSectionIdsLs = [];
     if (show?.ticketTypes) {
       show.ticketTypes.forEach((type) => {
+        if (type?.status !== "ON_SALE")
+          soldOutSectionIdsLs.push(type?.sectionId);
         type?.seats.forEach((seat) => {
           map.set(seat?.seatCode, seat);
         });
@@ -87,6 +99,7 @@ function Booking() {
       }
     });
     setBookedSeats(bookedSeatsCode);
+    setSoldOutSectionIds(soldOutSectionIdsLs);
     return map;
   }, [show]);
 
@@ -103,6 +116,10 @@ function Booking() {
         const showRes = result?.data;
         setShow(showRes);
       } catch (error) {
+        if (error.status === 404) {
+          window.location.href = "/notfound";
+          return;
+        }
         console.log("Lấy dữ liệu show thất bại:", error.message);
       }
     };
@@ -110,6 +127,7 @@ function Booking() {
   }, [showId]);
 
   const handleSectionSelect = (sectionId) => {
+    if (soldOutSectionIds.includes(sectionId)) return;
     setActiveTicketType(ticketTypeMap.get(sectionId));
   };
 
@@ -359,6 +377,11 @@ function Booking() {
     }
   };
 
+  const userIdRef = React.useRef(user?.id);
+  useEffect(() => {
+    userIdRef.current = user?.id;
+  }, [user?.id]);
+
   useEffect(() => {
     const socket = new SockJS("http://localhost:8080/api/v1/ws");
     const stompClient = Stomp.over(socket);
@@ -374,7 +397,10 @@ function Booking() {
             const data = JSON.parse(message.body);
             console.log("Nhận update ghế từ socket:", data);
             const { action, userId, seatCodes } = data;
-            if (action === "HOLD" && user?.id != userId) {
+            if (
+              action === "HOLD" &&
+              String(userIdRef.current) !== String(userId)
+            ) {
               setBookedSeats((prev) => [...new Set([...prev, ...seatCodes])]);
               setSelectedSeats((prevSelected) => {
                 const remainingSeats = prevSelected.filter(
@@ -445,7 +471,7 @@ function Booking() {
         <BookingStepper
           currentStep={currentStep}
           onExpire={onExpire}
-          expiryTime={expiryTime}
+          expiryTime={getSession(showId)?.expiresAt || 0}
           onBack={onBack}
         ></BookingStepper>
         {currentStep === 1 && (
@@ -462,6 +488,7 @@ function Booking() {
             selectedSeats={selectedSeats}
             show={show}
             onNext={onNext}
+            soldOutSectionIds={soldOutSectionIds}
           ></Step1BookingSelection>
         )}
         <FormProvider {...methods}>
@@ -479,6 +506,7 @@ function Booking() {
           <Step3Payment
             reservationInfo={reservation}
             onBack={onBack}
+            showId={showId}
           ></Step3Payment>
         )}
       </div>

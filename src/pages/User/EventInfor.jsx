@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axiosClient from "../../api/axiosClient";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ShowItem from "../../components/EventInfor/ShowItem";
 import { formatShowTime } from "../../utils/format";
 import EventSkeleton from "../../components/EventInfor/EventSkeleton";
@@ -15,7 +15,7 @@ function EventInfor() {
   const [event, setEvent] = useState(false);
   const [shows, setShows] = useState([]);
   const contentRef = useRef(null);
-  const {requireAuth} = useAuth();
+  const { requireAuth } = useAuth();
   const { id } = useParams();
   useEffect(() => {
     const fetchEvent = async () => {
@@ -26,9 +26,13 @@ function EventInfor() {
         setShows(eventRes.data?.shows);
         console.log("Data xịn nè:", eventRes.data);
       } catch (error) {
+        if (error.status === 404) {
+          window.location.href = "/notfound";
+          return;
+        }
         console.error(error.message);
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
     if (id) {
@@ -44,9 +48,9 @@ function EventInfor() {
   };
 
   const handleBuy = (show) => {
-    requireAuth(`/event/${id}/show/${show.id}/booking`);
+    requireAuth(`/event/${id}/show/${show.id}/queue`);
   };
-  
+
   const renderBuyButton = () => {
     const baseClass = "w-full py-3 font-bold rounded-lg transition-colors";
 
@@ -74,7 +78,7 @@ function EventInfor() {
         return (
           <button
             onClick={() => {
-              handleBuy(shows[0])
+              handleBuy(shows[0]);
             }}
             className={`${baseClass} bg-[#2DC275] text-black hover:bg-[#22A05E]`}
           >
@@ -123,7 +127,7 @@ function EventInfor() {
   };
 
   const otherShowCount = shows?.length > 1 ? shows.length - 1 : 0;
-  
+
   if (isLoading) return <EventSkeleton />;
   return (
     <>

@@ -9,9 +9,11 @@ function TicketTypeSelector({ ticketTypes, onSelectTicket, activeTypeId }) {
       onSelectTicket(type?.sectionId);
     }
   };
+
   useEffect(() => {
     setActiveId(activeTypeId);
   }, [activeTypeId]);
+  
   const noScrollbarStyles = `
     .no-scrollbar::-webkit-scrollbar {
       display: none;

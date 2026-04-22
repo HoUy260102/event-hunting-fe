@@ -16,7 +16,8 @@ function Step1BookingSelection({
   cart,
   removeTicketTypeFromCart,
   handleRemoveSeat,
-  onNext
+  onNext,
+  soldOutSectionIds
 }) {
   return (
     <>
@@ -42,6 +43,7 @@ function Step1BookingSelection({
                   onSectionClick={handleSectionSelect}
                   selectedSectionId={activeTicketType?.sectionId}
                   svgContent={show?.seatMapSvg}
+                  soldOutSectionIds={soldOutSectionIds}
                 />
               )
             ) : /* KIỂM TRA: Nếu ĐÃ CÓ activeTicketType thì hiện SeatGrid + Nút Undo */

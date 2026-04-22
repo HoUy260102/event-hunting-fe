@@ -5,7 +5,10 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 function TicketItem({ type, isOpen, onToggle }) {
   return (
     <div
-      onClick={onToggle}
+      onClick={() => {
+        if (type?.status === "SOLD_OUT") return;
+        onToggle();
+      }}
       className={`overflow-hidden rounded-lg border transition-all duration-300 cursor-pointer ${
         isOpen
           ? "border-green-500 bg-green-50 shadow-md"

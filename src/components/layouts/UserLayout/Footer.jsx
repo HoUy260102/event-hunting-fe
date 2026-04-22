@@ -34,7 +34,7 @@ const Footer = () => {
           </div>
           <div className="pt-2">
             <p className="text-xs text-zinc-500 opacity-70">
-              © 2026 Công ty TNHH Ticketbox. All rights reserved.
+              © 2026 Công ty TNHH EventHunting. All rights reserved.
             </p>
           </div>
           {/* Social Icons */}
@@ -139,7 +139,7 @@ const Footer = () => {
 
           <button
             onClick={scrollToTop}
-            className="mt-4 flex items-center gap-2 px-4 py-2 bg-zinc-800/50 hover:bg-zinc-700 rounded-full border border-zinc-700 text-zinc-400 hover:text-white transition-all group"
+            className="mt-4 flex items-center justify-between gap-2 px-4 py-2 bg-zinc-800/50 hover:bg-zinc-700 rounded-full border border-zinc-700 text-zinc-400 hover:text-white transition-all group"
           >
             <span className="text-[10px] font-bold uppercase tracking-widest">
               Back to Top

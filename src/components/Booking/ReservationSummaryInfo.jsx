@@ -83,9 +83,20 @@ const ReservationSummaryInfo = ({ reservationInfo }) => {
                       {item.ticketTierName}
                     </p>
                   </div>
-                  <span className="text-sm font-bold text-gray-900">
-                    {item.totalPrice?.toLocaleString()}đ
-                  </span>
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-gray-900">
+                      {item.finalPrice?.toLocaleString() ??
+                        item.totalPrice?.toLocaleString()}
+                      đ
+                    </div>
+
+                    {item.finalPrice != null &&
+                      item.finalPrice !== item.totalPrice && (
+                        <div className="text-[10px] text-gray-400 line-through">
+                          {item.totalPrice?.toLocaleString()}đ
+                        </div>
+                      )}
+                  </div>
                 </div>
 
                 {/* Kiểm tra seatId trực tiếp trên từng item */}
@@ -116,6 +127,12 @@ const ReservationSummaryInfo = ({ reservationInfo }) => {
             <span className="text-gray-500">Tạm tính:</span>
             <span className="font-bold text-gray-800">
               {reservationInfo?.totalAmount?.toLocaleString()}đ
+            </span>
+          </div>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-500">Giảm giá:</span>
+            <span className="font-bold text-gray-800">
+              {reservationInfo?.discountAmount?.toLocaleString() || 0}đ
             </span>
           </div>
 

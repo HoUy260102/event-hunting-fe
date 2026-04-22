@@ -5,6 +5,7 @@ function Sidebar({ isOpen, handleIsOpen }) {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [openDropdown, setOpenDropdown] = useState(null);
   const usersRef = useRef(null);
+  const vouchersRef = useRef(null);
   const categoriesRef = useRef(null);
   const permissionsRef = useRef(null);
   const eventsRef = useRef(null);
@@ -232,6 +233,65 @@ function Sidebar({ isOpen, handleIsOpen }) {
                     }}
                   >
                     Thêm sự kiện
+                  </Link>
+                </li>
+              </ul>
+            </li>
+
+            {/* Vouchers */}
+            <li
+              className={`nav-item dropdown-container ${
+                openDropdown === "vouchers" ? "open" : ""
+              }`}
+            >
+              <a
+                className={`nav-link custom-dropdown-toggle ${activeMenu === "vouchers" ? "active" : ""}`}
+                onClick={() => {
+                  toggleDropdown("vouchers");
+                }}
+              >
+                <span className="material-symbols-rounded">local_offer</span>
+                <span className="nav-label">Khuyến mãi</span>
+                <span className="dropdown-icon material-symbols-rounded">
+                  keyboard_arrow_down
+                </span>
+              </a>
+
+              <ul
+                ref={vouchersRef}
+                className="dropdown"
+                style={{
+                  height:
+                    openDropdown === "vouchers"
+                      ? `${eventsRef.current?.scrollHeight}px`
+                      : 0,
+                  overflow: "hidden",
+                  transition: "height 0.3s ease",
+                }}
+              >
+                <li className="nav-item">
+                  <Link className="nav-link dropdown-title">Khuyến mãi</Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    to="/admin/vouchers"
+                    className="nav-link dropdown-link"
+                    onClick={() => {
+                      setActiveMenu("vouchers");
+                    }}
+                  >
+                    Danh sách khuyến mãi
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    to="/admin/add-voucher"
+                    className="nav-link dropdown-link"
+                    onClick={() => {
+                      setActiveMenu("vouchers");
+                    }}
+                  >
+                    Thêm khuyến mãi
                   </Link>
                 </li>
               </ul>

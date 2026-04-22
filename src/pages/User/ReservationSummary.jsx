@@ -1,11 +1,15 @@
 // PaymentSuccess.jsx
 import React, { useEffect, useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
-import axiosClient from "../../../api/axiosClient";
-import { formatDateVN } from "../../../utils/format";
-import PaymentSuccessSkeleton from "../../../components/common/PaymentSuccessSkeleton";
+import { useNavigate, useParams } from "react-router-dom";
+import axiosClient from "../../api/axiosClient";
+import { formatDateVN } from "../../utils/format";
+import ReservationSummarySkeleton from "../../components/common/ReservationSummarySkeleton";
 
-const PaymentSuccess = () => {
+const ReservationSummary = () => {
+  const PAYMENT_METHOD_MAP = {
+    VNPAY: "Cổng thanh toán VNPAY",
+    MOMO: "Ví điện tử MoMo",
+  };
   const { id } = useParams();
   const [reservation, setReservation] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,7 +19,7 @@ const PaymentSuccess = () => {
       try {
         setIsLoading(true);
         const reservationRes = await axiosClient.get(
-          `/reservations/${id}/payment-success`,
+          `/reservations/${id}/summary`,
         );
         setReservation(reservationRes?.data);
       } catch (error) {
@@ -26,7 +30,7 @@ const PaymentSuccess = () => {
     };
     fetchData();
   }, [id]);
-  if (isLoading) return <PaymentSuccessSkeleton></PaymentSuccessSkeleton>;
+  if (isLoading) return <ReservationSummarySkeleton></ReservationSummarySkeleton>;
   return (
     <>
       <style>
@@ -72,16 +76,11 @@ const PaymentSuccess = () => {
               className="font-bold text-2xl md:text-3xl text-[#e7e5e5] mb-4 tracking-tight"
               style={{ fontFamily: "Manrope, sans-serif" }}
             >
-              Thanh toán thành công!
+              Thông tin đơn hàng
             </h3>
 
             <p className="text-[#acabab] max-w-md mx-auto mb-10 leading-relaxed">
-              Cảm ơn bạn đã lựa chọn dịch vụ của chúng tôi. Thông tin vé điện tử
-              đã được gửi về email:{" "}
-              <span className="text-[#e7e5e5] font-medium">
-                {reservation?.customerEmail}
-              </span>
-              .
+              Cảm ơn bạn đã lựa chọn dịch vụ của chúng tôi .
             </p>
 
             {/* Order Details Card */}
@@ -106,7 +105,10 @@ const PaymentSuccess = () => {
               </div>
 
               <div className="space-y-6">
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 border-b border-[#474848]/20 pb-4 mb-6">
+                  <p className="text-xs uppercase tracking-widest text-[#acabab] font-bold mb-1">
+                    Thông tin sự kiện
+                  </p>
                   <div className="flex-1">
                     <p className="text-xs text-[#acabab] mb-1">Sự kiện</p>
                     <h3
@@ -136,7 +138,77 @@ const PaymentSuccess = () => {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border-b border-[#474848]/20 pb-4 mb-6">
+                  <p className="col-span-2 text-xs uppercase tracking-widest text-[#acabab] font-bold mb-1">
+                    Thông tin khách hàng
+                  </p>
+                  <div className="col-span-2">
+                    <p className="text-xs text-[#acabab] mb-1">
+                      Người đặt hàng:
+                    </p>
+                    <h3
+                      className="font-bold text-[#e7e5e5] leading-tight"
+                      style={{ fontFamily: "Manrope, sans-serif" }}
+                    >
+                      {reservation?.customerName}
+                    </h3>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <p className="text-xs text-[#acabab] mb-1">
+                      Email người đặt hàng:
+                    </p>
+                    <h3
+                      className="font-bold text-[#e7e5e5] leading-tight"
+                      style={{ fontFamily: "Manrope, sans-serif" }}
+                    >
+                      {reservation?.customerEmail}
+                    </h3>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <p className="text-xs text-[#acabab] mb-1">
+                      Số điện thoại người đặt hàng:
+                    </p>
+                    <h3
+                      className="font-bold text-[#e7e5e5] leading-tight"
+                      style={{ fontFamily: "Manrope, sans-serif" }}
+                    >
+                      {reservation?.customerPhone}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 border-b border-[#474848]/20 pb-4 mb-6">
+                  <p className="col-span-2 text-xs uppercase tracking-widest text-[#acabab] font-bold mb-1">
+                    Thông tin thanh toán
+                  </p>
+                  <div className="col-span-2 md:col-span-1">
+                    <p className="text-xs text-[#acabab] mb-1">
+                      Phương thức thanh toán:
+                    </p>
+                    <h3
+                      className="font-bold text-[#e7e5e5] leading-tight"
+                      style={{ fontFamily: "Manrope, sans-serif" }}
+                    >
+                      {PAYMENT_METHOD_MAP[reservation?.paymentMethod] || "N/A"}
+                    </h3>
+                  </div>
+                  <div className="col-span-2 md:col-span-1">
+                    <p className="text-xs text-[#acabab] mb-1">
+                      Ngày thanh toán:
+                    </p>
+                    <h3
+                      className="font-bold text-[#e7e5e5] leading-tight"
+                      style={{ fontFamily: "Manrope, sans-serif" }}
+                    >
+                      {formatDateVN(reservation?.paidAt)}
+                    </h3>
+                  </div>
+                </div>
+
                 <div className="flex flex-col gap-2">
+                  <p className="text-xs uppercase tracking-widest text-[#acabab] font-bold mb-1">
+                    Thông tin vé
+                  </p>
                   {reservation?.items.map((item) => (
                     <div key={item?.id} className="flex justify-between w-full">
                       {/* Bên trái: Số lượng vé */}
@@ -212,4 +284,4 @@ const PaymentSuccess = () => {
   );
 };
 
-export default PaymentSuccess;
+export default ReservationSummary;

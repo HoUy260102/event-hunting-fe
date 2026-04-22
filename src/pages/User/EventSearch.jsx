@@ -56,6 +56,7 @@ function EventSearch() {
   }, [searchParams, getFiltersFromURL]);
 
   const lastRequestId = useRef(0);
+  
   const fetchEvents = async (isLoadMore = false) => {
     const currentId = ++lastRequestId.current;
     if (isLoadMore) setIsLoadingMore(true);

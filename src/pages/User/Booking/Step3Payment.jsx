@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReservationSummaryInfo from "../../../components/Booking/ReservationSummaryInfo";
 import vnpayIcon from "../../../images/vnpaylogo.png";
 import momoIcon from "../../../images/momoicon.png";
 import axiosClient from "../../../api/axiosClient";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
+import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import VoucherListModal from "../../../components/modals/VoucherListModal";
+import Modal from "../../../components/common/Modal";
 
-function Step3Payment({ reservationInfo }) {
+function Step3Payment({ reservationInfo, showId }) {
+  const navigate = useNavigate();
+  const [reservation, setReservation] = useState(reservationInfo);
+  const [isOpenVoucher, setIsOpenVoucher] = useState(false);
+  const [selectedVoucherId, setSelectedVoucherId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("vnpay");
   const paymentOptions = [
     {
@@ -20,13 +30,52 @@ function Step3Payment({ reservationInfo }) {
       logo: momoIcon,
     },
   ];
+  const [notiModal, setNotiModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
+
+  const closeNotiModal = () =>
+    setNotiModal((prev) => ({ ...prev, isOpen: false }));
+
+  const toastSuccess = (message) => {
+    toast.success(message, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    });
+  };
+
+  const toastError = (message) => {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    });
+  };
 
   const handleCreatePaymentUrl = async () => {
     if (paymentMethod === "vnpay") {
       try {
+        const payload = {
+          ...reservation,
+          ...(selectedVoucherId ? { voucherId: selectedVoucherId } : {}),
+        };
         const res = await axiosClient.post(
           `/payments/create_payment_url`,
-          reservationInfo,
+          payload,
         );
         const paymentUrl = res?.data;
         console.log(paymentUrl);
@@ -37,15 +86,111 @@ function Step3Payment({ reservationInfo }) {
     }
   };
 
+  useEffect(() => {
+    const socket = new SockJS("http://localhost:8080/api/v1/ws");
+    const stompClient = Stomp.over(socket);
+    stompClient.debug = null;
+    stompClient.connect(
+      {},
+      () => {
+        console.log("Connected to WebSocket");
+        stompClient.subscribe(
+          `/topic/reservations/${reservationInfo?.id}/payment-response`,
+          (message) => {
+            if (message.body) {
+              const data = JSON.parse(message.body);
+              console.log("Nhận update ghế từ socket:", data);
+              if (data.status === "SUCCESS") {
+                toastSuccess(data?.message || "Giao dịch thành công.");
+                setTimeout(
+                  () => navigate(`/payments/success/${data.reservationId}`),
+                  2000,
+                );
+              } else {
+                setNotiModal({
+                  isOpen: true,
+                  title: "Thanh toán đơn đặt hàng",
+                  message: "Thanh toán thất bại thất bại: " + data?.message,
+                  type: "error",
+                });
+              }
+            }
+          },
+        );
+      },
+      (error) => {
+        setNotiModal({
+          isOpen: true,
+          title: "Thanh toán đơn đặt hàng",
+          message: "Thanh toán thất bại thất bại: " + error.message,
+          type: "error",
+        });
+        console.error("WebSocket error:", error);
+      },
+    );
+
+    return () => {
+      if (stompClient.connected) {
+        stompClient.disconnect();
+      }
+    };
+  }, [reservationInfo]);
+
+  const handleSelectVoucher = async (voucherId) => {
+    try {
+      const res = await axiosClient.get(
+        `/reservations/${reservationInfo?.id}/vouchers`,
+        {
+          params: { voucherId },
+        },
+      );
+      setSelectedVoucherId(voucherId);
+      setReservation(res?.data);
+    } catch (error) {
+      console.log(error.message);
+      setNotiModal({
+        isOpen: true,
+        title: "Thanh toán đơn đặt hàng",
+        message: "Thanh toán thất bại thất bại: " + error?.message,
+        type: "error",
+      });
+    } finally {
+      toggleVoucher();
+    }
+  };
+
+  const toggleVoucher = () => {
+    setIsOpenVoucher((prev) => !prev);
+  };
+
   return (
     <>
+      <VoucherListModal
+        isOpen={isOpenVoucher}
+        onClose={toggleVoucher}
+        showId={showId}
+        selectedId={selectedVoucherId}
+        handleSelectVoucher={handleSelectVoucher}
+        toastSuccess={toastSuccess}
+        toastError={toastError}
+      ></VoucherListModal>
+      {notiModal.isOpen && (
+        <Modal
+          isOpen={notiModal.isOpen}
+          title={notiModal.title}
+          message={notiModal.message}
+          onClose={closeNotiModal}
+          type={notiModal.type}
+        />
+      )}
+      <ToastContainer />
       <div className="animate-fadeIn p-5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* CỘT TRÁI: Chi tiết đơn hàng */}
           <div className="lg:col-span-4 order-2 lg:order-1 h-full">
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 h-full flex flex-col">
               <ReservationSummaryInfo
-                reservationInfo={reservationInfo}
+                reservationInfo={reservation}
               ></ReservationSummaryInfo>
             </div>
           </div>
@@ -65,8 +210,8 @@ function Step3Payment({ reservationInfo }) {
                       Thông tin nhận vé
                     </h3>
                     <p className="text-sm text-slate-500">
-                      Vé sẽ được gửi về email {reservationInfo?.customerEmail}{" "}
-                      và mục "Vé của tôi".
+                      Vé sẽ được gửi về email {reservation?.customerEmail} và
+                      mục "Vé của tôi".
                     </p>
                   </div>
                 </div>
@@ -150,6 +295,38 @@ function Step3Payment({ reservationInfo }) {
                     toán của bạn được mã hóa an toàn và không lưu trữ trên hệ
                     thống.
                   </p>
+                </div>
+
+                <div className="mt-6">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-white">
+                    {/* LEFT */}
+                    <div>
+                      <h4 className="font-semibold text-slate-800">
+                        Mã khuyến mãi
+                      </h4>
+
+                      {selectedVoucherId ? (
+                        <p className="text-sm text-green-600 mt-1">
+                          Đã áp dụng voucher
+                        </p>
+                      ) : (
+                        <p className="text-sm text-slate-500 mt-1">
+                          Chọn mã giảm giá cho đơn hàng
+                        </p>
+                      )}
+                    </div>
+
+                    {/* RIGHT */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={toggleVoucher}
+                        className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+                      >
+                        {selectedVoucherId ? "Đổi" : "Chọn"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
