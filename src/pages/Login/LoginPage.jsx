@@ -10,6 +10,7 @@ import axiosClient from "../../api/axiosClient";
 import backgroundImageUrl from "../../images/bgeventhunting.png";
 import { useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useGoogleLogin } from "../../hooks/useGoogleLogin";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ").nonempty("Email là bắt buộc"),
@@ -17,6 +18,7 @@ const loginSchema = z.object({
 });
 
 function LoginPage() {
+  const { loginWithGoogle, error: googleError } = useGoogleLogin();
   const {
     register,
     handleSubmit,
@@ -86,6 +88,10 @@ function LoginPage() {
       );
       if (apiRes?.data?.user?.role === "ADMIN") {
         navigate("/admin/");
+        return;
+      }
+      if (apiRes?.data?.user?.role === "USER") {
+        navigate("/");
         return;
       }
       toastSuccess(apiRes.message || "Đăng nhập thành công!");
@@ -183,7 +189,11 @@ function LoginPage() {
                 )}
               </button>
 
-              <button type="button" className="google-login-button">
+              <button
+                type="button"
+                onClick={loginWithGoogle}
+                className="google-login-button"
+              >
                 <img
                   src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
                   alt="Google logo"
@@ -201,6 +211,14 @@ function LoginPage() {
                   Đăng ký?
                 </Link>
               </p>
+              {googleError && (
+                <span
+                  className="error-text"
+                  style={{ color: "red", fontSize: "12px" }}
+                >
+                  {googleError}
+                </span>
+              )}
             </form>
           </div>
           <ToastContainer />

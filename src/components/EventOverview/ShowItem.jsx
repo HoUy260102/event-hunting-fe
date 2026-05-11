@@ -46,10 +46,18 @@ const ShowItem = ({ show }) => {
               </div>
               <div className="text-sm">
                 <p className="text-[10px] text-gray-400 uppercase font-bold text-[9px]">
-                  Doanh thu
+                  Doanh thu gộp
                 </p>
                 <p className="font-bold text-gray-800">
-                  {show.totalRevenue?.toLocaleString()} đ
+                  {show?.totalAmount?.toLocaleString()} đ
+                </p>
+              </div>
+              <div className="text-sm">
+                <p className="text-[10px] text-gray-400 uppercase font-bold text-[9px]">
+                  Doanh thu thuần
+                </p>
+                <p className="font-bold text-gray-800">
+                  {show?.totalFinalAmount?.toLocaleString()} đ
                 </p>
               </div>
             </div>
@@ -97,13 +105,19 @@ const ShowItem = ({ show }) => {
                     <th className="px-4 pb-2 whitespace-nowrap">Giá vé</th>
                     <th className="px-4 pb-2 whitespace-nowrap">Tổng số</th>
                     <th className="px-4 pb-2 whitespace-nowrap">Đã bán</th>
+                    <th className="px-4 pb-2 whitespace-nowrap">Vé đã đặt</th>
+                    <th className="px-4 pb-2 whitespace-nowrap">Vé khả dụng</th>
+                    <th className="px-4 pb-2 whitespace-nowrap">
+                      Doanh thu gộp
+                    </th>
+                    <th className="px-4 pb-2 whitespace-nowrap">Chiết khấu</th>
+                    <th className="px-4 pb-2 whitespace-nowrap">
+                      Doanh thu thuần
+                    </th>
                     <th className="px-4 pb-2 whitespace-nowrap">
                       Trạng thái(Hệ thống)
                     </th>
-                    <th className="px-4 pb-2 whitespace-nowrap">
-                      Trạng thái(Doanh nghiệp)
-                    </th>
-                    <th className="px-4 pb-2 text-right">Thao tác</th>
+                    <th className="px-4 pb-2 text-center whitespace-nowrap">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>

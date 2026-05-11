@@ -5,8 +5,10 @@ import { useSearchParams } from "react-router-dom";
 import EventCard from "../../components/EventSearch/User/EventCard";
 import EventCardSkeleton from "../../components/EventSearch/User/EventCardSkeleton";
 import SearchEmpty from "../../components/common/SearchEmpty";
+import { useAuth } from "../../hooks/useAuth";
 
 function EventSearch() {
+  const { user, openLogin } = useAuth();
   const [categories, setCategories] = useState([]);
   const [locations, setLocations] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,7 +29,7 @@ function EventSearch() {
   }, [searchParams]);
   const [filters, setFilters] = useState(getFiltersFromURL());
   const [events, setEvents] = useState([]);
- 
+
   useEffect(() => {
     const params = new URLSearchParams();
     Object.keys(filters).forEach((key) => {
@@ -56,7 +58,7 @@ function EventSearch() {
   }, [searchParams, getFiltersFromURL]);
 
   const lastRequestId = useRef(0);
-  
+
   const fetchEvents = async (isLoadMore = false) => {
     const currentId = ++lastRequestId.current;
     if (isLoadMore) setIsLoadingMore(true);
@@ -95,7 +97,7 @@ function EventSearch() {
 
   useEffect(() => {
     fetchEvents();
-  }, [searchParams]);
+  }, [searchParams, user]);
 
   const handleFilterChange = (name, value) => {
     setFilters((prev) => ({
@@ -157,7 +159,14 @@ function EventSearch() {
               <EventCardSkeleton key={i} />
             ))
           ) : events.length > 0 ? (
-            events.map((event) => <EventCard key={event.id} event={event} />)
+            events.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                user={user}
+                openLogin={openLogin}
+              />
+            ))
           ) : (
             <div className="col-span-full">
               <SearchEmpty

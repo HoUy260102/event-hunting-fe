@@ -1,9 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import { formatDateVN } from "../../../utils/format";
 import { useNavigate } from "react-router-dom";
+import axiosClient from "../../../api/axiosClient";
 
-const EventCard = ({ event }) => {
+const EventCard = ({ event, user, openLogin }) => {
   const navigate = useNavigate();
+  const [isSaved, setIsSaved] = useState(event?.isSaved || false);
+  const [loading, setLoading] = useState(false);
+  const handleFavoriteClick = async (e) => {
+    e.stopPropagation();
+    if (!user) {
+      openLogin();
+      return;
+    }
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      if (isSaved) {
+        await axiosClient.delete(`/favorites/${event.id}`);
+        setIsSaved(false);
+      } else {
+        await axiosClient.post(`/favorites/${event.id}`);
+        setIsSaved(true);
+      }
+    } catch (error) {
+      console.error("Lỗi khi xử lý favorite:", error);
+      alert(error?.message || "Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       onClick={() => {
@@ -30,7 +58,17 @@ const EventCard = ({ event }) => {
           </div>
         )}
         {/* Save Action */}
-        <button className="absolute top-4 right-4 h-9 w-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-red-500 transition-all shadow-lg">
+        <button
+          type="button"
+          onClick={handleFavoriteClick}
+          disabled={loading}
+          className={`absolute top-4 right-4 h-9 w-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow-lg z-10
+            ${
+              isSaved
+                ? "bg-red-500 text-white"
+                : "bg-white/20 text-white hover:bg-white hover:text-red-500"
+            } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
           <span className="material-symbols-outlined text-xl">favorite</span>
         </button>
       </div>
@@ -39,7 +77,11 @@ const EventCard = ({ event }) => {
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex items-center gap-2 mb-2">
           <span className="px-2 py-1 rounded bg-[#46ec13]/10 text-green-500 text-[10px] font-bold uppercase tracking-wider">
-            {event?.category?.name}
+            {event?.category === null
+              ? "Chưa phân loại"
+              : event?.category?.status === "INACTIVE"
+                ? "Danh mục đã ngừng hoạt động"
+                : event?.category?.name}
           </span>
         </div>
         <h5 className="font-bold text-white leading-snug mb-4 line-clamp-2 h-12">

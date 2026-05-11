@@ -35,6 +35,11 @@ import AddVoucher from "./pages/Admin/AddVoucher";
 import UpdateVoucher from "./pages/Admin/UpdateVoucher";
 import VoucherList from "./pages/Admin/VoucherList";
 import { useScrollToTop } from "./hooks/useScrollToTop";
+import MyfavoriteEvent from "./pages/User/MyFavoriteEvent";
+import Home from "./pages/User/Home";
+import GeneralError from "./pages/GeneralError";
+import ReservationList from "./pages/Admin/ReservationList";
+import UpdateProfile from "./pages/Admin/UpdateProfile";
 function App() {
   const { isLoginModalOpen, closeLogin } = useAuth();
   useScrollToTop();
@@ -47,9 +52,11 @@ function App() {
         <Route path="/signup/verify" element={<VerifyWaitingSignUpPage />} />
         <Route path="/forbidden" element={<Forbidden403 />} />
         <Route path="/notfound" element={<NotFound404 />} />
-
+        <Route path="/general-error" element={<GeneralError />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<Dashboard />}>
+            <Route path="update-profile" element={<UpdateProfile />} />
+            
             <Route path="users" element={<UserList />} />
             <Route path="add-user" element={<AddUser />} />
             <Route path="update-user/:id" element={<UpdateUser />} />
@@ -69,10 +76,13 @@ function App() {
             <Route path="vouchers" element={<VoucherList />} />
             <Route path="add-voucher" element={<AddVoucher />} />
             <Route path="update-voucher/:id" element={<UpdateVoucher />} />
+
+            <Route path="reservations" element={<ReservationList />} />
           </Route>
         </Route>
 
         <Route path="/" element={<UserLayout />}>
+          <Route path="" element={<Home />} />
           <Route path="event/:id/details" element={<EventInfor />} />
           <Route element={<ProtectedRoute />}>
             <Route
@@ -83,6 +93,7 @@ function App() {
               path="event/:eventId/show/:showId/queue"
               element={<WaitingRoom />}
             />
+            <Route path="my-favorite-events" element={<MyfavoriteEvent />} />
             <Route path="my-tickets" element={<MyTickets />} />
             <Route path="my-tickets/:id" element={<TicketDetail />} />
             <Route path="payments/success/:id" element={<PaymentSuccess />} />

@@ -1,10 +1,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import Modal from "../../components/common/Modal";
+import { useAuth } from "../../hooks/useAuth";
+import { useHeader } from "../../hooks/useHeader";
 const schema = z.object({
   name: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
   phone: z
@@ -22,8 +23,6 @@ const schema = z.object({
     return val.trim();
   }, z.string().min(1, "Nếu nhập thì phải có ít nhất 1 ký tự").optional()),
   fileId: z.string().optional(),
-  roleId: z.string().min(1, "Vui lòng chọn vai trò"),
-  status: z.string().min(1, "Vui lòng chọn trạng thái"),
   dob: z.preprocess(
     (val) => (val === "" || val === null ? undefined : val),
     z
@@ -40,9 +39,12 @@ const schema = z.object({
       .optional(),
   ),
 });
-function UpdateUser() {
-  const { id } = useParams();
-  const [user, setUser] = useState();
+
+function UpdateProfile() {
+  const { setTitle } = useHeader();
+  const { user, refreshUser } = useAuth();
+  const id = user?.id;
+  const [userInfo, setUserInfo] = useState();
   const [previewImage, setPreviewImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [modal, setModal] = useState({
@@ -52,7 +54,6 @@ function UpdateUser() {
     type: "success",
   });
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
-  const [roles, setRoles] = useState([]);
   const {
     register,
     setValue,
@@ -67,19 +68,18 @@ function UpdateUser() {
     if (isLoading) return;
     try {
       setIsLoading(true);
-      const response = await axiosClient.put(`/users/${id}`, data);
+      const response = await axiosClient.put(`users/profile`, data);
       reset({
         name: response?.data?.name || "",
         email: response?.data?.email || "",
         address: response?.data?.address || "",
-        roleId: response?.data?.role?.id ? String(response.data?.role?.id) : "",
         fileId: response?.data?.avatar?.id
           ? String(response.data?.avatar?.id)
           : "",
         phone: response?.data?.phone || "",
         dob: response?.data?.dob ? response?.data?.dob.split("T")[0] : "",
       });
-      setUser(response.data);
+      setUserInfo(response.data);
       setPreviewImage(response?.data?.avatar?.url);
       setModal({
         isOpen: true,
@@ -87,6 +87,7 @@ function UpdateUser() {
         message: "Cập nhật tài khoản thành công",
         type: "success",
       });
+      await refreshUser();
       console.log(response.data);
     } catch (error) {
       setModal({
@@ -102,46 +103,35 @@ function UpdateUser() {
   };
 
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await axiosClient.get("/roles/select");
-        setRoles(response.data);
-      } catch (error) {
-        console.error("Lỗi lấy danh sách role:", error.message);
-      }
-    };
-    fetchRoles();
-  }, []);
-
-  useEffect(() => {
+    let ignore = false;
     const fetchData = async () => {
       try {
-        const [rolesRes, userRes] = await Promise.all([
-          axiosClient.get("/roles/select"),
-          axiosClient.get(`/users/${id}`),
-        ]);
-        setRoles(rolesRes.data);
+        setIsLoading(true);
+        const [userRes] = await Promise.all([axiosClient.get(`/users/${id}`)]);
         const userData = userRes.data;
-        setUser(userData);
+        if (ignore) return;
+        setUserInfo(userData);
         setPreviewImage(userData?.avatar?.url);
         reset({
           name: userData?.name || "",
           email: userData?.email || "",
           address: userData?.address || "",
-          roleId: userData?.role?.id ? String(userData.role?.id) : "",
-          status: userData?.status,
           phone: userData?.phone || "",
           dob: userData?.dob ? userData.dob.split("T")[0] : "",
           fileId: userData?.avatar?.id ? String(userData?.avatar?.id) : "",
         });
       } catch (error) {
         console.error("Lấy dữ liệu thất bại:", error.message);
+      } finally {
+        if (!ignore) setIsLoading(false);
       }
     };
-
     if (id) {
       fetchData();
     }
+    return () => {
+      ignore = true;
+    };
   }, [id, reset]);
 
   const handleImageChange = async (e) => {
@@ -174,6 +164,11 @@ function UpdateUser() {
       }
     }
   };
+
+  useEffect(() => {
+    setTitle("Cập nhật thông tin tài khoản");
+  }, []);
+
   return (
     <>
       {modal.isOpen && (
@@ -187,40 +182,37 @@ function UpdateUser() {
       )}
       <main className="flex-1 p-6 lg:p-10 max-w-[1000px] mx-auto w-full">
         {/* Tiêu đề */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Cập nhật tài khoản
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">
-            Cập nhật tài khoản người dùng vào hệ thống.
-          </p>
+        <div className="mb-8 border-b border-[#474848]/20 pb-4">
+          <h3 className="text-2xl font-bold text-black tracking-tight">
+            Thông tin tài khoản
+          </h3>
         </div>
 
         {/* Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white dark:bg-[#1a2c15] rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-800 p-6 lg:p-10"
+          className="bg-white rounded-[2rem] shadow-2xl border border-slate-50 p-6 lg:p-10"
         >
           <div className="flex flex-col gap-8">
             {/* Section 1: Thông tin cá nhân */}
             <div className="flex flex-col gap-5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/10 pb-4">
+              <h3 className="text-lg font-bold text-black border-b border-white/10 pb-4">
                 Thông tin cá nhân
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Full Name */}
                 <div className="flex flex-col gap-2 md:col-span-2 w-fit mb-3">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
+                  <label className="text-sm font-semibold text-black ml-3">
                     Ảnh đại diện:
                   </label>
                   <div className="relative group">
                     <div
-                      className={`w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg bg-slate-200 ${isLoading ? "animate-pulse" : ""}`}
+                      className={`w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-slate-200 ${isLoading ? "animate-pulse" : ""}`}
                     >
                       <img
                         src={
                           previewImage ||
-                          user?.avatar?.url ||
+                          userInfo?.avatar?.url ||
                           "https://via.placeholder.com/150"
                         }
                         alt="Avatar"
@@ -230,7 +222,7 @@ function UpdateUser() {
 
                     <label
                       htmlFor="avatar-upload"
-                      className={`${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} absolute bottom-0 right-0 bg-[#46ec13] p-2 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center border-2 border-white dark:border-slate-900`}
+                      className={`${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} absolute bottom-0 right-0 bg-[#46ec13] p-2 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center border-2 border-white`}
                     >
                       <span className="material-symbols-outlined text-slate-900 text-sm">
                         photo_camera
@@ -247,12 +239,12 @@ function UpdateUser() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
+                  <label className="text-sm font-semibold text-black ml-3">
                     Họ và tên:
                   </label>
                   <input
                     {...register("name")}
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.name ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                    className={`w-full h-12 px-6 rounded-xl bg-slate-50 border-transparent focus:border-primary focus:ring-0 focus:bg-white text-slate-900 transition-all ${errors.name ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     placeholder="Nhập họ và tên..."
                   />
                   {errors.name && (
@@ -264,12 +256,12 @@ function UpdateUser() {
 
                 {/* Phone */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
+                  <label className="text-sm font-semibold text-black ml-3">
                     Số điện thoại:
                   </label>
                   <input
                     {...register("phone")}
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.phone ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                    className={`w-full h-12 px-6 rounded-xl bg-slate-50 border-transparent focus:border-primary focus:ring-0 focus:bg-white text-slate-900 transition-all ${errors.phone ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     placeholder="Nhập số điện thoại..."
                   />
                   {errors.phone && (
@@ -281,13 +273,13 @@ function UpdateUser() {
 
                 {/* Email */}
                 <div className="flex flex-col gap-2 md:col-span-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
+                  <label className="text-sm font-semibold text-black ml-3">
                     Email:
                   </label>
                   <input
                     {...register("email")}
                     disabled
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.email ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                    className={`w-full h-12 px-6 rounded-xl bg-slate-50 border-transparent focus:border-primary focus:ring-0 focus:bg-white text-slate-900 transition-all ${errors.email ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     placeholder="Nhập địa chỉ email..."
                   />
                   {errors.email && (
@@ -298,12 +290,12 @@ function UpdateUser() {
                 </div>
                 {/* Địa chỉ */}
                 <div className="flex flex-col gap-2 md:col-span-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
+                  <label className="text-sm font-semibold text-black ml-3">
                     Địa chỉ:
                   </label>
                   <input
                     {...register("address")}
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.address ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                    className={`w-full h-12 px-6 rounded-xl bg-slate-50 border-transparent focus:border-primary focus:ring-0 focus:bg-white text-slate-900 transition-all ${errors.address ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     placeholder="Nhập địa chỉ ..."
                   />
                   {errors.address && (
@@ -314,12 +306,12 @@ function UpdateUser() {
                 </div>
                 {/* Ngày sinh */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
+                  <label className="text-sm font-semibold text-black ml-3">
                     Ngày sinh:
                   </label>
                   <input
                     {...register("dob")}
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.dob ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                    className={`w-full h-12 px-6 rounded-xl bg-slate-50 border-transparent focus:border-primary focus:ring-0 focus:bg-white text-slate-900 transition-all ${errors.dob ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     type="date"
                   />
                   {errors.dob && (
@@ -328,102 +320,39 @@ function UpdateUser() {
                     </span>
                   )}
                 </div>
-                {/* Role */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Role:
-                  </label>
-                  <div className="relative">
-                    <select
-                      defaultValue={user?.role?.id}
-                      {...register("roleId")}
-                      className="focus:shadow-xl w-full h-12 px-6 pr-12 rounded-full 
-               bg-slate-50 
-               border border-transparent 
-               focus:bg-slate-100  
-               text-slate-900 
-               appearance-none cursor-pointer outline-none transition-all"
-                    >
-                      {roles?.map((role) => (
-                        <option key={role.id} value={role.id}>
-                          {role.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {errors.roleId && (
-                    <span className="text-red-500 text-xs ml-4">
-                      {errors.roleId.message}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Trạng thái:
-                  </label>
-                  <div className="relative">
-                    <select
-                      defaultValue={user?.status}
-                      {...register("status")}
-                      className="focus:shadow-xl w-full h-12 px-6 pr-12 rounded-full 
-               bg-slate-50 
-               border border-transparent 
-               focus:bg-slate-100  
-               text-slate-900 
-               appearance-none cursor-pointer outline-none transition-all"
-                    >
-                      <option value="">-- Chọn trạng thái --</option>
-                      <option value="ACTIVE">Hoạt động (Active)</option>
-                      <option value="INACTIVE">
-                        Không hoạt động (Inactive)
-                      </option>
-                      <option value="BLOCKED">Bị khóa (Blocked)</option>
-                      <option value="DELETED">Đã xóa (Deleted)</option>
-                      <option value="UNVERIFIED">
-                        Chưa xác thực (Unverified)
-                      </option>
-                    </select>
-                  </div>
-                  {errors.status && (
-                    <span className="text-red-500 text-xs ml-4">
-                      {errors.status.message}
-                    </span>
-                  )}
-                </div>
               </div>
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="flex flex-col-reverse md:flex-row justify-end items-center gap-4 mt-12 pt-6 border-t border-slate-100 dark:border-white/10">
+          <div className="flex flex-col-reverse md:flex-row justify-end items-center gap-4 mt-12 pt-6 border-t border-white/10">
             <button
               type="button"
               onClick={() => {
-                if (user) {
+                if (userInfo) {
                   reset({
-                    name: user.name || "",
-                    email: user.email || "",
-                    address: user.address || "",
-                    roleId: user.role?.id ? String(user.role.id) : "",
-                    status: user?.status,
-                    phone: user.phone || "",
-                    dob: user.dob ? user.dob.split("T")[0] : "",
-                    fileId: user.avatar?.id ? String(user.avatar.id) : "",
+                    name: userInfo?.name || "",
+                    email: userInfo?.email || "",
+                    address: userInfo?.address || "",
+                    phone: userInfo?.phone || "",
+                    dob: userInfo?.dob ? userInfo?.dob.split("T")[0] : "",
+                    fileId: userInfo?.avatar?.id
+                      ? String(userInfo?.avatar.id)
+                      : "",
                   });
-                  setPreviewImage(user.avatar?.url || null);
+                  setPreviewImage(userInfo?.avatar?.url || null);
                 }
               }}
-              className="w-full md:w-auto px-8 h-12 rounded-full border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-white font-bold hover:bg-slate-50 transition-colors"
+              className="w-full md:w-auto px-8 h-12 rounded-xl bg-slate-100 border border-slate-100 text-black font-bold hover:bg-slate-300 transition-colors"
             >
               Hủy
             </button>
             <button
               type="submit"
-              className={` ${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} w-full md:w-auto px-8 h-12 rounded-full bg-[#46ec13] text-slate-900 font-bold hover:brightness-110 flex items-center justify-center gap-2 transition-all`}
+              className={` ${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} w-full md:w-auto px-8 h-12 rounded-xl bg-[#46ec13] text-slate-900 font-bold hover:brightness-110 flex items-center justify-center gap-2 transition-all`}
             >
               <span className="material-symbols-outlined">check</span>
-              Cập nhật tài khoản
+              Cập nhật
             </button>
           </div>
         </form>
@@ -431,4 +360,4 @@ function UpdateUser() {
     </>
   );
 }
-export default UpdateUser;
+export default UpdateProfile;

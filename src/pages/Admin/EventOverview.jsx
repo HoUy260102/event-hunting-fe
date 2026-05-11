@@ -29,7 +29,7 @@ function EventOverview() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const eventRes = await axiosClient.get(`/events/${id}/overview`);
+        const eventRes = await axiosClient.get(`/events/${id}/summary`);
         setEvent(eventRes.data);
         console.log("Data xịn nè:", eventRes.data);
       } catch (error) {
@@ -42,11 +42,11 @@ function EventOverview() {
   }, [id]);
   const navigate = useNavigate();
   return (
-    <div class="pt-5 space-y-6">
+    <div className="pt-5 space-y-6">
       <div className="bg-white border border-gray-200 shadow-md rounded-xl p-4 md:p-6 flex flex-col lg:flex-row gap-6">
         <div
           className="w-full lg:w-64 h-48 md:h-56 lg:h-48 rounded-lg bg-cover bg-center shrink-0"
-          style={{ backgroundImage: `url(${event?.poster?.url})` }}
+          style={{ backgroundImage: `url(${event?.posterUrl})` }}
         />
 
         <div className="flex-1 flex flex-col justify-between py-1">
@@ -63,15 +63,19 @@ function EventOverview() {
                   <span className="material-symbols-outlined text-sm shrink-0">
                     location_on
                   </span>
-                  <span className="truncate">{event?.location}</span>
+                  <span className="break-words">
+                    {event?.address
+                      ? `${event?.location} - ${event?.address}`
+                      : event?.location}
+                  </span>
                 </p>
                 <p className="text-gray-500 flex items-center gap-1 mt-1 text-sm">
                   <span className="material-symbols-outlined text-sm shrink-0">
                     calendar_today
                   </span>
                   <span className="truncate">
-                    {formatEventDateToString(event?.startDate)} -{" "}
-                    {formatEventDateToString(event?.endDate)}{" "}
+                    {formatEventDateToString(event?.startTime)} -{" "}
+                    {formatEventDateToString(event?.endTime)}{" "}
                   </span>
                 </p>
               </div>
@@ -83,12 +87,22 @@ function EventOverview() {
               >
                 Chỉnh sửa
               </button>
-
-              
             </div>
 
             {/* --- GRID THÔNG SỐ: Giải quyết chồng lấp --- */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-6 border-t border-gray-50 pt-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mt-6 border-t border-gray-50 pt-6">
+              <StatBlock
+                label="Doanh thu gộp"
+                value={`${event?.totalAmount?.toLocaleString()} ₫`}
+              />
+              <StatBlock
+                label="Chiết khấu"
+                value={`${event?.discountAmount?.toLocaleString()} ₫`}
+              />
+              <StatBlock
+                label="Doanh thu thuần"
+                value={`${event?.totalFinalAmount?.toLocaleString()} ₫`}
+              />
               <StatBlock
                 label="Tổng vé"
                 value={event?.totalQuantity.toLocaleString()}
@@ -98,8 +112,11 @@ function EventOverview() {
                 value={event?.soldQuantity.toLocaleString()}
                 color="text-green-600"
               />
-              <StatBlock label="Doanh thu" value={`${event?.totalRevenue} ₫`} />
-              <StatBlock label="Lấp đầy" value={`100%`} color="text-blue-500" />
+              <StatBlock
+                label="Lấp đầy"
+                value={`${(((event?.soldQuantity || 0) * 100) / (event?.totalQuantity || 1)).toFixed(1)}%`}
+                color="text-blue-500"
+              />
             </div>
           </div>
         </div>

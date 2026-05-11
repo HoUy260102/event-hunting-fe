@@ -153,6 +153,15 @@ const Header = () => {
                       <span className="font-medium text-sm">Vé của tôi</span>
                     </Link>
                     <Link
+                      to="/my-favorite-events"
+                      className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-gray-500">
+                        favorite
+                      </span>
+                      <span className="font-medium text-sm">Sự kiện yêu thích</span>
+                    </Link>
+                    <Link
                       to="/user/profile"
                       className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                     >

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormContext, Controller } from "react-hook-form";
 import TextEditor from "../../../components/common/TextEditor";
 import axiosClient from "../../../api/axiosClient";
@@ -9,6 +9,8 @@ function StepAddEventInf({ provinces, categories }) {
     control,
     getValues,
     setValue,
+    clearErrors,
+    setError,
     watch,
     formState: { errors },
   } = useFormContext();
@@ -67,26 +69,50 @@ function StepAddEventInf({ provinces, categories }) {
   const watchOrganizerName = watch("organizerName", "");
   const watchOrganizerInfo = watch("organizerInfo", "");
   const watchLocation = watch("location", "");
+  const watchAddress = watch("address", "");
+  const userId = watch("userId");
+  const [owner, setOwner] = useState(null);
+  useEffect(() => {
+    if (!userId) {
+      setOwner(null);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await axiosClient.get(`/users/${userId}`);
+
+        setOwner(res.data);
+        clearErrors("userId");
+      } catch (err) {
+        console.log(err.message);
+        setError("userId", { message: "User không hợp lệ" });
+        setOwner(null);
+      }
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [userId]);
+
   return (
     <>
-      <div class="max-w-7xl mx-auto space-y-8">
-        <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between mb-6">
-            <label class="block text-sm font-semibold text-slate-900">
-              <span class="text-red-500 mr-1">*</span>Upload hình ảnh
+      <div className="max-w-7xl mx-auto space-y-8">
+        <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <label className="block text-sm font-semibold text-slate-900">
+              <span className="text-red-500 mr-1">*</span>Upload hình ảnh
             </label>
             {(errors.posterId || errors.bannerId) && (
               <span className="text-red-500 text-xs italic font-medium">
                 Bạn chưa chọn đủ ảnh Poster/Banner
               </span>
             )}
-            <a class="text-xs text-emerald-500 hover:underline" href="#">
+            <a className="text-xs text-emerald-500 hover:underline" href="#">
               Xem vị trí hiển thị các ảnh
             </a>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:h-[400px]">
-            <div class="md:col-span-4 lg:col-span-3">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:h-[400px]">
+            <div className="md:col-span-4 lg:col-span-3">
               <label className="md:h-full h-[250px] relative overflow-hidden border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 flex flex-col items-center justify-center p-6 text-center group cursor-pointer hover:border-emerald-500 transition-colors">
                 <input
                   type="file"
@@ -226,6 +252,34 @@ function StepAddEventInf({ provinces, categories }) {
                 )}
               </div>
 
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-widest">
+                  Địa chỉ
+                </label>
+                <div className="relative">
+                  <input
+                    {...register("address")}
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 outline-none transition-all pr-16 text-sm
+                      ${
+                        errors.address
+                          ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                          : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                      } `}
+                    maxLength="255"
+                    placeholder="Nhập địa chỉ"
+                    type="text"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                    {watchAddress?.length} / 255
+                  </span>
+                </div>
+                {errors.address && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.address.message}
+                  </p>
+                )}
+              </div>
+
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-widest">
                   Tỉnh / Thành
@@ -331,6 +385,40 @@ function StepAddEventInf({ provinces, categories }) {
             mua vé.
           </p>
         </section>
+
+        <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-slate-900">
+              <span className="text-red-500 mr-1">*</span>Id sở hữu
+            </label>
+            <div className="relative">
+              <input
+                {...register("userId")}
+                className={`w-full border rounded-lg px-4 py-3 outline-none transition-all pr-16 text-sm
+                ${
+                  errors.userId
+                    ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                    : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                } 
+                focus:ring-2`}
+                maxLength="100"
+                placeholder="Nhập id của người sở hữu sự kiện"
+                type="text"
+              />
+            </div>
+            {owner && (
+              <p className="mt-3 text-sm text-slate-600 italic">
+                {owner?.name} - {owner?.email}
+              </p>
+            )}
+            {errors?.userId && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors?.userId?.message}
+              </p>
+            )}
+          </div>
+        </section>
+
         {/* SECTION: THÔNG TIN BAN TỔ CHỨC */}
         <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex flex-col md:flex-row gap-8">

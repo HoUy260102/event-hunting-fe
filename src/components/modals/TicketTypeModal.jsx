@@ -456,7 +456,7 @@ function TicketTypeModal({
                 className={`w-full bg-slate-50 border ${errors.totalQuantity ? "border-red-500" : "border-slate-200"} rounded-lg px-4 py-3`}
                 value={formData.totalQuantity}
                 onChange={(e) => validateField("totalQuantity", e.target.value)}
-                disabled={show?.seatMapType === "SECTION_WITH_SEATS"}
+                disabled={show?.seatMapType === "SECTION_WITH_SEATS" && formData.seatingType === "SEATED"}
               />
               {errors.totalQuantity && (
                 <p className="text-red-500 text-xs mt-1">

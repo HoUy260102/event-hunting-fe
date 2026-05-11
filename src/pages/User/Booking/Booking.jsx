@@ -157,12 +157,12 @@ function Booking() {
             return {
               ...item,
               selectedSeats: updatedSeats,
-              quantity: updatedSeats.length,
+              quantity: updatedSeats?.length,
             };
           }
           return item;
         });
-        return updatedCart.filter((item) => item?.selectedSeats.length > 0);
+        return updatedCart.filter((item) => item?.quantity > 0);
       }
       if (!isSelected) {
         const newItem = {
@@ -200,12 +200,12 @@ function Booking() {
             return {
               ...item,
               selectedSeats: updatedSeats,
-              quantity: updatedSeats.length,
+              quantity: updatedSeats?.length,
             };
           }
           return item;
         });
-        return updatedCart.filter((item) => item?.selectedSeats.length > 0);
+        return updatedCart.filter((item) => item?.quantity > 0);
       }
       return prevCart;
     });
@@ -216,7 +216,7 @@ function Booking() {
       const existingIndex = prevCart.findIndex(
         (item) => item.ticketTypeId === ticketType.id,
       );
-      if (quantity <= 0 && selectedSeats.length === 0) {
+      if (quantity <= 0 && selectedSeats?.length === 0) {
         return prevCart.filter((item) => item.ticketTypeId !== ticketType.id);
       }
       const cartItem = {
@@ -334,7 +334,7 @@ function Booking() {
   };
 
   const onNext = () => {
-    if (currentStep === 1 && cart.length === 0) {
+    if (currentStep === 1 && cart?.length === 0) {
       alert("Vui lòng chọn ít nhất một loại vé để tiếp tục!");
       return;
     }
@@ -419,7 +419,7 @@ function Booking() {
                       return {
                         ...item,
                         selectedSeats: newSelectedSeats,
-                        quantity: newSelectedSeats.length,
+                        quantity: newSelectedSeats?.length,
                       };
                     }
                     return item;

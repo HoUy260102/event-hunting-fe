@@ -58,12 +58,32 @@ const TicketTypeGroup = ({ type }) => {
           </div>
         </td>
 
-        <td className="px-4 py-3 border-t border-gray-200">
-          <TicketTypeStatusBadge status={type?.adminStatus}></TicketTypeStatusBadge>
+        <td className="px-4 py-3 border-t border-gray-200 text-sm font-bold">
+          {type.reservedQuantity}
         </td>
-        <td className="px-4 py-3 border-t border-gray-200">
-          <TicketTypeStatusBadge status={type?.businessStatus}></TicketTypeStatusBadge>
+
+        <td className="px-4 py-3 border-t border-gray-200 text-sm font-bold">
+          {type.availableQuantity}
         </td>
+
+        <td className="px-4 py-3 border-t border-gray-200 text-sm font-bold">
+          {type?.totalPrice?.toLocaleString()}
+        </td>
+
+        <td className="px-4 py-3 border-t border-gray-200 text-sm font-bold">
+          {type?.discountAmount?.toLocaleString()}
+        </td>
+
+        <td className="px-4 py-3 border-t border-gray-200 text-sm font-bold">
+          {type?.finalPrice?.toLocaleString()}
+        </td>
+
+        <td className="px-4 py-3 border-t border-gray-200">
+          <TicketTypeStatusBadge
+            status={type?.adminStatus}
+          ></TicketTypeStatusBadge>
+        </td>
+       
         <td className="px-4 py-3 rounded-tr-lg border-t border-r border-gray-200 text-right">
           <button className="p-1.5 text-gray-400 hover:text-green-500">
             <span className="material-symbols-outlined text-lg">edit</span>

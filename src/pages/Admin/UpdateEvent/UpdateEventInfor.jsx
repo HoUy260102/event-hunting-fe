@@ -20,6 +20,8 @@ const eventSchema = z.object({
     .min(5, "Tên sự kiện phải có ít nhất 5 ký tự")
     .max(100, "Tối đa 100 ký tự"),
   location: z.string().min(1, "Vui lòng nhập tên địa điểm"),
+  address: z.string().nullable().optional(),
+  userId: z.string().min(1, "Vui lòng nhập id người sở hữu"),
   provinceId: z.string().min(1, "Vui lòng chọn Tỉnh/Thành"),
   categoryId: z.string().min(1, "Vui lòng chọn thể loại"),
   descriptionHtml: z.string().optional(),
@@ -53,6 +55,7 @@ function UpdateEventInfor() {
     control,
     watch,
     setValue,
+    clearErrors,
     getValues,
     setError,
     formState: { errors, isSubmitting },
@@ -66,6 +69,7 @@ function UpdateEventInfor() {
       organizerLogoId: "",
       name: "",
       location: "",
+      address: "",
       provinceId: "",
       categoryId: "",
       descriptionHtml: "",
@@ -156,11 +160,11 @@ function UpdateEventInfor() {
       e.target.value = "";
     }
   };
-
   const watchName = watch("name", "");
   const watchOrganizerName = watch("organizerName", "");
   const watchOrganizerInfo = watch("organizerInfo", "");
   const watchLocation = watch("location", "");
+  const watchAddress = watch("address", "");
   const onSubmit = async (data) => {
     try {
       const eventRes = await axiosClient.put(`/events/${id}`, data);
@@ -226,6 +230,16 @@ function UpdateEventInfor() {
       color: "bg-slate-100 text-slate-600 border-slate-200",
       dot: "bg-slate-400",
     },
+    PENDING: {
+      label: "Chờ duyệt",
+      color: "bg-yellow-100 text-yellow-700 border-yellow-200",
+      dot: "bg-yellow-500",
+    },
+    APPROVED: {
+      label: "Đã duyệt",
+      color: "bg-green-100 text-green-700 border-green-200",
+      dot: "bg-green-500",
+    },
     PUBLISHED: {
       label: "Đã công khai",
       color: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -242,7 +256,7 @@ function UpdateEventInfor() {
       dot: "bg-red-500",
     },
   };
-  
+
   const [confirmModal, setComfirmModal] = useState({
     isOpen: false,
     title: "",
@@ -292,6 +306,27 @@ function UpdateEventInfor() {
       setNextStatus(null);
     }
   };
+  const userId = watch("userId");
+  const [owner, setOwner] = useState(null);
+  useEffect(() => {
+    if (!userId) {
+      setOwner(null);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await axiosClient.get(`/users/${userId}`);
+        setOwner(res.data);
+        clearErrors("userId");
+      } catch (err) {
+        console.log(err.message);
+        setError("userId", { message: "User không hợp lệ" });
+        setOwner(null);
+      }
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [userId]);
 
   return (
     <>
@@ -487,6 +522,34 @@ function UpdateEventInfor() {
                 )}
               </div>
 
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-widest">
+                  Địa chỉ
+                </label>
+                <div className="relative">
+                  <input
+                    {...register("address")}
+                    className={`w-full border rounded-lg px-4 py-3 focus:ring-2 outline-none transition-all pr-16 text-sm
+                      ${
+                        errors.address
+                          ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                          : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                      } `}
+                    maxLength="255"
+                    placeholder="Nhập địa chỉ"
+                    type="text"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                    {watchAddress?.length} / 255
+                  </span>
+                </div>
+                {errors.address && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.address.message}
+                  </p>
+                )}
+              </div>
+
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-widest">
                   Tỉnh / Thành
@@ -596,6 +659,40 @@ function UpdateEventInfor() {
             mua vé.
           </p>
         </section>
+
+        <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-slate-900">
+              <span className="text-red-500 mr-1">*</span>Id sở hữu
+            </label>
+            <div className="relative">
+              <input
+                {...register("userId")}
+                className={`w-full border rounded-lg px-4 py-3 outline-none transition-all pr-16 text-sm
+                ${
+                  errors.userId
+                    ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                    : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                } 
+                focus:ring-2`}
+                maxLength="100"
+                placeholder="Nhập id của người sở hữu sự kiện"
+                type="text"
+              />
+            </div>
+            {owner && (
+              <p className="mt-3 text-sm text-slate-600 italic">
+                {owner?.name} - {owner?.email}
+              </p>
+            )}
+            {errors?.userId && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors?.userId?.message}
+              </p>
+            )}
+          </div>
+        </section>
+
         {/* SECTION: THÔNG TIN BAN TỔ CHỨC */}
         <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex flex-col md:flex-row gap-8">

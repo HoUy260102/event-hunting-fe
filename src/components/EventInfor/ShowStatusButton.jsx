@@ -59,6 +59,15 @@ const ShowStatusButton = ({ status, onBuy }) => {
         </div>
       );
 
+    case "POSTPONED":
+      return (
+        <div
+          className={`${baseClass} bg-yellow-500 text-white cursor-default text-center opacity-70`}
+        >
+          Đã hủy
+        </div>
+      );
+
     default:
       return null;
   }

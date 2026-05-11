@@ -96,7 +96,6 @@ const SeatGrid = ({
     if (bookedSeats.includes(seatId)) return;
     onSeatClick(seatId);
   };
-
   return (
     <div className="bg-white h-full rounded-xl shadow-sm border border-gray-200 p-6">
       {/* Header */}

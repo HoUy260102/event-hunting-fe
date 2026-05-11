@@ -122,7 +122,7 @@ function AddUser() {
       <main className="flex-1 p-6 lg:p-10 max-w-[1000px] mx-auto w-full">
         {/* Tiêu đề */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
             Thêm mới tài khoản
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mt-2">
@@ -232,10 +232,10 @@ function AddUser() {
                     <select
                       {...register("roleId")}
                       className="focus:shadow-xl w-full h-12 px-6 pr-12 rounded-full 
-           bg-slate-50 dark:bg-white/5 
+           bg-slate-50  
            border border-transparent 
-           focus:bg-white dark:focus:bg-black/20 
-           text-slate-900 dark:text-white 
+           focus:bg-slate-100  
+           text-slate-900  
            appearance-none cursor-pointer outline-none transition-all"
                     >
                       <option value={""}>Chọn vai trò</option>
@@ -327,14 +327,14 @@ function AddUser() {
               onClick={() => reset()}
               className="w-full md:w-auto px-8 h-12 rounded-full border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-white font-bold hover:bg-slate-50 transition-colors"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
               className="w-full md:w-auto px-8 h-12 rounded-full bg-[#46ec13] text-slate-900 font-bold hover:brightness-110 flex items-center justify-center gap-2 transition-all"
             >
               <span className="material-symbols-outlined">check</span>
-              Create User
+              Tạo tài khoản
             </button>
           </div>
         </form>

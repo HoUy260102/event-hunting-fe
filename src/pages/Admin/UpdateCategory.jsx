@@ -125,9 +125,9 @@ function UpdateCategory() {
                 Thông tin chủ đề
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 col-span-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Tên:
+                    Tên chủ đề:
                   </label>
                   <input
                     {...register("name")}
@@ -160,7 +160,7 @@ function UpdateCategory() {
                 </div>
 
                 {/* Trạng thái */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 col-span-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
                     Trạng thái:
                   </label>
@@ -168,10 +168,10 @@ function UpdateCategory() {
                     <select
                       {...register("status")}
                       className="focus:shadow-xl w-full h-12 px-6 pr-12 rounded-full 
-               bg-slate-50 dark:bg-white/5 
+               bg-slate-50 
                border border-transparent 
-               focus:bg-white dark:focus:bg-black/20 
-               text-slate-900 dark:text-white 
+               focus:bg-slate-100  
+               text-slate-900  
                appearance-none cursor-pointer outline-none transition-all"
                     >
                       <option value={"ACTIVE"}>Hoạt động</option>
@@ -203,14 +203,14 @@ function UpdateCategory() {
               }}
               className="w-full md:w-auto px-8 h-12 rounded-full border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-white font-bold hover:bg-slate-50 transition-colors"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
               className={` ${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} w-full md:w-auto px-8 h-12 rounded-full bg-[#46ec13] text-slate-900 font-bold hover:brightness-110 flex items-center justify-center gap-2 transition-all`}
             >
               <span className="material-symbols-outlined">check</span>
-              Update Category
+              Cập nhật chủ đề
             </button>
           </div>
         </form>

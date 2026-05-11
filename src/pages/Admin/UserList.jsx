@@ -13,6 +13,54 @@ import ConfirmModal from "../../components/modals/ConfirmModal";
 import { useCan } from "../../hooks/useCan";
 import { useHeader } from "../../hooks/useHeader";
 import TableSkeleton from "../../components/common/TableSkeleton";
+import Modal from "../../components/common/Modal";
+
+const UserStatusBadge = ({ status }) => {
+  const statusConfig = {
+    ACTIVE: {
+      label: "Hoạt động",
+      class:
+        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
+      dot: "bg-green-500",
+    },
+    INACTIVE: {
+      label: "Không hoạt động",
+      class:
+        "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-800",
+      dot: "bg-gray-500",
+    },
+    BLOCKED: {
+      label: "Bị khóa",
+      class:
+        "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800",
+      dot: "bg-orange-500",
+    },
+    DELETED: {
+      label: "Đã xóa",
+      class:
+        "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
+      dot: "bg-red-500",
+    },
+    UNVERIFIED: {
+      label: "Chưa xác thực",
+      class:
+        "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+      dot: "bg-blue-500",
+    },
+  };
+
+  const config = statusConfig[status?.toUpperCase()] || statusConfig.UNVERIFIED;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold border border-transparent ${config.class}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`}></span>
+      {config.label}
+    </span>
+  );
+};
+
 function UserList() {
   const { setTitle } = useHeader();
   const [roles, setRoles] = useState([]);
@@ -26,6 +74,13 @@ function UserList() {
     title: "",
     message: "",
   });
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
+  const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
   const [isUserDetailModalOpen, setIsUserDetailModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const navigate = useNavigate();
@@ -197,6 +252,14 @@ function UserList() {
                   fetchUsers(page, keyword, status, role);
                   closeConfirmModal();
                 } catch (error) {
+                  closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Xóa tài khoản.",
+                    message: "Xóa tài khoản thất bại:" + error?.message,
+                    type: "error",
+                  });
+                  console.log("Khôi phục thất bại: ", error.message);
                   console.log("Xóa thất bại: ", error.message);
                 }
               },
@@ -231,6 +294,13 @@ function UserList() {
                   fetchUsers(page, keyword, status, role);
                   closeConfirmModal();
                 } catch (error) {
+                  closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Khôi phục tài khoản.",
+                    message: "Khôi phục tài khoản thất bại:" + error?.message,
+                    type: "error",
+                  });
                   console.log("Khôi phục thất bại: ", error.message);
                 }
               },
@@ -253,6 +323,15 @@ function UserList() {
         onClose={closeConfirmModal}
         onConfirm={confirmModal?.onConfirm}
       ></ConfirmModal>
+      {modal.isOpen && (
+        <Modal
+          isOpen={modal.isOpen}
+          title={modal.title}
+          message={modal.message}
+          onClose={closeModal}
+          type={modal.type}
+        />
+      )}
       <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
@@ -320,6 +399,9 @@ function UserList() {
             >
               <option value="all">All Statuses</option>
               <option value="active">Hoạt động</option>
+              <option value="inactive">Không hoạt động</option>
+              <option value="blocked">Bị khóa</option>
+              <option value="unverified">Chưa xác thực</option>
               <option value="deleted">Đã xóa</option>
             </select>
             <button
@@ -427,17 +509,7 @@ function UserList() {
                         {iconMap[user?.role?.name]}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {user?.deletedAt === null ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-bold text-green-700 dark:text-green-300 border border-transparent dark:border-green-800">
-                            <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>{" "}
-                            Active
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 dark:bg-red-900/30 px-3 py-1 text-xs font-bold text-red-700 dark:text-red-300 border border-transparent dark:border-red-800">
-                            <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>{" "}
-                            Inactive
-                          </span>
-                        )}
+                        <UserStatusBadge status={user?.status} />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <ActionMenu actions={menuActions(user)} data={user} />

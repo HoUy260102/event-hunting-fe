@@ -139,7 +139,6 @@ const PaymentSuccess = () => {
                 <div className="flex flex-col gap-2">
                   {reservation?.items.map((item) => (
                     <div key={item?.id} className="flex justify-between w-full">
-                      {/* Bên trái: Số lượng vé */}
                       <div>
                         <p className="text-xs text-[#acabab] mb-1">
                           Số lượng vé
@@ -149,26 +148,62 @@ const PaymentSuccess = () => {
                         </p>
                       </div>
 
-                      {/* Bên phải: Tổng cộng */}
                       <div className="text-right">
                         <p className="text-xs text-[#acabab] mb-1">Tổng cộng</p>
                         <p
                           className="text-xl font-extrabold text-[#e7e5e5]"
                           style={{ fontFamily: "Manrope, sans-serif" }}
                         >
-                          {item.totalPrice?.toLocaleString("vi-VN")}đ
+                          {(item.finalPrice ?? item.totalPrice)?.toLocaleString(
+                            "vi-VN",
+                          )}
+                          đ
                         </p>
+                        {item.finalPrice &&
+                          item.finalPrice !== item.totalPrice && (
+                            <p className="text-sm text-[#888] line-through decoration-slate-300">
+                              {item.totalPrice?.toLocaleString("vi-VN")}đ
+                            </p>
+                          )}
                       </div>
                     </div>
                   ))}
                 </div>
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-[#acabab] font-bold mb-1">
-                    Tổng tiền
-                  </p>
-                  <p className="font-mono text-[#4ade80] font-bold text-xl">
-                    {reservation?.finalAmount?.toLocaleString("vi-VN")}đ
-                  </p>
+                <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+                  {/* Cột 1: Tổng tiền */}
+                  <div className="flex justify-between items-end border-b border-gray-800 pb-1">
+                    <p className="text-xs uppercase tracking-widest text-[#acabab] font-bold">
+                      Tổng tiền
+                    </p>
+                    <p className="font-mono text-[#4ade80] font-bold text-xl">
+                      {reservation?.totalAmount?.toLocaleString("vi-VN")}đ
+                    </p>
+                  </div>
+
+                  {/* Cột 2: Chiết khấu */}
+                  <div className="flex justify-between items-end border-b border-gray-800 pb-1">
+                    <p className="text-xs uppercase tracking-widest text-[#acabab] font-bold">
+                      Chiết khấu
+                    </p>
+                    <p className="font-mono text-orange-200 font-bold text-xl">
+                      -{reservation?.discountAmount?.toLocaleString("vi-VN")}đ
+                    </p>
+                  </div>
+
+                  {/* Hàng 2 - Cột 1: Tổng tiền đã trả (hoặc bạn có thể thêm mục khác vào đây) */}
+                  <div className="flex justify-between items-end border-b border-gray-800 pb-1">
+                    <p className="text-xs uppercase tracking-widest text-[#acabab] font-bold">
+                      Đã thanh toán
+                    </p>
+                    <p className="font-mono text-[#4ade80] font-bold text-xl">
+                      {reservation?.finalAmount?.toLocaleString("vi-VN")}đ
+                    </p>
+                  </div>
+
+                  {/* Cột còn lại để trống hoặc thêm thông tin khác */}
+                  <div className="flex justify-between items-end border-b border-gray-800 pb-1">
+                    {/* Trống */}
+                  </div>
                 </div>
               </div>
             </div>

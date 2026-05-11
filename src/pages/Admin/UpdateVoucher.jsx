@@ -331,10 +331,13 @@ const UpdateVoucher = () => {
           type={modal.type}
         />
       )}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
+      <div className="w-full flex flex-col justify-between gap-4 mb-8">
+        <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] tracking-tight">
           Cập nhật thông tin khuyến mãi
         </h2>
+        <p className="text-slate-500">
+          Cập nhật thông tin khuyến mãi vào hệ thống.
+        </p>
       </div>
       <main className="flex-1 flex flex-col min-h-screen bg-[#f3f4f6]">
         <form

@@ -25,36 +25,36 @@ const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    let isMounted = true;
-    const syncPermissions = async () => {
-      if (!user?.roleId) return;
-      try {
-        const res = await axiosClient.get(`/roles/${user.roleId}/permissions`);
-        const newPerms = res.data?.map((p) => p.code) || [];
-        if (
-          isMounted &&
-          JSON.stringify(newPerms) !== JSON.stringify(permissions)
-        ) {
-          setPermissions(newPerms);
-          const currentStored = JSON.parse(
-            localStorage.getItem("user") || "{}",
-          );
-          localStorage.setItem(
-            "user",
-            JSON.stringify({ ...currentStored, permissions: newPerms }),
-          );
-          console.log("Quyền của bạn đã được Admin cập nhật!");
-        }
-      } catch (error) {
-        console.error("Lỗi đồng bộ quyền:", error);
-      }
-    };
-    syncPermissions();
-    return () => {
-      isMounted = false;
-    };
-  }, [location.pathname, user?.roleId]);
+  // useEffect(() => {
+  //   let isMounted = true;
+  //   const syncPermissions = async () => {
+  //     if (!user?.roleId || location.pathname === "/login") return;
+  //     try {
+  //       const res = await axiosClient.get(`/roles/${user.roleId}/permissions`);
+  //       const newPerms = res.data?.map((p) => p.code) || [];
+  //       if (
+  //         isMounted &&
+  //         JSON.stringify(newPerms) !== JSON.stringify(permissions)
+  //       ) {
+  //         setPermissions(newPerms);
+  //         const currentStored = JSON.parse(
+  //           localStorage.getItem("user") || "{}",
+  //         );
+  //         localStorage.setItem(
+  //           "user",
+  //           JSON.stringify({ ...currentStored, permissions: newPerms }),
+  //         );
+  //         console.log("Quyền của bạn đã được Admin cập nhật!");
+  //       }
+  //     } catch (error) {
+  //       console.error("Lỗi đồng bộ quyền:", error);
+  //     }
+  //   };
+  //   syncPermissions();
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, [location.pathname, user?.roleId]);
 
   const login = (userData, token, refreshToken) => {
     localStorage.setItem("user", JSON.stringify(userData));
@@ -67,7 +67,7 @@ const AuthProvider = ({ children }) => {
   const refreshUser = async () => {
     try {
       const response = await axiosClient.get("/auth/me");
-      const updatedUser = response.data; 
+      const updatedUser = response.data;
 
       if (updatedUser) {
         setUser(updatedUser);
@@ -114,7 +114,7 @@ const AuthProvider = ({ children }) => {
         openLogin,
         closeLogin,
         requireAuth,
-        refreshUser, 
+        refreshUser,
       }}
     >
       {!loading && children}

@@ -35,7 +35,9 @@ const Header = () => {
     {
       label: "Chỉnh sửa thông tin",
       icon: <AccountCircle fontSize="small" />,
-      onClick: () => {},
+      onClick: () => {
+        navigate("/admin/update-profile");
+      },
     },
     {
       label: "Đăng xuất",

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import z from "zod";
+import { z } from "zod";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axiosClient from "../../../api/axiosClient";
@@ -8,6 +8,7 @@ import StepAddEventInf from "./StepAddEventInf";
 import StepAddShow from "./StepAddShow";
 import Modal from "../../../components/common/Modal";
 import { useHeader } from "../../../hooks/useHeader";
+import { useAuth } from "../../../hooks/useAuth";
 const ticketTierSchema = z
   .object({
     id: z.string(),
@@ -216,7 +217,10 @@ const showSchema = z
         }
 
         //Kiểm tra có gửi danh sách ghế không
-        if (data.seatMapType === "SECTION_WITH_SEATS" && ticketType.seatingType === "SEATED") {
+        if (
+          data.seatMapType === "SECTION_WITH_SEATS" &&
+          ticketType.seatingType === "SEATED"
+        ) {
           if (!ticketType.seats || ticketType.seats.length === 0) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
@@ -239,6 +243,8 @@ const schemas = [
       .min(5, "Tên sự kiện phải có ít nhất 5 ký tự")
       .max(100, "Tối đa 100 ký tự"),
     location: z.string().min(1, "Vui lòng nhập tên địa điểm"),
+    address: z.string().nullable().optional(),
+    userId: z.string().min(1, "Vui lòng nhập id người sở hữu"),
     provinceId: z.string().min(1, "Vui lòng chọn Tỉnh/Thành"),
     categoryId: z.string().min(1, "Vui lòng chọn thể loại"),
     descriptionHtml: z.string().optional(),
@@ -294,6 +300,7 @@ const schemas = [
 const fullSchema = schemas.reduce((acc, curr) => acc.merge(curr), z.object({}));
 
 function AddEvent() {
+  const {user} = useAuth();
   const { setTitle } = useHeader();
   const [modal, setModal] = useState({
     isOpen: false,
@@ -336,6 +343,8 @@ function AddEvent() {
       "bannerId",
       "name",
       "location",
+      "address",
+      "userId",
       "provinceId",
       "categoryId",
       "descriptionHtml",
@@ -359,6 +368,8 @@ function AddEvent() {
       organizerLogoId: "",
       name: "",
       location: "",
+      address: "",
+      userId: user?.id,
       provinceId: "",
       categoryId: "",
       descriptionHtml: "",
@@ -376,11 +387,12 @@ function AddEvent() {
   const { handleSubmit, trigger, setError } = methods;
 
   const handleNext = async () => {
-    const fieldsToValidate = stepFields[currentStep - 1];
-    const isStepValid = await trigger(fieldsToValidate);
-    if (isStepValid && currentStep < steps.length) {
-      setCurrentStep((prev) => prev + 1);
-    }
+    // const fieldsToValidate = stepFields[currentStep - 1];
+    // const isStepValid = await trigger(fieldsToValidate);
+    // if (isStepValid && currentStep < steps.length) {
+    //   setCurrentStep((prev) => prev + 1);
+    // }
+    setCurrentStep((prev) => prev + 1);
   };
 
   const handleStep = async (targetStep) => {

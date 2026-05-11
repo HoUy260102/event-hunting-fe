@@ -6,6 +6,7 @@ function Sidebar({ isOpen, handleIsOpen }) {
   const [openDropdown, setOpenDropdown] = useState(null);
   const usersRef = useRef(null);
   const vouchersRef = useRef(null);
+  const reservationsRef = useRef(null);
   const categoriesRef = useRef(null);
   const permissionsRef = useRef(null);
   const eventsRef = useRef(null);
@@ -221,7 +222,7 @@ function Sidebar({ isOpen, handleIsOpen }) {
                       setActiveMenu("events");
                     }}
                   >
-                    Sự kiện của tôi
+                    Danh sách sự kiện
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -233,6 +234,54 @@ function Sidebar({ isOpen, handleIsOpen }) {
                     }}
                   >
                     Thêm sự kiện
+                  </Link>
+                </li>
+              </ul>
+            </li>
+
+            {/* Reservations */}
+            <li
+              className={`nav-item dropdown-container ${
+                openDropdown === "reservations" ? "open" : ""
+              }`}
+            >
+              <a
+                className={`nav-link custom-dropdown-toggle ${activeMenu === "reservations" ? "active" : ""}`}
+                onClick={() => {
+                  toggleDropdown("reservations");
+                }}
+              >
+                <span className="material-symbols-rounded">book_online</span>
+                <span className="nav-label">Đặt chỗ</span>
+                <span className="dropdown-icon material-symbols-rounded">
+                  keyboard_arrow_down
+                </span>
+              </a>
+
+              <ul
+                ref={reservationsRef}
+                className="dropdown"
+                style={{
+                  height:
+                    openDropdown === "reservations"
+                      ? `${reservationsRef.current?.scrollHeight}px`
+                      : 0,
+                  overflow: "hidden",
+                  transition: "height 0.3s ease",
+                }}
+              >
+                <li className="nav-item">
+                  <Link className="nav-link dropdown-title">Đặt chỗ</Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    to="/admin/reservations"
+                    className="nav-link dropdown-link"
+                    onClick={() => {
+                      setActiveMenu("reservations");
+                    }}
+                  >
+                    Danh sách đặt chỗ
                   </Link>
                 </li>
               </ul>
@@ -263,7 +312,7 @@ function Sidebar({ isOpen, handleIsOpen }) {
                 style={{
                   height:
                     openDropdown === "vouchers"
-                      ? `${eventsRef.current?.scrollHeight}px`
+                      ? `${vouchersRef.current?.scrollHeight}px`
                       : 0,
                   overflow: "hidden",
                   transition: "height 0.3s ease",

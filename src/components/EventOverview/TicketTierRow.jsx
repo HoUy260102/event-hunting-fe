@@ -9,14 +9,16 @@ const TicketTierRow = ({ tier }) => (
         <p className="text-xs font-semibold text-gray-700">{tier.name}</p>
       </div>
     </td>
-    <td className="px-4 py-2 text-xs font-medium">{tier.price.toLocaleString()} ₫</td>
+    <td className="px-4 py-2 text-xs font-medium">{tier?.unitPrice?.toLocaleString()} ₫</td>
     <td className="px-4 py-2 text-xs">{tier.totalQuantity}</td>
     <td className="px-4 py-2 text-xs font-bold">{tier.soldQuantity}</td>
+    <td className="px-4 py-2 text-xs font-bold">{tier.reservedQuantity}</td>
+    <td className="px-4 py-2 text-xs font-bold">{tier.availableQuantity}</td>
+    <td className="px-4 py-2 text-xs font-bold">{tier?.totalPrice?.toLocaleString()}</td>
+    <td className="px-4 py-2 text-xs font-bold">{tier?.discountAmount?.toLocaleString()}</td>
+    <td className="px-4 py-2 text-xs font-bold">{tier?.finalPrice?.toLocaleString()}</td>
     <td className="px-4 py-2">
       <TicketTierStatusBadge status={tier?.adminStatus}></TicketTierStatusBadge>
-    </td>
-    <td className="px-4 py-2">
-      <TicketTierStatusBadge status={tier?.businessStatus}></TicketTierStatusBadge>
     </td>
     <td className="px-4 py-2 border-r border-gray-200 text-right">
       <button className="p-1 text-gray-400 hover:text-green-500"><span className="material-symbols-outlined text-base">edit</span></button>

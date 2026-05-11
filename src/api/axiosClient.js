@@ -82,10 +82,17 @@ axiosClient.interceptors.response.use(
         isRefreshing = false;
       }
     }
-    
+
     if (error.response?.status === 403) {
       window.location.href = "/forbidden";
       return Promise.reject(errorResponse);
+    }
+
+    if (error.response?.status === 401) {
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+        return Promise.reject(errorResponse);
+      }
     }
 
     const errorResponse = error.response?.data || {

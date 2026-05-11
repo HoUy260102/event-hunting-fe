@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axiosClient from "../../api/axiosClient";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ShowItem from "../../components/EventInfor/ShowItem";
 import { formatShowTime } from "../../utils/format";
 import EventSkeleton from "../../components/EventInfor/EventSkeleton";
@@ -121,6 +121,13 @@ function EventInfor() {
           </div>
         );
 
+      case "POSTPONED":
+        return (
+          <div className={`${baseClass} bg-yellow-500 text-white text-center`}>
+            Hoãn lại
+          </div>
+        );
+
       default:
         return null;
     }
@@ -213,10 +220,24 @@ function EventInfor() {
                         </p>
                       </div>
                     </div>
+                    <div className="flex items-start gap-3">
+                      <p className="!italic text-slate-100 text-sm">
+                        {event?.address}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <span className="px-2 py-1 rounded bg-[#46ec13]/10 text-green-500 text-[10px] font-bold uppercase tracking-wider">
+                      {event?.category === null
+                        ? "Chưa phân loại"
+                        : event?.category?.status === "INACTIVE"
+                          ? "Danh mục đã ngừng hoạt động"
+                          : event?.category?.name}
+                    </span>
                   </div>
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-white/10">
+                <div className="mt-6 pt-2 border-t border-white/10">
                   <div className="flex items-baseline gap-2 mb-4">
                     <span className="text-lg font-bold">Giá từ</span>
                     <span className="text-2xl font-extrabold text-[#2DC275]">

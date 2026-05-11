@@ -21,6 +21,8 @@ const schemas = [
       .min(5, "Tên sự kiện phải có ít nhất 5 ký tự")
       .max(100, "Tối đa 100 ký tự"),
     locationName: z.string().min(1, "Vui lòng nhập tên địa điểm"),
+    address: z.string().nullable().optional(),
+    userId: z.string().min(1, "Vui lòng nhập id"),
     provinceId: z.string().min(1, "Vui lòng chọn Tỉnh/Thành"),
     categoryId: z.string().min(1, "Vui lòng chọn thể loại"),
     description: z.string().min(20, "Mô tả phải có ít nhất 20 ký tự"),
@@ -114,6 +116,8 @@ function AddEvent() {
       organizerLogo: "",
       eventName: "",
       locationName: "",
+      userId: "",
+      address: "",
       provinceId: "",
       categoryId: "",
       description: "",
@@ -129,7 +133,9 @@ function AddEvent() {
       "poster",
       "banner",
       "eventName",
+      "userId",
       "locationName",
+      "address",
       "provinceId",
       "categoryId",
       "description",
@@ -150,14 +156,14 @@ function AddEvent() {
   const watchOrganizerInfo = watch("organizerInfo", "");
   const watchOrganizerName = watch("organizerName", "");
   const watchLocationName = watch("locationName", "");
-
+  const watchAddress = watch("address", "");
   const handleNext = async () => {
-    // const fieldsToValidate = stepFields[currentStep - 1];
-    // const isStepValid = await trigger(fieldsToValidate);
-    // if (isStepValid && currentStep < steps.length) {
-    //   setCurrentStep((prev) => prev + 1);
-    // }
-    setCurrentStep((prev) => prev + 1);
+    const fieldsToValidate = stepFields[currentStep - 1];
+    const isStepValid = await trigger(fieldsToValidate);
+    if (isStepValid && currentStep < steps.length) {
+      setCurrentStep((prev) => prev + 1);
+    }
+    // setCurrentStep((prev) => prev + 1);
   };
 
   const handleStep = async (targetStep) => {
@@ -255,7 +261,8 @@ function AddEvent() {
       if (nextStart && nextShowData.tickets?.length > 0) {
         const hasInvalidTicket = nextShowData.tickets.some((ticket) => {
           return (
-            ticket.saleEndTime && new Date(ticket.saleEndTime).getTime() > nextStart
+            ticket.saleEndTime &&
+            new Date(ticket.saleEndTime).getTime() > nextStart
           );
         });
 
@@ -636,6 +643,29 @@ function AddEvent() {
                       {errors.locationName && (
                         <p className="text-red-500 text-xs mt-1">
                           {errors.locationName.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-widest">
+                        Địa chỉ
+                      </label>
+                      <div className="relative">
+                        <input
+                          {...register("address")}
+                          className="w-full bg-transparent border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all pr-16 text-sm"
+                          maxLength="80"
+                          placeholder="Tên địa điểm"
+                          type="text"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                          {watchAddress.length} / 80
+                        </span>
+                      </div>
+                      {errors.address && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.address.message}
                         </p>
                       )}
                     </div>

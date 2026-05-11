@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Pagination from "../../components/common/Pagination";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import ActionMenu from "../../components/common/ActionMenu";
 import EditIcon from "@mui/icons-material/Edit";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import RestoreIcon from "@mui/icons-material/Restore";
+import CancelIcon from "@mui/icons-material/Cancel";
 import UserDetailModal from "../../components/modals/UserDetailModal";
 import axiosClient from "../../api/axiosClient";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -15,6 +18,9 @@ import CategoryDetailModal from "../../components/modals/CategoryDetailModal";
 import EventOverviewModal from "./EventOverview";
 import { useHeader } from "../../hooks/useHeader";
 import TableSkeleton from "../../components/common/TableSkeleton";
+import RejectEventModal from "../../components/modals/RejectEventModal";
+import RejectionReasonModal from "../../components/modals/RejectionReasonModal";
+import { formatDateVN } from "../../utils/format";
 function EventList() {
   const { setTitle } = useHeader();
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
@@ -29,10 +35,20 @@ function EventList() {
     title: "",
     message: "",
   });
+  const [rejectModal, setRejectModal] = useState({
+    isOpen: false,
+  });
+  const [rejectReasonModal, setRejectReasonModal] = useState({
+    isOpen: false,
+  });
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const closeConfirmModal = () =>
     setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+  const closeRejectModal = () =>
+    setRejectModal((prev) => ({ ...prev, isOpen: false }));
+  const closeRejectReasonModal = () =>
+    setRejectReasonModal((prev) => ({ ...prev, isOpen: false }));
   const can = useCan();
   const fetchEvents = async (
     pageNo = 1,
@@ -136,6 +152,18 @@ function EventList() {
           "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-900/30 dark:text-slate-400 dark:border-slate-800",
         dot: "bg-slate-400",
       },
+      PENDING: {
+        label: "Chờ duyệt",
+        badge:
+          "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800",
+        dot: "bg-yellow-500",
+      },
+      APPROVED: {
+        label: "Đã duyệt",
+        badge:
+          "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+        dot: "bg-green-500",
+      },
       PUBLISHED: {
         label: "Đã công khai",
         badge:
@@ -201,6 +229,63 @@ function EventList() {
         icon: <EditIcon fontSize="small" />,
         onClick: (item) => {
           navigate(`/admin/update-event/${item.id}`);
+        },
+      });
+    }
+    if (can() && event?.status === "PENDING") {
+      actions.push({
+        label: "Duyệt",
+        icon: <CheckCircleIcon fontSize="small" />,
+        onClick: (item) => {
+          setConfirmModal({
+            isOpen: true,
+            title: "Xác nhận duyệt sự kiện này",
+            message: "Bạn có chắc sẽ xác nhận duyệt sự kiện có id: " + item.id,
+            onConfirm: async () => {
+              try {
+                await axiosClient.patch(`/events/${item.id}/approve`);
+                closeConfirmModal();
+                window.location.reload();
+              } catch (error) {
+                console.log("Duyệt thất bại: ", error.message);
+              }
+            },
+          });
+        },
+      });
+    }
+    if (can() && event?.status === "PENDING") {
+      actions.push({
+        label: "Từ chối",
+        color: "error.main",
+        icon: <CancelIcon fontSize="small" />,
+        onClick: (item) => {
+          setRejectModal({
+            isOpen: true,
+            onConfirm: async (reason) => {
+              try {
+                await axiosClient.patch(`/events/${item.id}/reject`, {
+                  rejectionReason: reason,
+                });
+                closeRejectModal();
+                window.location.reload();
+              } catch (error) {
+                console.log("Từ chối thất bại: ", error.message);
+              }
+            },
+          });
+        },
+      });
+    }
+    if (can() && event?.status === "REJECTED") {
+      actions.push({
+        label: "Xem lý do bị từ chối",
+        icon: <InfoOutlinedIcon fontSize="small" />,
+        onClick: (item) => {
+          setRejectReasonModal({
+            isOpen: true,
+            reason: item?.rejectionReason,
+          });
         },
       });
     }
@@ -277,6 +362,16 @@ function EventList() {
 
   return (
     <>
+      <RejectionReasonModal
+        isOpen={rejectReasonModal.isOpen}
+        onClose={closeRejectReasonModal}
+        reason={rejectReasonModal?.reason}
+      ></RejectionReasonModal>
+      <RejectEventModal
+        isOpen={rejectModal.isOpen}
+        onClose={closeRejectModal}
+        onConfirm={rejectModal?.onConfirm}
+      ></RejectEventModal>
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         message={confirmModal.message}
@@ -368,6 +463,7 @@ function EventList() {
               >
                 <option value="ALL">Tất cả trạng thái</option>
                 <option value="DRAFT">Bản nháp</option>
+                <option value="REJECTED">Từ chối</option>
                 <option value="PUBLISHED">Công khai</option>
                 <option value="UPCOMING">Sắp diễn ra</option>
                 <option value="HAPPENING">Đang diễn ra</option>
@@ -451,6 +547,12 @@ function EventList() {
                 >
                   Trạng thái
                 </th>
+                <th
+                  className="px-6 py-3 text-left text-xs font-bold text-[#6b7280] dark:text-[#a1aebf] uppercase tracking-wider"
+                  scope="col"
+                >
+                  Ngày xét duyệt
+                </th>
                 <th className="relative px-6 py-3" scope="col">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -513,6 +615,9 @@ function EventList() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {renderStatusBadge(event?.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {formatDateVN(event?.reviewedAt)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <ActionMenu actions={menuActions(event)} data={event} />

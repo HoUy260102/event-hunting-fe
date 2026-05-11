@@ -7,6 +7,7 @@ import { useAuth } from "../../hooks/useAuth";
 import axiosClient from "../../api/axiosClient";
 import { useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useGoogleLogin } from "../../hooks/useGoogleLogin";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ").nonempty("Email là bắt buộc"),
@@ -22,7 +23,11 @@ function LoginModal({ isOpen, onClose }) {
     resolver: zodResolver(loginSchema),
     mode: "onTouched",
   });
-
+  const { loginWithGoogle, error: googleError } = useGoogleLogin({
+    onClose: () => {
+      onClose();
+    },
+  });
   const { login } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -197,6 +202,7 @@ function LoginModal({ isOpen, onClose }) {
 
             <button
               type="button"
+              onClick={loginWithGoogle}
               className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-md hover:bg-gray-50 transition-all"
             >
               <img
@@ -225,6 +231,11 @@ function LoginModal({ isOpen, onClose }) {
                 </Link>
               </p>
             </div>
+            {googleError && (
+              <span className="text-red-500 text-xs">
+                {googleError}
+              </span>
+            )}
           </form>
         </div>
       </div>
