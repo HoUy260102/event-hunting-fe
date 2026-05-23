@@ -12,9 +12,10 @@ import axiosClient from "../../api/axiosClient";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { useCan } from "../../hooks/useCan";
 import { useHeader } from "../../hooks/useHeader";
-import CategoryDetailModal from "../../components/modals/CategoryDetailModal";
+import ReservationDetailModal from "../../components/modals/ReservationDetailModal";
 import TableSkeleton from "../../components/common/TableSkeleton";
 import { formatDateVN } from "../../utils/format";
+import { useAuth } from "../../hooks/useAuth";
 
 const renderStatusBadge = (status) => {
   const statusMap = {
@@ -75,14 +76,16 @@ function ReservationList() {
     title: "",
     message: "",
   });
-  const [isCategoryDetailModalOpen, setIsCategoryDetailModalOpen] =
+  const [isReservationDetailModalOpen, setIsReservationDetailModalOpen] =
     useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedReservation, setSelectedReservation] = useState(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const closeConfirmModal = () =>
     setConfirmModal((prev) => ({ ...prev, isOpen: false }));
   const can = useCan();
+  const { user } = useAuth();
+
   const fetchReservations = async (
     pageNo = 1,
     keyword = "",
@@ -92,7 +95,8 @@ function ReservationList() {
   ) => {
     try {
       setIsLoadingReservations(true);
-      const result = await axiosClient.get("/reservations/search", {
+      const endpoint = user?.role === "ORGANIZER" ? "/reservations/me" : "/reservations/search";
+      const result = await axiosClient.get(endpoint, {
         params: {
           page: pageNo,
           size: 5,
@@ -169,7 +173,11 @@ function ReservationList() {
   useEffect(() => {
     try {
       const fetchEventSelection = async () => {
-        const eventRes = await axiosClient.get(`/events/selection`);
+        const endpoint =
+          user?.role === "ORGANIZER"
+            ? `/events/me/selection`
+            : `/events/selection`;
+        const eventRes = await axiosClient.get(endpoint);
         setEvents(eventRes?.data);
       };
       fetchEventSelection();
@@ -199,105 +207,26 @@ function ReservationList() {
     fetchShows();
   }, [filters.eventId]);
 
-  const handleOpenCategoryDetailModal = (item) => {
-    setSelectedCategory(item);
-    setIsCategoryDetailModalOpen(true);
+  const handleOpenReservationDetailModal = (item) => {
+    setSelectedReservation(item.id);
+    setIsReservationDetailModalOpen(true);
   };
 
-  const handleCloseUserDetailModal = () => {
-    setIsCategoryDetailModalOpen(false);
-    setSelectedCategory(null);
+  const handleCloseReservationDetailModal = () => {
+    setIsReservationDetailModalOpen(false);
+    setSelectedReservation(null);
   };
 
-  const menuActions = (category) => {
+  const menuActions = (reservation) => {
     const actions = [];
-    if (can()) {
+    if (can("RESERVATION:VIEW")) {
       actions.push({
         label: "Xem chi tiết",
         icon: <VisibilityIcon fontSize="small" />,
         onClick: (item) => {
-          handleOpenCategoryDetailModal(item);
+          handleOpenReservationDetailModal(item);
         },
       });
-    }
-    if (can()) {
-      actions.push({
-        label: "Sửa",
-        icon: <EditIcon fontSize="small" />,
-        onClick: (item) => {
-          navigate(`/admin/update-category/${item.id}`);
-        },
-      });
-    }
-    if (category.deletedAt === null) {
-      if (can()) {
-        actions.push({
-          label: "Xóa",
-          icon: <DeleteIcon fontSize="small" />,
-          color: "error.main",
-          onClick: (item) => {
-            setConfirmModal({
-              isOpen: true,
-              title: "Xác nhận xóa chủ đề",
-              message: "Bạn có chắc sẽ xóa chủ đề có id: " + item.id,
-              onConfirm: async () => {
-                try {
-                  await axiosClient.patch(
-                    `/reservations/${item.id}/soft-delete`,
-                  );
-                  const keyword = searchParams.get("keyword") || "";
-                  const status = searchParams.get("status") || "ALL";
-                  let page = parseInt(searchParams.get("page")) || 1;
-                  if (reservations.length === 1 && page > 1) {
-                    page -= 1;
-                    const params = new URLSearchParams(searchParams);
-                    params.set("page", page.toString());
-                    setSearchParams(params);
-                    setFilters((prev) => ({ ...prev, page: page }));
-                  }
-                  fetchReservations(page, keyword, status);
-                  closeConfirmModal();
-                } catch (error) {
-                  console.log("Xóa thất bại: ", error.message);
-                }
-              },
-            });
-          },
-        });
-      }
-    } else {
-      if (can()) {
-        actions.push({
-          label: "Khôi phục",
-          icon: <RestoreIcon fontSize="small" />,
-          onClick: (item) => {
-            setConfirmModal({
-              isOpen: true,
-              title: "Xác nhận khôi phục chủ đề",
-              message: "Bạn có chắc sẽ khôi phục chủ đề có id: " + item.id,
-              onConfirm: async () => {
-                try {
-                  await axiosClient.patch(`/reservations/${item.id}/restore`);
-                  const keyword = searchParams.get("keyword") || "";
-                  const status = searchParams.get("status") || "ALL";
-                  let page = parseInt(searchParams.get("page")) || 1;
-                  if (reservations.length === 1 && page > 1) {
-                    page -= 1;
-                    const params = new URLSearchParams(searchParams);
-                    params.set("page", page.toString());
-                    setSearchParams(params);
-                    setFilters((prev) => ({ ...prev, page: page }));
-                  }
-                  fetchReservations(page, keyword, status);
-                  closeConfirmModal();
-                } catch (error) {
-                  console.log("Khôi phục thất bại: ", error.message);
-                }
-              },
-            });
-          },
-        });
-      }
     }
     return actions;
   };
@@ -409,27 +338,6 @@ function ReservationList() {
           </p>
 
           {/* Bên phải: Cụm nút bấm */}
-          {/* <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button
-              onClick={handleReset}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 dark:bg-[#142210] border border-[#e5e7eb] dark:border-[#2a4225] dark:text-white text-gray-700 font-semibold py-2 px-5 rounded-lg text-sm transition-all active:scale-95"
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                restart_alt
-              </span>
-              Làm mới
-            </button>
-
-            <button
-              onClick={applyFilters}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2 px-10 rounded-lg text-sm transition-all active:scale-95 shadow-sm shadow-[#46ec13]/20"
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                search
-              </span>
-              Tìm kiếm
-            </button>
-          </div> */}
           <div className="grid grid-cols-2 gap-3 w-full sm:w-auto">
             <button
               onClick={handleReset}
@@ -569,7 +477,7 @@ function ReservationList() {
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        {/* <ActionMenu actions={menuActions(res)} data={res} /> */}
+                        <ActionMenu actions={menuActions(res)} data={res} />
                       </td>
                     </tr>
                   );
@@ -587,11 +495,11 @@ function ReservationList() {
         totalPage={totalPages}
         handlePagination={handlePagination}
       ></Pagination>
-      <CategoryDetailModal
-        isOpen={isCategoryDetailModalOpen}
-        onClose={handleCloseUserDetailModal}
-        data={selectedCategory}
-      ></CategoryDetailModal>
+      <ReservationDetailModal
+        isOpen={isReservationDetailModalOpen}
+        onClose={handleCloseReservationDetailModal}
+        reservationId={selectedReservation}
+      ></ReservationDetailModal>
     </>
   );
 }

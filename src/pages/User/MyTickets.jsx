@@ -3,6 +3,7 @@ import TicketCard from "../../components/common/TicketCard";
 import axiosClient from "../../api/axiosClient";
 import TicketSkeleton from "../../components/common/TicketSkeleton";
 import PaginationV2 from "../../components/common/PaginationV2";
+import ProfileSidebar from "./ProfileSidebar";
 
 const MyTickets = () => {
   // Dữ liệu mẫu
@@ -88,70 +89,76 @@ const MyTickets = () => {
         }}
       />
 
-      <main className="min-h-screen pt-5 pb-32 md:px-4 max-w-7xl mx-auto">
-        {/* Section Header */}
-        <div className="mb-5">
-          <h3 className="border-b border-[#474848]/20 py-5 font-headline text-white text-2xl font-extrabold tracking-tight text-on-surface">
-            Vé của tôi
-          </h3>
+      <div className="w-full px-2 py-4 lg:px-6 lg:py-6 flex flex-col lg:flex-row gap-6">
+        {/* Sidebar */}
+        <div className="w-full lg:w-80 shrink-0">
+          <ProfileSidebar />
         </div>
-        <div className="flex justify-center items-center gap-8 mb-10">
-          <button
-            onClick={() => {
-              handleTabChange(false);
-            }}
-            className={`pb-4 font-headline text-sm font-bold tracking-tight transition-all relative ${
-              isFinished === false
-                ? "text-[#e7e5e5]"
-                : "text-[#acabab] hover:text-[#e7e5e5]"
-            }`}
-          >
-            Sắp diễn ra
-            {isFinished === false && (
-              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-green-500"></div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 min-w-0">
+          {/* Section Header */}
+          <div className="mb-5">
+            <h3 className="border-b border-[#474848]/20 py-5 font-headline text-white text-2xl font-extrabold tracking-tight text-on-surface">
+              Vé của tôi
+            </h3>
+          </div>
+          <div className="flex justify-center items-center gap-8 mb-10">
+            <button
+              onClick={() => {
+                handleTabChange(false);
+              }}
+              className={`pb-4 font-headline text-sm font-bold tracking-tight transition-all relative ${isFinished === false
+                  ? "text-[#e7e5e5]"
+                  : "text-[#acabab] hover:text-[#e7e5e5]"
+                }`}
+            >
+              Sắp diễn ra
+              {isFinished === false && (
+                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-green-500"></div>
+              )}
+            </button>
+
+            <button
+              onClick={() => {
+                handleTabChange(true);
+              }}
+              className={`pb-4 font-headline text-sm font-bold tracking-tight transition-all relative ${isFinished
+                  ? "text-[#e7e5e5]"
+                  : "text-[#acabab] hover:text-[#e7e5e5]"
+                }`}
+            >
+              Kết thúc
+              {isFinished && (
+                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-green-500"></div>
+              )}
+            </button>
+          </div>
+
+          {/* Ticket Card Container */}
+          <div className="space-y-8 flex flex-col items-center">
+            {loading ? (
+              <TicketSkeleton rows={5} />
+            ) : tickets.length > 0 ? (
+              tickets.map((item) => (
+                <TicketCard key={item.id} ticket={item} isFinished={isFinished} />
+              ))
+            ) : (
+              <div className="py-20 text-[#acabab]">Không có vé nào.</div>
             )}
-          </button>
+          </div>
 
-          <button
-            onClick={() => {
-              handleTabChange(true);
-            }}
-            className={`pb-4 font-headline text-sm font-bold tracking-tight transition-all relative ${
-              isFinished
-                ? "text-[#e7e5e5]"
-                : "text-[#acabab] hover:text-[#e7e5e5]"
-            }`}
-          >
-            Kết thúc
-            {isFinished && (
-              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-green-500"></div>
-            )}
-          </button>
+          <div className="mt-20">
+            <PaginationV2
+              currentPage={pageNumber}
+              pageSize={4}
+              totalPage={totalPages}
+              totalElements={totalElements}
+              handlePagination={handlePagination}
+            ></PaginationV2>
+          </div>
         </div>
-
-        {/* Ticket Card Container */}
-        <div className="space-y-8 flex flex-col items-center px-20">
-          {loading ? (
-            <TicketSkeleton rows={5} />
-          ) : tickets.length > 0 ? (
-            tickets.map((item) => (
-              <TicketCard key={item.id} ticket={item} isFinished={isFinished} />
-            ))
-          ) : (
-            <div className="py-20 text-[#acabab]">Không có vé nào.</div>
-          )}
-        </div>
-
-        <div className="mt-20">
-          <PaginationV2
-            currentPage={pageNumber}
-            pageSize={4}
-            totalPage={totalPages}
-            totalElements={totalElements}
-            handlePagination={handlePagination}
-          ></PaginationV2>
-        </div>
-      </main>
+      </div>
     </>
   );
 };

@@ -81,7 +81,7 @@ const PaymentSuccess = () => {
               <span className="text-[#e7e5e5] font-medium">
                 {reservation?.customerEmail}
               </span>
-              .
+              {" "}hoặc bạn có thể xem vé tại mục "Vé của tôi".
             </p>
 
             {/* Order Details Card */}

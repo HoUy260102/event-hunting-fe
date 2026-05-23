@@ -1,7 +1,12 @@
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Sidebar.css";
+import { useAuth } from "../../../hooks/useAuth";
+
 function Sidebar({ isOpen, handleIsOpen }) {
+  const { user } = useAuth();
+  const role = user?.role;
+
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [openDropdown, setOpenDropdown] = useState(null);
   const usersRef = useRef(null);
@@ -23,6 +28,10 @@ function Sidebar({ isOpen, handleIsOpen }) {
     closeAllDropdowns();
     handleIsOpen();
   };
+
+  if (role === "USER") return null;
+
+  const isAdmin = role === "ADMIN";
 
   return (
     <>
@@ -56,135 +65,136 @@ function Sidebar({ isOpen, handleIsOpen }) {
             </li>
 
             {/* Quản lý tài khoản */}
-            <li
-              className={`nav-item dropdown-container ${
-                openDropdown === "users" ? "open" : ""
-              }`}
-            >
-              <Link
-                to="#"
-                className={`nav-link custom-dropdown-toggle ${activeMenu === "users" ? "active" : ""}`}
-                onClick={() => {
-                  toggleDropdown("users");
-                }}
+            {isAdmin && (
+              <li
+                className={`nav-item dropdown-container ${openDropdown === "users" ? "open" : ""
+                  }`}
               >
-                <span className="material-symbols-rounded">
-                  manage_accounts
-                </span>
-                <span className="nav-label">Quản lý tài khoản</span>
-                <span className="dropdown-icon material-symbols-rounded">
-                  keyboard_arrow_down
-                </span>
-              </Link>
+                <Link
+                  to="#"
+                  className={`nav-link custom-dropdown-toggle ${activeMenu === "users" ? "active" : ""}`}
+                  onClick={() => {
+                    toggleDropdown("users");
+                  }}
+                >
+                  <span className="material-symbols-rounded">
+                    manage_accounts
+                  </span>
+                  <span className="nav-label">Quản lý tài khoản</span>
+                  <span className="dropdown-icon material-symbols-rounded">
+                    keyboard_arrow_down
+                  </span>
+                </Link>
 
-              <ul
-                ref={usersRef}
-                className="dropdown"
-                style={{
-                  height:
-                    openDropdown === "users"
-                      ? `${usersRef.current?.scrollHeight}px`
-                      : 0,
-                  overflow: "hidden",
-                  transition: "height 0.3s ease",
-                }}
-              >
-                <li className="nav-item">
-                  <Link className="nav-link dropdown-title">
-                    Quản lý tài khoản
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="/admin/users"
-                    className="nav-link dropdown-link"
-                    onClick={() => {
-                      setActiveMenu("users");
-                    }}
-                  >
-                    Danh sách tài khoản
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="/admin/add-user"
-                    className="nav-link dropdown-link"
-                    onClick={() => {
-                      setActiveMenu("users");
-                    }}
-                  >
-                    Thêm tài khoản
-                  </Link>
-                </li>
-              </ul>
-            </li>
+                <ul
+                  ref={usersRef}
+                  className="dropdown"
+                  style={{
+                    height:
+                      openDropdown === "users"
+                        ? `${usersRef.current?.scrollHeight}px`
+                        : 0,
+                    overflow: "hidden",
+                    transition: "height 0.3s ease",
+                  }}
+                >
+                  <li className="nav-item">
+                    <Link className="nav-link dropdown-title">
+                      Quản lý tài khoản
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="/admin/users"
+                      className="nav-link dropdown-link"
+                      onClick={() => {
+                        setActiveMenu("users");
+                      }}
+                    >
+                      Danh sách tài khoản
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="/admin/add-user"
+                      className="nav-link dropdown-link"
+                      onClick={() => {
+                        setActiveMenu("users");
+                      }}
+                    >
+                      Thêm tài khoản
+                    </Link>
+                  </li>
+                </ul>
+              </li>
+            )}
 
             {/* Thể loại */}
-            <li
-              className={`nav-item dropdown-container ${
-                openDropdown === "categories" ? "open" : ""
-              }`}
-            >
-              <a
-                href="#"
-                className={`nav-link custom-dropdown-toggle ${activeMenu === "categories" ? "active" : ""}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggleDropdown("categories");
-                }}
+            {isAdmin && (
+              <li
+                className={`nav-item dropdown-container ${openDropdown === "categories" ? "open" : ""
+                  }`}
               >
-                <span className="material-symbols-rounded">category</span>
-                <span className="nav-label">Chủ đề</span>
-                <span className="dropdown-icon material-symbols-rounded">
-                  keyboard_arrow_down
-                </span>
-              </a>
+                <a
+                  href="#"
+                  className={`nav-link custom-dropdown-toggle ${activeMenu === "categories" ? "active" : ""}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDropdown("categories");
+                  }}
+                >
+                  <span className="material-symbols-rounded">category</span>
+                  <span className="nav-label">Chủ đề</span>
+                  <span className="dropdown-icon material-symbols-rounded">
+                    keyboard_arrow_down
+                  </span>
+                </a>
 
-              <ul
-                ref={categoriesRef}
-                className="dropdown"
-                style={{
-                  height:
-                    openDropdown === "categories"
-                      ? `${categoriesRef.current?.scrollHeight}px`
-                      : 0,
-                  overflow: "hidden",
-                  transition: "height 0.3s ease",
-                }}
-              >
-                <li className="nav-item">
-                  <Link className="nav-link dropdown-title">Chủ đề</Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="/admin/categories"
-                    className="nav-link dropdown-link"
-                    onClick={() => {
-                      setActiveMenu("categories");
-                    }}
-                  >
-                    Danh sách chủ đề
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="/admin/add-category"
-                    className="nav-link dropdown-link"
-                    onClick={() => {
-                      setActiveMenu("categories");
-                    }}
-                  >
-                    Thêm chủ đề mới
-                  </Link>
-                </li>
-              </ul>
-            </li>
+                <ul
+                  ref={categoriesRef}
+                  className="dropdown"
+                  style={{
+                    height:
+                      openDropdown === "categories"
+                        ? `${categoriesRef.current?.scrollHeight}px`
+                        : 0,
+                    overflow: "hidden",
+                    transition: "height 0.3s ease",
+                  }}
+                >
+                  <li className="nav-item">
+                    <Link className="nav-link dropdown-title">Chủ đề</Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="/admin/categories"
+                      className="nav-link dropdown-link"
+                      onClick={() => {
+                        setActiveMenu("categories");
+                      }}
+                    >
+                      Danh sách chủ đề
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="/admin/add-category"
+                      className="nav-link dropdown-link"
+                      onClick={() => {
+                        setActiveMenu("categories");
+                      }}
+                    >
+                      Thêm chủ đề mới
+                    </Link>
+                  </li>
+                </ul>
+              </li>
+            )}
 
             {/* Events */}
             <li
-              className={`nav-item dropdown-container ${
-                openDropdown === "events" ? "open" : ""
-              }`}
+              className={`nav-item dropdown-container ${openDropdown === "events" ? "open" : ""
+                }`}
             >
               <a
                 className={`nav-link custom-dropdown-toggle ${activeMenu === "events" ? "active" : ""}`}
@@ -241,9 +251,8 @@ function Sidebar({ isOpen, handleIsOpen }) {
 
             {/* Reservations */}
             <li
-              className={`nav-item dropdown-container ${
-                openDropdown === "reservations" ? "open" : ""
-              }`}
+              className={`nav-item dropdown-container ${openDropdown === "reservations" ? "open" : ""
+                }`}
             >
               <a
                 className={`nav-link custom-dropdown-toggle ${activeMenu === "reservations" ? "active" : ""}`}
@@ -289,9 +298,8 @@ function Sidebar({ isOpen, handleIsOpen }) {
 
             {/* Vouchers */}
             <li
-              className={`nav-item dropdown-container ${
-                openDropdown === "vouchers" ? "open" : ""
-              }`}
+              className={`nav-item dropdown-container ${openDropdown === "vouchers" ? "open" : ""
+                }`}
             >
               <a
                 className={`nav-link custom-dropdown-toggle ${activeMenu === "vouchers" ? "active" : ""}`}
@@ -347,77 +355,78 @@ function Sidebar({ isOpen, handleIsOpen }) {
             </li>
 
             {/* Phân quyền */}
-            <li
-              className={`nav-item dropdown-container ${
-                openDropdown === "permissions" ? "open" : ""
-              }`}
-            >
-              <Link
-                to="#"
-                className={`nav-link custom-dropdown-toggle ${activeMenu === "permissions" ? "active" : ""}`}
-                onClick={() => {
-                  toggleDropdown("permissions");
-                }}
+            {isAdmin && (
+              <li
+                className={`nav-item dropdown-container ${openDropdown === "permissions" ? "open" : ""
+                  }`}
               >
-                <span className="material-symbols-rounded">verified_user</span>
-                <span className="nav-label">Vai trò & Phân quyền</span>
-                <span className="dropdown-icon material-symbols-rounded">
-                  keyboard_arrow_down
-                </span>
-              </Link>
+                <Link
+                  to="#"
+                  className={`nav-link custom-dropdown-toggle ${activeMenu === "permissions" ? "active" : ""}`}
+                  onClick={() => {
+                    toggleDropdown("permissions");
+                  }}
+                >
+                  <span className="material-symbols-rounded">verified_user</span>
+                  <span className="nav-label">Vai trò & Phân quyền</span>
+                  <span className="dropdown-icon material-symbols-rounded">
+                    keyboard_arrow_down
+                  </span>
+                </Link>
 
-              <ul
-                ref={permissionsRef}
-                className="dropdown"
-                style={{
-                  height:
-                    openDropdown === "permissions"
-                      ? `${permissionsRef.current?.scrollHeight}px`
-                      : 0,
-                  overflow: "hidden",
-                  transition: "height 0.3s ease",
-                }}
-              >
-                <li className="nav-item">
-                  <Link className="nav-link dropdown-title">
-                    Vai trò & Phân quyền
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="#"
-                    className="nav-link dropdown-link"
-                    onClick={() => {
-                      setActiveMenu("permissions");
-                    }}
-                  >
-                    Thêm quyền
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="#"
-                    className="nav-link dropdown-link"
-                    onClick={() => {
-                      setActiveMenu("permissions");
-                    }}
-                  >
-                    Danh sách quyền
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="/admin/roles/assignment"
-                    className="nav-link dropdown-link"
-                    onClick={() => {
-                      setActiveMenu("permissions");
-                    }}
-                  >
-                    Phân quyền chức năng
-                  </Link>
-                </li>
-              </ul>
-            </li>
+                <ul
+                  ref={permissionsRef}
+                  className="dropdown"
+                  style={{
+                    height:
+                      openDropdown === "permissions"
+                        ? `${permissionsRef.current?.scrollHeight}px`
+                        : 0,
+                    overflow: "hidden",
+                    transition: "height 0.3s ease",
+                  }}
+                >
+                  <li className="nav-item">
+                    <Link className="nav-link dropdown-title">
+                      Vai trò & Phân quyền
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="#"
+                      className="nav-link dropdown-link"
+                      onClick={() => {
+                        setActiveMenu("permissions");
+                      }}
+                    >
+                      Thêm quyền
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="#"
+                      className="nav-link dropdown-link"
+                      onClick={() => {
+                        setActiveMenu("permissions");
+                      }}
+                    >
+                      Danh sách quyền
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="/admin/roles/assignment"
+                      className="nav-link dropdown-link"
+                      onClick={() => {
+                        setActiveMenu("permissions");
+                      }}
+                    >
+                      Phân quyền chức năng
+                    </Link>
+                  </li>
+                </ul>
+              </li>
+            )}
           </ul>
 
           <ul className="nav-list secondary-nav">
@@ -441,3 +450,4 @@ function Sidebar({ isOpen, handleIsOpen }) {
 }
 
 export default Sidebar;
+

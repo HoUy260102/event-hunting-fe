@@ -7,6 +7,7 @@ import { formatDateVN } from "../../utils/format";
 import Modal from "../../components/common/Modal";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useHeader } from "../../hooks/useHeader";
+import { useAuth } from "../../hooks/useAuth";
 
 const voucherSchema = z
   .object({
@@ -24,7 +25,7 @@ const voucherSchema = z
     showId: z.string().optional(),
     maxDiscountValue: z.coerce.number().optional(),
   })
-   .superRefine((data, ctx) => {
+  .superRefine((data, ctx) => {
     if (new Date(data.endTime) <= new Date(data.startTime)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -106,6 +107,8 @@ const voucherSchema = z
 
 const AddVoucher = () => {
   const { setTitle } = useHeader();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
   const [discountType, setDiscountType] = useState("VALUE");
   const [voucherScope, setVoucherScope] = useState("ORGANIZER");
   const [eventCode, setEventCode] = useState("");
@@ -428,11 +431,10 @@ const AddVoucher = () => {
                     <button
                       type="button"
                       onClick={() => setDiscountType("VALUE")}
-                      className={`px-4 py-2 text-[10px] font-bold rounded-md transition-all duration-200 ${
-                        discountType === "VALUE"
+                      className={`px-4 py-2 text-[10px] font-bold rounded-md transition-all duration-200 ${discountType === "VALUE"
                           ? "bg-[#53d22d] text-[#152012] shadow-sm"
                           : "text-[#6b7280] hover:text-[#111827]"
-                      }`}
+                        }`}
                     >
                       VALUE (VNĐ)
                     </button>
@@ -440,11 +442,10 @@ const AddVoucher = () => {
                     <button
                       type="button"
                       onClick={() => setDiscountType("PERCENT")}
-                      className={`px-4 py-2 text-[10px] font-bold rounded-md transition-all duration-200 ${
-                        discountType === "PERCENT"
+                      className={`px-4 py-2 text-[10px] font-bold rounded-md transition-all duration-200 ${discountType === "PERCENT"
                           ? "bg-[#53d22d] text-[#152012] shadow-sm"
                           : "text-[#6b7280] hover:text-[#111827]"
-                      }`}
+                        }`}
                     >
                       PERCENT (%)
                     </button>
@@ -465,9 +466,9 @@ const AddVoucher = () => {
                       checked={hasMax}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setValue("maxDiscountValue", 0); 
+                          setValue("maxDiscountValue", 0);
                         } else {
-                          setValue("maxDiscountValue", undefined); 
+                          setValue("maxDiscountValue", undefined);
                         }
                       }}
                     />
@@ -515,26 +516,26 @@ const AddVoucher = () => {
                 </label>
 
                 <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setVoucherScope("SYSTEM")}
-                    className={`px-4 py-2 text-xs font-bold rounded-lg ${
-                      voucherScope === "SYSTEM"
-                        ? "bg-[#53d22d] text-black"
-                        : "bg-white text-gray-600"
-                    }`}
-                  >
-                    SYSTEM
-                  </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setVoucherScope("SYSTEM")}
+                      className={`px-4 py-2 text-xs font-bold rounded-lg ${voucherScope === "SYSTEM"
+                          ? "bg-[#53d22d] text-black"
+                          : "bg-white text-gray-600"
+                        }`}
+                    >
+                      SYSTEM
+                    </button>
+                  )}
 
                   <button
                     type="button"
                     onClick={() => setVoucherScope("ORGANIZER")}
-                    className={`px-4 py-2 text-xs font-bold rounded-lg ${
-                      voucherScope === "ORGANIZER"
+                    className={`px-4 py-2 text-xs font-bold rounded-lg ${voucherScope === "ORGANIZER"
                         ? "bg-[#53d22d] text-black"
                         : "bg-white text-gray-600"
-                    }`}
+                      }`}
                   >
                     ORGANIZER
                   </button>
@@ -670,11 +671,10 @@ const AddVoucher = () => {
               type="submit"
               disabled={isSubmitting}
               className={`px-10 py-3 text-sm font-black rounded-full uppercase tracking-widest flex items-center justify-center gap-2 transition-all
-    ${
-      isSubmitting
-        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-        : "bg-[#53d22d] text-[#152012] hover:brightness-110 transform hover:-translate-y-0.5 active:scale-95 shadow-lg shadow-[#53d22d]/20"
-    }`}
+    ${isSubmitting
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-[#53d22d] text-[#152012] hover:brightness-110 transform hover:-translate-y-0.5 active:scale-95 shadow-lg shadow-[#53d22d]/20"
+                }`}
             >
               {isSubmitting ? (
                 <>

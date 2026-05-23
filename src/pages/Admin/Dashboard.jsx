@@ -7,7 +7,7 @@ function Dashboard() {
   const [isOpen, setIsOpen] = useState(true);
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
+      if (window.innerWidth < 1024) {
         setIsOpen(false);
       } else {
         setIsOpen(true);
@@ -18,11 +18,17 @@ function Dashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   const sidebarWidth = isOpen ? "270px" : "85px";
+  const toggleSidebar = () => {
+    if (window.innerWidth >= 1024) {
+      setIsOpen(!isOpen);
+    }
+  };
+
   return (
     <>
       <HeaderProvider>
-        <div className="flex min-h-screen bg-background-light overflow-x-hidden">
-          <Sidebar isOpen={isOpen} handleIsOpen={() => setIsOpen(!isOpen)} />
+        <div className="flex min-h-screen bg-background-light overflow-x-hidden admin-layout-container">
+          <Sidebar isOpen={isOpen} handleIsOpen={toggleSidebar} />
           <div
             style={{
               flex: 1,

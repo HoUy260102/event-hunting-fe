@@ -14,6 +14,7 @@ import UserDetailModal from "../../components/modals/UserDetailModal";
 import axiosClient from "../../api/axiosClient";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { useCan } from "../../hooks/useCan";
+import { useAuth } from "../../hooks/useAuth";
 import CategoryDetailModal from "../../components/modals/CategoryDetailModal";
 import EventOverviewModal from "./EventOverview";
 import { useHeader } from "../../hooks/useHeader";
@@ -23,6 +24,7 @@ import RejectionReasonModal from "../../components/modals/RejectionReasonModal";
 import { formatDateVN } from "../../utils/format";
 function EventList() {
   const { setTitle } = useHeader();
+  const { user } = useAuth();
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
   const [events, setEvents] = useState([]);
   const [provinces, setProvinces] = useState([]);
@@ -59,7 +61,9 @@ function EventList() {
   ) => {
     try {
       setIsLoadingEvents(true);
-      const result = await axiosClient.get("/events/search", {
+      const endpoint =
+        user?.role === "ORGANIZER" ? "/events/me" : "/events/search";
+      const result = await axiosClient.get(endpoint, {
         params: {
           page: pageNo,
           size: 5,
@@ -214,16 +218,25 @@ function EventList() {
 
   const menuActions = (event) => {
     const actions = [];
-    if (can()) {
+    if (can("EVENT:VIEW")) {
       actions.push({
-        label: "Xem chi tiết",
+        label: "Xem thông tin",
+        icon: <InfoOutlinedIcon fontSize="small" />,
+        onClick: (item) => {
+          navigate(`/admin/info-event/${item.id}`);
+        },
+      });
+    }
+    if (can("EVENT:VIEW")) {
+      actions.push({
+        label: "Xem tổng quan",
         icon: <VisibilityIcon fontSize="small" />,
         onClick: (item) => {
           navigate(`/admin/event/${item?.id}/overview`);
         },
       });
     }
-    if (can()) {
+    if (can("EVENT:UPDATE")) {
       actions.push({
         label: "Sửa",
         icon: <EditIcon fontSize="small" />,
@@ -232,7 +245,7 @@ function EventList() {
         },
       });
     }
-    if (can() && event?.status === "PENDING") {
+    if (can("EVENT:APPROVE") && event?.status === "PENDING") {
       actions.push({
         label: "Duyệt",
         icon: <CheckCircleIcon fontSize="small" />,
@@ -254,7 +267,7 @@ function EventList() {
         },
       });
     }
-    if (can() && event?.status === "PENDING") {
+    if (can("EVENT:REJECT") && event?.status === "PENDING") {
       actions.push({
         label: "Từ chối",
         color: "error.main",
@@ -277,7 +290,7 @@ function EventList() {
         },
       });
     }
-    if (can() && event?.status === "REJECTED") {
+    if (can("EVENT:REJECT") && event?.status === "REJECTED") {
       actions.push({
         label: "Xem lý do bị từ chối",
         icon: <InfoOutlinedIcon fontSize="small" />,
@@ -386,15 +399,17 @@ function EventList() {
           </h2>
           <p className="mt-1 text-sm text-[#6b7280] dark:text-[#a1aebf]"></p>
         </div>
-        <button
-          onClick={() => {
-            navigate("/admin/add-event");
-          }}
-          className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
-        >
-          <span className="material-symbols-outlined text-[20px]">add</span>{" "}
-          Thêm mới sự kiện
-        </button>
+        {can("EVENT:CREATE") && (
+          <button
+            onClick={() => {
+              navigate("/admin/add-event");
+            }}
+            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>{" "}
+            Thêm mới sự kiện
+          </button>
+        )}
       </div>
       <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-5 mb-6">
         <div className="flex flex-col gap-3">
@@ -463,6 +478,8 @@ function EventList() {
               >
                 <option value="ALL">Tất cả trạng thái</option>
                 <option value="DRAFT">Bản nháp</option>
+                <option value="PENDING">Chờ duyệt</option>
+                <option value="APPROVED">Đã duyệt</option>
                 <option value="REJECTED">Từ chối</option>
                 <option value="PUBLISHED">Công khai</option>
                 <option value="UPCOMING">Sắp diễn ra</option>
@@ -483,9 +500,12 @@ function EventList() {
                   });
                   setSearchParams({});
                 }}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none"
+                className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none"
               >
-                Xóa
+                <span className="material-symbols-outlined text-[18px] mr-2">
+                  restart_alt
+                </span>
+                Làm mới
               </button>
               <button
                 onClick={applyFilters}

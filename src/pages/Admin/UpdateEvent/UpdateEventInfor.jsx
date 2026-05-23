@@ -9,6 +9,8 @@ import z from "zod";
 import { useParams } from "react-router-dom";
 import StatusBadge from "../../../components/common/StatusBadge";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
+import { useAuth } from "../../../hooks/useAuth";
+
 
 const eventSchema = z.object({
   posterId: z.string().min(1, "Vui lòng upload ảnh poster"),
@@ -33,6 +35,8 @@ const eventSchema = z.object({
 
 function UpdateEventInfor() {
   const { id } = useParams();
+  const { user: currentUser } = useAuth();
+
   const [initialData, setInitialData] = useState(null);
   const [modal, setModal] = useState({
     isOpen: false,
@@ -660,38 +664,46 @@ function UpdateEventInfor() {
           </p>
         </section>
 
-        <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
-          <div>
-            <label className="block text-sm font-semibold mb-2 text-slate-900">
-              <span className="text-red-500 mr-1">*</span>Id sở hữu
-            </label>
-            <div className="relative">
-              <input
-                {...register("userId")}
-                className={`w-full border rounded-lg px-4 py-3 outline-none transition-all pr-16 text-sm
+        {currentUser?.role === "ADMIN" ? (
+          <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-slate-900">
+                <span className="text-red-500 mr-1">*</span>Id sở hữu
+              </label>
+              <div className="relative">
+                <input
+                  {...register("userId")}
+                  className={`w-full border rounded-lg px-4 py-3 outline-none transition-all pr-16 text-sm
                 ${
                   errors.userId
                     ? "border-red-500 focus:ring-red-200 focus:border-red-500"
                     : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
                 } 
                 focus:ring-2`}
-                maxLength="100"
-                placeholder="Nhập id của người sở hữu sự kiện"
-                type="text"
-              />
+                  maxLength="100"
+                  placeholder="Nhập id của người sở hữu sự kiện"
+                  type="text"
+                />
+              </div>
+              {owner && (
+                <p className="mt-3 text-sm text-slate-600 italic">
+                  {owner?.name} - {owner?.email}
+                </p>
+              )}
+              {errors?.userId && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors?.userId?.message}
+                </p>
+              )}
             </div>
-            {owner && (
-              <p className="mt-3 text-sm text-slate-600 italic">
-                {owner?.name} - {owner?.email}
-              </p>
-            )}
-            {errors?.userId && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors?.userId?.message}
-              </p>
-            )}
-          </div>
-        </section>
+          </section>
+        ) : (
+          <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <label className="block text-sm font-semibold mb-2 text-slate-900">Người sở hữu</label>
+            <p className="text-sm text-slate-600">{currentUser?.name} - {currentUser?.email}</p>
+          </section>
+        )}
+
 
         {/* SECTION: THÔNG TIN BAN TỔ CHỨC */}
         <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">

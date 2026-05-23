@@ -81,20 +81,22 @@ function LoginPage() {
         password: data.password,
       });
 
-      login(
-        apiRes?.data?.user,
-        apiRes?.data?.accessToken,
-        apiRes?.data?.refreshToken,
-      );
-      if (apiRes?.data?.user?.role === "ADMIN") {
-        navigate("/admin/");
-        return;
+      const userData = apiRes?.data?.user;
+      const role = userData?.role;
+
+      if (role === "USER") {
+        login(
+          userData,
+          apiRes?.data?.accessToken,
+          apiRes?.data?.refreshToken,
+        );
+        toastSuccess(apiRes.message || "Đăng nhập thành công!");
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      } else {
+        toastError("Vui lòng sử dụng trang đăng nhập dành cho Quản trị viên/Nhà tổ chức!");
       }
-      if (apiRes?.data?.user?.role === "USER") {
-        navigate("/");
-        return;
-      }
-      toastSuccess(apiRes.message || "Đăng nhập thành công!");
     } catch (error) {
       if (error.code === "USER_NOT_VERIFIED") {
         handleSendVerifyMail(data?.email);

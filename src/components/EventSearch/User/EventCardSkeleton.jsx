@@ -4,7 +4,7 @@ const EventCardSkeleton = () => {
   return (
     <div className="flex flex-col bg-[hsla(0,0%,100%,.07)] rounded-xl overflow-hidden border border-white/5 h-full animate-pulse">
       {/* 1. Phần Image Skeleton (khớp với h-48 bạn dùng ở EventCard) */}
-      <div className="relative h-48 bg-zinc-800">
+      <div className="relative aspect-video bg-zinc-800">
         {/* Giả lập cái nút favorite và price tag nếu muốn */}
         <div className="absolute top-4 right-4 h-9 w-9 rounded-full bg-zinc-700"></div>
         <div className="absolute bottom-3 right-3 h-7 w-24 rounded-lg bg-zinc-700"></div>

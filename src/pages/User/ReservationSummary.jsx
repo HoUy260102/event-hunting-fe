@@ -19,7 +19,7 @@ const ReservationSummary = () => {
       try {
         setIsLoading(true);
         const reservationRes = await axiosClient.get(
-          `/reservations/${id}/summary`,
+          `/reservations/${id}`,
         );
         setReservation(reservationRes?.data);
       } catch (error) {

@@ -11,6 +11,7 @@ import UserDetailModal from "../../components/modals/UserDetailModal";
 import axiosClient from "../../api/axiosClient";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { useCan } from "../../hooks/useCan";
+import { useAuth } from "../../hooks/useAuth";
 import { useHeader } from "../../hooks/useHeader";
 import VoucherDetailModal from "../../components/modals/VoucherDetailModal";
 import TableSkeleton from "../../components/common/TableSkeleton";
@@ -18,6 +19,7 @@ import { formatDateVN } from "../../utils/format";
 import VoucherListModal from "../../components/modals/VoucherListModal";
 function VoucherList() {
   const { setTitle } = useHeader();
+  const { user } = useAuth();
   const [isLoadingVouchers, setIsLoadingVouchers] = useState(true);
   const [vouchers, setVouchers] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -39,7 +41,9 @@ function VoucherList() {
   const fetchVouchers = async (pageNo = 1, keyword = "", status = "ALL") => {
     try {
       setIsLoadingVouchers(true);
-      const result = await axiosClient.get("/vouchers/search", {
+      const endpoint =
+        user?.role === "ORGANIZER" ? "/vouchers/me" : "/vouchers/search";
+      const result = await axiosClient.get(endpoint, {
         params: {
           page: pageNo,
           size: 5,
@@ -155,7 +159,7 @@ function VoucherList() {
 
   const menuActions = (voucher) => {
     const actions = [];
-    if (can()) {
+    if (can("VOUCHER:VIEW")) {
       actions.push({
         label: "Xem chi tiết",
         icon: <VisibilityIcon fontSize="small" />,
@@ -164,7 +168,7 @@ function VoucherList() {
         },
       });
     }
-    if (can()) {
+    if (can("VOUCHER:UPDATE")) {
       actions.push({
         label: "Sửa",
         icon: <EditIcon fontSize="small" />,
@@ -174,7 +178,7 @@ function VoucherList() {
       });
     }
     if (voucher.deletedAt === null) {
-      if (can()) {
+      if (can("VOUCHER:DELETE")) {
         actions.push({
           label: "Xóa",
           icon: <DeleteIcon fontSize="small" />,
@@ -208,7 +212,7 @@ function VoucherList() {
         });
       }
     } else {
-      if (can()) {
+      if (can("VOUCHER:RESTORE")) {
         actions.push({
           label: "Khôi phục",
           icon: <RestoreIcon fontSize="small" />,
@@ -257,15 +261,17 @@ function VoucherList() {
         <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
           Danh sách khuyến mãi
         </h2>
-        <button
-          onClick={() => {
-            navigate("/admin/add-voucher");
-          }}
-          className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
-        >
-          <span className="material-symbols-outlined text-[20px]">add</span>{" "}
-          Thêm mới khuyến mãi
-        </button>
+        {can("VOUCHER:CREATE") && (
+          <button
+            onClick={() => {
+              navigate("/admin/add-voucher");
+            }}
+            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>{" "}
+            Thêm mới khuyến mãi
+          </button>
+        )}
       </div>
       <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-4 mb-6">
         <div className="flex md:flex-wrap flex-col md:flex-row gap-4">

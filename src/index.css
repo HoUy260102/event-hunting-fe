@@ -19,6 +19,19 @@
   font-family: 'Manrope', sans-serif;
 }
 
+.admin-layout-container {
+  font-family: 'Inter', sans-serif;
+}
+
+.admin-layout-container h1, 
+.admin-layout-container h2, 
+.admin-layout-container h3, 
+.admin-layout-container h4, 
+.admin-layout-container h5, 
+.admin-layout-container h6 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
 a {
   font-weight: 500;
   text-decoration: inherit;

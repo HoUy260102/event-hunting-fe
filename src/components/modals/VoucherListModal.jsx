@@ -19,7 +19,6 @@ const VoucherListModal = ({
   const toggleVoucher = (id) => {
     setSelectedId((prev) => (prev === id ? null : id));
   };
-
   const handleApplyVoucherByCode = async () => {
     try {
       const res = await axiosClient.get(`/shows/${showId}/vouchers/search`, {
@@ -125,7 +124,7 @@ const VoucherListModal = ({
               {isLoading ? (
                 <VoucherSkeleton />
               ) : vouchers?.filter((voucher) => voucher.scope === "ORGANIZER")
-                  ?.length > 0 ? (
+                ?.length > 0 ? (
                 <div className="space-y-4">
                   {vouchers
                     ?.filter((voucher) => voucher.scope === "ORGANIZER")
@@ -238,13 +237,14 @@ const VoucherListModal = ({
               {isLoading ? (
                 <VoucherSkeleton />
               ) : vouchers?.filter((voucher) => voucher.scope === "SYSTEM")
-                  ?.length > 0 ? (
+                ?.length > 0 ? (
                 <div className="space-y-4">
                   {vouchers
                     ?.filter((voucher) => voucher.scope === "SYSTEM")
                     .map((voucher) => (
                       <div
                         key={voucher.id}
+                        onClick={() => toggleVoucher(voucher.id)}
                         className={`${selectedInId === voucher.id ? "border-[#00FF85]/60" : "border-[#CAC4D0]/30 hover:border-[#00FF85]/40"}  group relative bg-[#FFFFFF] rounded-xl border-2 flex overflow-hidden hover:bg-[#F3EDF7]/50 transition-colors`}
                       >
                         <div className="w-24 bg-white border-r border-[#CAC4D0]/20 flex items-center justify-center p-4">
@@ -301,8 +301,7 @@ const VoucherListModal = ({
                             <label className="relative flex items-center justify-center w-6 h-6 cursor-pointer">
                               <input
                                 type="checkbox"
-                                checked={selectedId === voucher.id}
-                                onChange={() => toggleVoucher(voucher.id)}
+                                checked={selectedInId === voucher.id}
                                 className="
               peer
               appearance-none

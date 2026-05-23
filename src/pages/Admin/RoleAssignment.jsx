@@ -92,6 +92,28 @@ function RoleAssignment() {
     );
   };
 
+  const isAllSelected = permissions.length > 0 && permissions.every((per) => selectedPermissions.includes(per.id));
+
+  const handleSelectAll = () => {
+    if (isAllSelected) {
+      // Bỏ chọn tất cả các quyền đang hiển thị
+      const visibleIds = permissions.map((p) => p.id);
+      setSelectedPermissions((prev) => prev.filter((id) => !visibleIds.includes(id)));
+    } else {
+      // Chọn tất cả các quyền đang hiển thị
+      const visibleIds = permissions.map((p) => p.id);
+      setSelectedPermissions((prev) => {
+        const newSelection = [...prev];
+        visibleIds.forEach((id) => {
+          if (!newSelection.includes(id)) {
+            newSelection.push(id);
+          }
+        });
+        return newSelection;
+      });
+    }
+  };
+
   const fetchMorePermissions = async () => {
     if (isLoading) return;
     if (!hasMore || !nextId) return;
@@ -130,7 +152,7 @@ function RoleAssignment() {
       });
     } catch (error) {
       console.error("Lỗi cập nhật quyền:", error);
-       setModal({
+      setModal({
         isOpen: true,
         title: "Cập nhật quyền cho role",
         message: "Cập nhật thất bại",
@@ -252,7 +274,16 @@ function RoleAssignment() {
                     className="px-6 py-3 text-left text-xs font-bold text-[#6b7280] dark:text-[#a1aebf] uppercase tracking-wider"
                     scope="col"
                   >
-                    Chọn
+                    <div className="flex items-center gap-2">
+                      <span>Chọn</span>
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 text-[#46ec13] rounded border-gray-300 focus:ring-[#46ec13] cursor-pointer bg-white dark:bg-[#142210]"
+                        checked={isAllSelected}
+                        onChange={handleSelectAll}
+                        disabled={!selectedRole || permissions.length === 0}
+                      />
+                    </div>
                   </th>
                 </tr>
               </thead>

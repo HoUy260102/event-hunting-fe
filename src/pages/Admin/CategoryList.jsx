@@ -147,7 +147,7 @@ function CategoryList() {
 
   const menuActions = (category) => {
     const actions = [];
-    if (can()) {
+    if (can("CATEGORY:VIEW")) {
       actions.push({
         label: "Xem chi tiết",
         icon: <VisibilityIcon fontSize="small" />,
@@ -156,7 +156,7 @@ function CategoryList() {
         },
       });
     }
-    if (can()) {
+    if (can("CATEGORY:UPDATE")) {
       actions.push({
         label: "Sửa",
         icon: <EditIcon fontSize="small" />,
@@ -166,7 +166,7 @@ function CategoryList() {
       });
     }
     if (category.deletedAt === null) {
-      if (can()) {
+      if (can("CATEGORY:DELETE")) {
         actions.push({
           label: "Xóa",
           icon: <DeleteIcon fontSize="small" />,
@@ -200,7 +200,7 @@ function CategoryList() {
         });
       }
     } else {
-      if (can()) {
+      if (can("CATEGORY:RESTORE")) {
         actions.push({
           label: "Khôi phục",
           icon: <RestoreIcon fontSize="small" />,
@@ -249,15 +249,17 @@ function CategoryList() {
         <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
           Danh sách chủ đề
         </h2>
-        <button
-          onClick={() => {
-            navigate("/admin/add-category");
-          }}
-          className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
-        >
-          <span className="material-symbols-outlined text-[20px]">add</span>{" "}
-          Thêm mới chủ đề
-        </button>
+        {can("CATEGORY:CREATE") && (
+          <button
+            onClick={() => {
+              navigate("/admin/add-category");
+            }}
+            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>{" "}
+            Thêm mới chủ đề
+          </button>
+        )}
       </div>
       <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-4 mb-6">
         <div className="flex md:flex-wrap flex-col md:flex-row gap-4">

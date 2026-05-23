@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
 import LoginPage from "./pages/Login/LoginPage";
+import AdminLoginPage from "./pages/Login/AdminLoginPage";
 import SignUpPage from "./pages/SignUp/SignUpPage";
 import VerifyWaitingSignUpPage from "./pages/VerifyWaitingSignUp/VerifyWaitingSignUpPage";
 import Dashboard from "./pages/Admin/Dashboard";
@@ -13,6 +14,7 @@ import CategoryList from "./pages/Admin/CategoryList";
 import UpdateCategory from "./pages/Admin/UpdateCategory";
 import AddEvent from "./pages/Admin/AddEvent/AddEvent";
 import UpdateEvent from "./pages/Admin/UpdateEvent/UpdateEvent";
+import InfoEvent from "./pages/Admin/InfoEvent/InfoEvent";
 import EventInfor from "./pages/User/EventInfor";
 import EventList from "./pages/Admin/EventList";
 import EventOverview from "./pages/Admin/EventOverview";
@@ -27,6 +29,7 @@ import TicketDetail from "./components/common/TicketDetail";
 import PaymentSuccess from "./pages/User/Booking/PaymentSuccess";
 import ReservationSummary from "./pages/User/ReservationSummary";
 import UserProfile from "./pages/User/UserProfile";
+import ChangePassword from "./pages/User/ChangePassword";
 import Forbidden403 from "./pages/Forbidden403";
 import NotFound404 from "./pages/NotFound404";
 import TicketList from "./pages/Admin/TicketList";
@@ -48,6 +51,7 @@ function App() {
       <LoginModal isOpen={isLoginModalOpen} onClose={closeLogin} />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/signup/verify" element={<VerifyWaitingSignUpPage />} />
         <Route path="/forbidden" element={<Forbidden403 />} />
@@ -69,6 +73,7 @@ function App() {
 
             <Route path="add-event" element={<AddEvent />} />
             <Route path="update-event/:id" element={<UpdateEvent />} />
+            <Route path="info-event/:id" element={<InfoEvent />} />
             <Route path="event/:id/overview" element={<EventOverview />} />
             <Route path="shows/:showId/tickets" element={<TicketList />} />
             <Route path="events" element={<EventList />} />
@@ -102,6 +107,7 @@ function App() {
               element={<ReservationSummary />}
             />
             <Route path="user/profile" element={<UserProfile />} />
+            <Route path="user/change-password" element={<ChangePassword />} />
           </Route>
           <Route path="search" element={<EventSearch />} />
         </Route>

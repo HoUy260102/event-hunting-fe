@@ -3,7 +3,10 @@ import { useFormContext, Controller } from "react-hook-form";
 import TextEditor from "../../../components/common/TextEditor";
 import axiosClient from "../../../api/axiosClient";
 import { extractFileIdsFromContent } from "../../../utils/editorContent";
+import { useAuth } from "../../../hooks/useAuth";
 function StepAddEventInf({ provinces, categories }) {
+  const { user: currentUser } = useAuth();
+
   const {
     register,
     control,
@@ -49,8 +52,6 @@ function StepAddEventInf({ provinces, categories }) {
         },
       });
       const fileData = response.data;
-      console.log(fileData);
-      console.log("Upload thành công, ID file là:", fileData.id);
       setImages((prev) => ({
         ...prev,
         [type]: fileData?.url,
@@ -72,6 +73,13 @@ function StepAddEventInf({ provinces, categories }) {
   const watchAddress = watch("address", "");
   const userId = watch("userId");
   const [owner, setOwner] = useState(null);
+
+  useEffect(() => {
+    if (currentUser?.role === "ORGANIZER" && currentUser?.id) {
+      setValue("userId", currentUser.id);
+    }
+  }, [currentUser, setValue]);
+
   useEffect(() => {
     if (!userId) {
       setOwner(null);
@@ -386,38 +394,41 @@ function StepAddEventInf({ provinces, categories }) {
           </p>
         </section>
 
-        <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
-          <div>
-            <label className="block text-sm font-semibold mb-2 text-slate-900">
-              <span className="text-red-500 mr-1">*</span>Id sở hữu
-            </label>
-            <div className="relative">
-              <input
-                {...register("userId")}
-                className={`w-full border rounded-lg px-4 py-3 outline-none transition-all pr-16 text-sm
+        {currentUser?.role === "ADMIN" && (
+          <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-slate-900">
+                <span className="text-red-500 mr-1">*</span>Id sở hữu
+              </label>
+              <div className="relative">
+                <input
+                  {...register("userId")}
+                  className={`w-full border rounded-lg px-4 py-3 outline-none transition-all pr-16 text-sm
                 ${
                   errors.userId
                     ? "border-red-500 focus:ring-red-200 focus:border-red-500"
                     : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
                 } 
                 focus:ring-2`}
-                maxLength="100"
-                placeholder="Nhập id của người sở hữu sự kiện"
-                type="text"
-              />
+                  maxLength="100"
+                  placeholder="Nhập id của người sở hữu sự kiện"
+                  type="text"
+                />
+              </div>
+              {owner && (
+                <p className="mt-3 text-sm text-slate-600 italic">
+                  {owner?.name} - {owner?.email}
+                </p>
+              )}
+              {errors?.userId && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors?.userId?.message}
+                </p>
+              )}
             </div>
-            {owner && (
-              <p className="mt-3 text-sm text-slate-600 italic">
-                {owner?.name} - {owner?.email}
-              </p>
-            )}
-            {errors?.userId && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors?.userId?.message}
-              </p>
-            )}
-          </div>
-        </section>
+          </section>
+        )}
+
 
         {/* SECTION: THÔNG TIN BAN TỔ CHỨC */}
         <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">

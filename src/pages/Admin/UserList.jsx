@@ -208,14 +208,14 @@ function UserList() {
 
   const menuActions = (user) => {
     const actions = [];
-    if (can()) {
+    if (can("USER:VIEW")) {
       actions.push({
         label: "Xem chi tiết",
         icon: <VisibilityIcon fontSize="small" />,
         onClick: (item) => handleOpenUserDetailModal(item),
       });
     }
-    if (can()) {
+    if (can("USER:UPDATE")) {
       actions.push({
         label: "Sửa",
         icon: <EditIcon fontSize="small" />,
@@ -225,11 +225,11 @@ function UserList() {
       });
     }
     if (user.deletedAt === null) {
-      if (can()) {
+      if (can("USER:DELETE")) {
         actions.push({
           label: "Xóa",
           icon: <DeleteIcon fontSize="small" />,
-          color: "error.main", // Màu đỏ cho nút xóa
+          color: "error.main", 
           onClick: (item) => {
             setConfirmModal({
               isOpen: true,
@@ -268,7 +268,7 @@ function UserList() {
         });
       }
     } else {
-      if (can()) {
+      if (can("USER:RESTORE")) {
         actions.push({
           label: "Khôi phục",
           icon: <RestoreIcon fontSize="small" />,
@@ -339,15 +339,17 @@ function UserList() {
           </h2>
           <p className="mt-1 text-sm text-[#6b7280] dark:text-[#a1aebf]"></p>
         </div>
-        <button
-          onClick={() => {
-            navigate("/admin/add-user");
-          }}
-          className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
-        >
-          <span className="material-symbols-outlined text-[20px]">add</span>{" "}
-          Thêm mới tài khoản
-        </button>
+        {can("USER:CREATE") && (
+          <button
+            onClick={() => {
+              navigate("/admin/add-user");
+            }}
+            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>{" "}
+            Thêm mới tài khoản
+          </button>
+        )}
       </div>
       <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-4 mb-6">
         <div className="flex md:flex-wrap flex-col md:flex-row gap-4">

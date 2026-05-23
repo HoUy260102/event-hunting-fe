@@ -145,7 +145,7 @@ function EventSearch() {
 
   return (
     <>
-      <main className="px-4">
+      <main className="px-2">
         <EventFilterBar
           locations={locations}
           categories={categories}
@@ -153,7 +153,7 @@ function EventSearch() {
           filters={filters}
           handleResetFilters={handleResetFilters}
         ></EventFilterBar>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => (
               <EventCardSkeleton key={i} />

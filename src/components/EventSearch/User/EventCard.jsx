@@ -14,7 +14,6 @@ const EventCard = ({ event, user, openLogin }) => {
       return;
     }
     if (loading) return;
-
     setLoading(true);
     try {
       if (isSaved) {
@@ -42,7 +41,7 @@ const EventCard = ({ event, user, openLogin }) => {
              hover:-translate-y-1 transition-all duration-300 h-full cursor-pointer"
     >
       {/* Top Image Section */}
-      <div className="relative h-45 overflow-hidden">
+      <div className="relative aspect-video overflow-hidden">
         <img
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           src={event?.poster?.url}
@@ -63,10 +62,9 @@ const EventCard = ({ event, user, openLogin }) => {
           onClick={handleFavoriteClick}
           disabled={loading}
           className={`absolute top-4 right-4 h-9 w-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all shadow-lg z-10
-            ${
-              isSaved
-                ? "bg-red-500 text-white"
-                : "bg-white/20 text-white hover:bg-white hover:text-red-500"
+            ${isSaved
+              ? "bg-red-500 text-white"
+              : "bg-white/20 text-white hover:bg-white hover:text-red-500"
             } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <span className="material-symbols-outlined text-xl">favorite</span>
@@ -74,7 +72,7 @@ const EventCard = ({ event, user, openLogin }) => {
       </div>
 
       {/* Content Section */}
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-3 flex flex-col flex-grow">
         <div className="flex items-center gap-2 mb-2">
           <span className="px-2 py-1 rounded bg-[#46ec13]/10 text-green-500 text-[10px] font-bold uppercase tracking-wider">
             {event?.category === null
@@ -84,21 +82,21 @@ const EventCard = ({ event, user, openLogin }) => {
                 : event?.category?.name}
           </span>
         </div>
-        <h5 className="font-bold text-white leading-snug mb-4 line-clamp-2 h-12">
+        <h5 className="font-bold text-white leading-snug mb-1.5 line-clamp-2 text-sm md:text-base">
           {event?.name}
         </h5>
-        <div className="flex flex-col gap-1.5 text-slate-500 text-[13px] mb-3">
+        <div className="flex flex-col gap-1 text-slate-500 text-[12px] md:text-[13px]">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px] text-white">
               location_on
             </span>
-            <span className="truncate text-white">{event?.location}</span>
+            <span className="line-clamp-2 text-white">{event?.location}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px] text-white">
               calendar_today
             </span>
-            <span className="text-white">
+            <span className="text-white line-clamp-2">
               {formatDateVN(event?.startTime)} - {formatDateVN(event?.endTime)}
             </span>
           </div>

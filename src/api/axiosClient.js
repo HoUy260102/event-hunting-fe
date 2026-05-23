@@ -27,6 +27,15 @@ axiosClient.interceptors.request.use(
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
+
+    // Add Device ID
+    let deviceId = localStorage.getItem("deviceId");
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem("deviceId", deviceId);
+    }
+    config.headers["X-Device-Id"] = deviceId;
+
     return config;
   },
   (error) => {
@@ -90,6 +99,10 @@ axiosClient.interceptors.response.use(
 
     if (error.response?.status === 401) {
       if (window.location.pathname !== "/login") {
+        // Clear auth data but keep deviceId
+        const deviceId = localStorage.getItem("deviceId");
+        localStorage.clear();
+        if (deviceId) localStorage.setItem("deviceId", deviceId);
         window.location.href = "/login";
         return Promise.reject(errorResponse);
       }
