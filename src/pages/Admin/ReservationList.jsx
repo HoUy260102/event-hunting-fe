@@ -257,10 +257,15 @@ function ReservationList() {
         onClose={closeConfirmModal}
         onConfirm={confirmModal?.onConfirm}
       ></ConfirmModal>
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
-          Danh sách đặt chỗ
-        </h2>
+      <div className="bg-white/60 dark:bg-[#1c2e18]/60 backdrop-blur-md p-6 rounded-2xl border border-white/40 dark:border-[#2a4225]/40 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 className="text-2xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
+            Danh sách đặt chỗ
+          </h2>
+          <p className="mt-1.5 text-xs text-[#6b7280] dark:text-[#a1aebf] font-medium max-w-2xl">
+            Theo dõi, tra cứu và quản lý tất cả các đơn đặt vé, trạng thái thanh toán và thông tin vé của khách hàng.
+          </p>
+        </div>
       </div>
       <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-5 mb-6">
         {/* CỤM 1: KHU VỰC FILTERS (GRID) */}

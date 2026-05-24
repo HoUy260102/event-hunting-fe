@@ -75,12 +75,12 @@ function AddCategory() {
       )}
       <main className="flex-1 p-6 lg:p-10 max-w-[1000px] mx-auto w-full">
         {/* Tiêu đề */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+        <div className="bg-white/60 dark:bg-[#1c2e18]/60 backdrop-blur-md p-6 rounded-2xl border border-white/40 dark:border-[#2a4225]/40 shadow-sm flex flex-col gap-1 mb-8">
+          <h2 className="text-2xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
             Thêm mới chủ đề
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">
-            Tạo chủ đề mới vào hệ thống.
+          <p className="text-xs text-[#6b7280] dark:text-[#a1aebf] font-medium">
+            Tạo chủ đề mới vào hệ thống giúp dễ dàng phân loại sự kiện.
           </p>
         </div>
 

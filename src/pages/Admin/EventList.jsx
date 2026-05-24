@@ -22,6 +22,7 @@ import TableSkeleton from "../../components/common/TableSkeleton";
 import RejectEventModal from "../../components/modals/RejectEventModal";
 import RejectionReasonModal from "../../components/modals/RejectionReasonModal";
 import { formatDateVN } from "../../utils/format";
+import Modal from "../../components/common/Modal";
 function EventList() {
   const { setTitle } = useHeader();
   const { user } = useAuth();
@@ -37,6 +38,13 @@ function EventList() {
     title: "",
     message: "",
   });
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
+  const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
   const [rejectModal, setRejectModal] = useState({
     isOpen: false,
   });
@@ -302,74 +310,104 @@ function EventList() {
         },
       });
     }
-    // if (event.deletedAt === null) {
-    //   if (can()) {
-    //     actions.push({
-    //       label: "Xóa",
-    //       icon: <DeleteIcon fontSize="small" />,
-    //       color: "error.main",
-    //       onClick: (item) => {
-    //         setConfirmModal({
-    //           isOpen: true,
-    //           title: "Xác nhận xóa chủ đề",
-    //           message: "Bạn có chắc sẽ xóa chủ đề có id: " + item.id,
-    //           onConfirm: async () => {
-    //             try {
-    //               await axiosClient.patch(`/categories/${item.id}/soft-delete`);
-    //               const keyword = searchParams.get("keyword") || "";
-    //               const status = searchParams.get("status") || "ALL";
-    //               let page = parseInt(searchParams.get("page")) || 1;
-    //               if (categories.length === 1 && page > 1) {
-    //                 page -= 1;
-    //                 const params = new URLSearchParams(searchParams);
-    //                 params.set("page", page.toString());
-    //                 setSearchParams(params);
-    //                 setFilters((prev) => ({ ...prev, page: page }));
-    //               }
-    //               fetchCategories(page, keyword, status);
-    //               closeConfirmModal();
-    //             } catch (error) {
-    //               console.log("Xóa thất bại: ", error.message);
-    //             }
-    //           },
-    //         });
-    //       },
-    //     });
-    //   }
-    // } else {
-    //   if (can()) {
-    //     actions.push({
-    //       label: "Khôi phục",
-    //       icon: <RestoreIcon fontSize="small" />,
-    //       onClick: (item) => {
-    //         setConfirmModal({
-    //           isOpen: true,
-    //           title: "Xác nhận khôi phục chủ đề",
-    //           message: "Bạn có chắc sẽ khôi phục chủ đề có id: " + item.id,
-    //           onConfirm: async () => {
-    //             try {
-    //               await axiosClient.patch(`/categories/${item.id}/restore`);
-    //               const keyword = searchParams.get("keyword") || "";
-    //               const status = searchParams.get("status") || "ALL";
-    //               let page = parseInt(searchParams.get("page")) || 1;
-    //               if (categories.length === 1 && page > 1) {
-    //                 page -= 1;
-    //                 const params = new URLSearchParams(searchParams);
-    //                 params.set("page", page.toString());
-    //                 setSearchParams(params);
-    //                 setFilters((prev) => ({ ...prev, page: page }));
-    //               }
-    //               fetchCategories(page, keyword, status);
-    //               closeConfirmModal();
-    //             } catch (error) {
-    //               console.log("Khôi phục thất bại: ", error.message);
-    //             }
-    //           },
-    //         });
-    //       },
-    //     });
-    //   }
-    // }
+    if (!event.deletedAt) {
+      if (can("EVENT:DELETE")) {
+        actions.push({
+          label: "Xóa",
+          icon: <DeleteIcon fontSize="small" />,
+          color: "error.main",
+          onClick: (item) => {
+            setConfirmModal({
+              isOpen: true,
+              title: "Xác nhận xóa sự kiện",
+              message: "Bạn có chắc sẽ xóa sự kiện có id: " + item.id,
+              onConfirm: async () => {
+                try {
+                  await axiosClient.patch(`/events/${item.id}/soft-delete`);
+                  const keyword = searchParams.get("keyword") || "";
+                  const status = searchParams.get("status") || "ALL";
+                  const categoryId = searchParams.get("categoryId") || "";
+                  const provinceId = searchParams.get("provinceId") || "";
+                  let page = parseInt(searchParams.get("page")) || 1;
+                  if (events.length === 1 && page > 1) {
+                    page -= 1;
+                    const params = new URLSearchParams(searchParams);
+                    params.set("page", page.toString());
+                    setSearchParams(params);
+                    setFilters((prev) => ({ ...prev, page: page }));
+                  }
+                  fetchEvents(page, keyword, status, categoryId, provinceId);
+                  closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Xóa sự kiện.",
+                    message: "Xóa sự kiện thành công!",
+                    type: "success",
+                  });
+                } catch (error) {
+                  closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Xóa sự kiện.",
+                    message: "Xóa sự kiện thất bại: " + (error?.response?.data?.message || error?.message),
+                    type: "error",
+                  });
+                  console.log("Xóa thất bại: ", error.message);
+                }
+              },
+            });
+          },
+        });
+      }
+    } else {
+      if (can("EVENT:RESTORE")) {
+        actions.push({
+          label: "Khôi phục",
+          icon: <RestoreIcon fontSize="small" />,
+          onClick: (item) => {
+            setConfirmModal({
+              isOpen: true,
+              title: "Xác nhận khôi phục sự kiện",
+              message: "Bạn có chắc sẽ khôi phục sự kiện có id: " + item.id,
+              onConfirm: async () => {
+                try {
+                  await axiosClient.patch(`/events/${item.id}/restore`);
+                  const keyword = searchParams.get("keyword") || "";
+                  const status = searchParams.get("status") || "ALL";
+                  const categoryId = searchParams.get("categoryId") || "";
+                  const provinceId = searchParams.get("provinceId") || "";
+                  let page = parseInt(searchParams.get("page")) || 1;
+                  if (events.length === 1 && page > 1) {
+                    page -= 1;
+                    const params = new URLSearchParams(searchParams);
+                    params.set("page", page.toString());
+                    setSearchParams(params);
+                    setFilters((prev) => ({ ...prev, page: page }));
+                  }
+                  fetchEvents(page, keyword, status, categoryId, provinceId);
+                  closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Khôi phục sự kiện.",
+                    message: "Khôi phục sự kiện thành công!",
+                    type: "success",
+                  });
+                } catch (error) {
+                  closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Khôi phục sự kiện.",
+                    message: "Khôi phục sự kiện thất bại: " + (error?.response?.data?.message || error?.message),
+                    type: "error",
+                  });
+                  console.log("Khôi phục thất bại: ", error.message);
+                }
+              },
+            });
+          },
+        });
+      }
+    }
     return actions;
   };
 
@@ -392,12 +430,23 @@ function EventList() {
         onClose={closeConfirmModal}
         onConfirm={confirmModal?.onConfirm}
       ></ConfirmModal>
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      {modal.isOpen && (
+        <Modal
+          isOpen={modal.isOpen}
+          title={modal.title}
+          message={modal.message}
+          onClose={closeModal}
+          type={modal.type}
+        />
+      )}
+      <div className="bg-white/60 dark:bg-[#1c2e18]/60 backdrop-blur-md p-6 rounded-2xl border border-white/40 dark:border-[#2a4225]/40 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
+          <h2 className="text-2xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
             Danh sách sự kiện
           </h2>
-          <p className="mt-1 text-sm text-[#6b7280] dark:text-[#a1aebf]"></p>
+          <p className="mt-1.5 text-xs text-[#6b7280] dark:text-[#a1aebf] font-medium max-w-2xl">
+            Quản lý, phê duyệt và theo dõi các chương trình sự kiện âm nhạc, văn hóa, nghệ thuật trên toàn quốc.
+          </p>
         </div>
         {can("EVENT:CREATE") && (
           <button

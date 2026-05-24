@@ -14,6 +14,7 @@ import { useCan } from "../../hooks/useCan";
 import { useHeader } from "../../hooks/useHeader";
 import CategoryDetailModal from "../../components/modals/CategoryDetailModal";
 import TableSkeleton from "../../components/common/TableSkeleton";
+import Modal from "../../components/common/Modal";
 function CategoryList() {
   const { setTitle } = useHeader();
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
@@ -26,6 +27,13 @@ function CategoryList() {
     title: "",
     message: "",
   });
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
+  const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
   const [isCategoryDetailModalOpen, setIsCategoryDetailModalOpen] =
     useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -191,7 +199,20 @@ function CategoryList() {
                   }
                   fetchCategories(page, keyword, status);
                   closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Xóa chủ đề.",
+                    message: "Xóa chủ đề thành công!",
+                    type: "success",
+                  });
                 } catch (error) {
+                  closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Xóa chủ đề.",
+                    message: "Xóa chủ đề thất bại: " + error?.message,
+                    type: "error",
+                  });
                   console.log("Xóa thất bại: ", error.message);
                 }
               },
@@ -224,7 +245,20 @@ function CategoryList() {
                   }
                   fetchCategories(page, keyword, status);
                   closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Khôi phục chủ đề.",
+                    message: "Khôi phục chủ đề thành công!",
+                    type: "success",
+                  });
                 } catch (error) {
+                  closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Khôi phục chủ đề.",
+                    message: "Khôi phục chủ đề thất bại: " + error?.message,
+                    type: "error",
+                  });
                   console.log("Khôi phục thất bại: ", error.message);
                 }
               },
@@ -245,10 +279,24 @@ function CategoryList() {
         onClose={closeConfirmModal}
         onConfirm={confirmModal?.onConfirm}
       ></ConfirmModal>
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
-          Danh sách chủ đề
-        </h2>
+      {modal.isOpen && (
+        <Modal
+          isOpen={modal.isOpen}
+          title={modal.title}
+          message={modal.message}
+          onClose={closeModal}
+          type={modal.type}
+        />
+      )}
+      <div className="bg-white/60 dark:bg-[#1c2e18]/60 backdrop-blur-md p-6 rounded-2xl border border-white/40 dark:border-[#2a4225]/40 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 className="text-2xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
+            Danh sách chủ đề
+          </h2>
+          <p className="mt-1.5 text-xs text-[#6b7280] dark:text-[#a1aebf] font-medium max-w-2xl">
+            Quản lý các danh mục, thể loại sự kiện giúp phân loại và tìm kiếm thông tin sự kiện khoa học và trực quan.
+          </p>
+        </div>
         {can("CATEGORY:CREATE") && (
           <button
             onClick={() => {
@@ -261,17 +309,17 @@ function CategoryList() {
           </button>
         )}
       </div>
-      <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-4 mb-6">
-        <div className="flex md:flex-wrap flex-col md:flex-row gap-4">
-          <div className="relative flex-2">
+      <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-5 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-end">
+          <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <span className="material-symbols-outlined text-[#6b7280] dark:text-[#a1aebf]">
+              <span className="material-symbols-outlined text-[20px] text-[#6b7280] dark:text-[#a1aebf]">
                 search
               </span>
             </div>
             <input
-              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
-              placeholder="Search..."
+              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none"
+              placeholder="Nhập tên chủ đề hoặc mô tả..."
               value={filters.keyword}
               type="text"
               onChange={(e) => {
@@ -279,22 +327,40 @@ function CategoryList() {
               }}
             />
           </div>
-          <div className="flex gap-4 relative flex-1">
+          <div>
             <select
               value={filters.status || "ALL"}
               onChange={(e) => {
                 handleFilterChange("status", e.target.value);
               }}
-              className="block w-full md:w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
+              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
             >
-              <option value="ALL">All Statuses</option>
+              <option value="ALL">Tất cả trạng thái</option>
               <option value="ACTIVE">Hoạt động</option>
               <option value="INACTIVE">Không hoạt động</option>
               <option value="DELETED">Đã xóa</option>
             </select>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setFilters({
+                  keyword: "",
+                  status: "ALL",
+                  page: 1,
+                });
+                setSearchParams({});
+              }}
+              className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[18px] mr-2">
+                restart_alt
+              </span>
+              Làm mới
+            </button>
             <button
               onClick={applyFilters}
-              className="inline-flex items-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20"
             >
               Tìm kiếm
             </button>

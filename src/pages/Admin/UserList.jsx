@@ -251,12 +251,18 @@ function UserList() {
                   }
                   fetchUsers(page, keyword, status, role);
                   closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Thành công",
+                    message: "Xóa tài khoản thành công",
+                    type: "success",
+                  });
                 } catch (error) {
                   closeConfirmModal();
                   setModal({
                     isOpen: true,
                     title: "Xóa tài khoản.",
-                    message: "Xóa tài khoản thất bại:" + error?.message,
+                    message: "Xóa tài khoản thất bại: " + error?.message,
                     type: "error",
                   });
                   console.log("Khôi phục thất bại: ", error.message);
@@ -293,12 +299,18 @@ function UserList() {
                   }
                   fetchUsers(page, keyword, status, role);
                   closeConfirmModal();
+                  setModal({
+                    isOpen: true,
+                    title: "Thành công",
+                    message: "Khôi phục tài khoản thành công",
+                    type: "success",
+                  });
                 } catch (error) {
                   closeConfirmModal();
                   setModal({
                     isOpen: true,
                     title: "Khôi phục tài khoản.",
-                    message: "Khôi phục tài khoản thất bại:" + error?.message,
+                    message: "Khôi phục tài khoản thất bại: " + error?.message,
                     type: "error",
                   });
                   console.log("Khôi phục thất bại: ", error.message);
@@ -332,12 +344,14 @@ function UserList() {
           type={modal.type}
         />
       )}
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="bg-white/60 dark:bg-[#1c2e18]/60 backdrop-blur-md p-6 rounded-2xl border border-white/40 dark:border-[#2a4225]/40 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
+          <h2 className="text-2xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
             Danh sách tài khoản
           </h2>
-          <p className="mt-1 text-sm text-[#6b7280] dark:text-[#a1aebf]"></p>
+          <p className="mt-1.5 text-xs text-[#6b7280] dark:text-[#a1aebf] font-medium max-w-2xl">
+            Quản lý thông tin chi tiết, phân quyền và trạng thái hoạt động của tất cả người dùng trong hệ thống.
+          </p>
         </div>
         {can("USER:CREATE") && (
           <button
@@ -351,26 +365,56 @@ function UserList() {
           </button>
         )}
       </div>
-      <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-4 mb-6">
-        <div className="flex md:flex-wrap flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <span className="material-symbols-outlined text-[#6b7280] dark:text-[#a1aebf]">
-                search
-              </span>
+      <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-5 mb-6">
+        <div className="flex flex-col gap-4">
+          {/* Dòng 1: Tìm kiếm, Làm mới, Nút Tìm kiếm */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div className="relative md:col-span-6">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <span className="material-symbols-outlined text-[20px] text-[#6b7280] dark:text-[#a1aebf]">
+                  search
+                </span>
+              </div>
+              <input
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none"
+                placeholder="Nhập tên, email hoặc SĐT..."
+                value={filters.keyword}
+                type="text"
+                onChange={(e) => {
+                  handleFilterChange("keyword", e.target.value);
+                }}
+              />
             </div>
-            <input
-              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
-              placeholder="Search..."
-              value={filters.keyword}
-              type="text"
-              onChange={(e) => {
-                handleFilterChange("keyword", e.target.value);
-              }}
-            />
+            <div className="flex gap-2 md:col-span-6">
+              <button
+                onClick={() => {
+                  setFilters({
+                    keyword: "",
+                    status: "all",
+                    roleId: "",
+                    page: 1,
+                  });
+                  setSearchParams({});
+                }}
+                className="flex flex-1 items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[18px] mr-2">
+                  restart_alt
+                </span>
+                Làm mới
+              </button>
+              <button
+                onClick={applyFilters}
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20"
+              >
+                Tìm kiếm
+              </button>
+            </div>
           </div>
-          <div className="flex gap-4 relative flex-1">
-            <div className="relative w-full md:w-full">
+
+          {/* Dòng 2: Hai cái dropdown */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <span className="material-symbols-outlined text-[#6b7280] dark:text-[#a1aebf]">
                   filter_list
@@ -381,9 +425,9 @@ function UserList() {
                 onChange={(e) => {
                   handleFilterChange("roleId", e.target.value);
                 }}
-                className="pl-10 block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
+                className="pl-10 block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
               >
-                <option value="">All Roles</option>
+                <option value="">Tất cả vai trò</option>
                 {roles?.map((role) => (
                   <option key={role.id} value={role.id}>
                     {role.name}
@@ -392,26 +436,22 @@ function UserList() {
               </select>
             </div>
 
-            <select
-              value={filters.status || "all"}
-              onChange={(e) => {
-                handleFilterChange("status", e.target.value);
-              }}
-              className="block w-full md:w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
-            >
-              <option value="all">All Statuses</option>
-              <option value="active">Hoạt động</option>
-              <option value="inactive">Không hoạt động</option>
-              <option value="blocked">Bị khóa</option>
-              <option value="unverified">Chưa xác thực</option>
-              <option value="deleted">Đã xóa</option>
-            </select>
-            <button
-              onClick={applyFilters}
-              className="inline-flex items-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20"
-            >
-              Tìm kiếm
-            </button>
+            <div>
+              <select
+                value={filters.status || "all"}
+                onChange={(e) => {
+                  handleFilterChange("status", e.target.value);
+                }}
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Không hoạt động</option>
+                <option value="blocked">Bị khóa</option>
+                <option value="unverified">Chưa xác thực</option>
+                <option value="deleted">Đã xóa</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import axiosClient from "../../api/axiosClient";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import ShowItem from "../../components/EventInfor/ShowItem";
 import { formatShowTime } from "../../utils/format";
 import EventSkeleton from "../../components/EventInfor/EventSkeleton";
 import { useAuth } from "../../hooks/useAuth";
+import EventCard from "../../components/EventSearch/User/EventCard";
+import EventCardSkeleton from "../../components/EventSearch/User/EventCardSkeleton";
 
 function EventInfor() {
   const showSectionRef = useRef(null);
@@ -14,17 +16,37 @@ function EventInfor() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [event, setEvent] = useState(false);
   const [shows, setShows] = useState([]);
+  const [relatedEvents, setRelatedEvents] = useState([]);
+  const [isRelatedLoading, setIsRelatedLoading] = useState(false);
   const contentRef = useRef(null);
-  const { requireAuth } = useAuth();
+  const { user, openLogin, requireAuth } = useAuth();
   const { id } = useParams();
   useEffect(() => {
     const fetchEvent = async () => {
       try {
         setIsLoading(true);
         const eventRes = await axiosClient.get(`/events/${id}/info`);
-        setEvent(eventRes.data);
-        setShows(eventRes.data?.shows);
-        console.log("Data xịn nè:", eventRes.data);
+        const eventData = eventRes.data;
+        setEvent(eventData);
+        setShows(eventData?.shows);
+        console.log("Data xịn nè:", eventData);
+
+        if (eventData?.category?.id) {
+          try {
+            setIsRelatedLoading(true);
+            const relatedRes = await axiosClient.get("/events/public/search", {
+              params: { categoryIds: [eventData.category.id], size: 5 },
+            });
+            const filtered = (relatedRes?.data?.content || [])
+              .filter((item) => item.id !== eventData.id)
+              .slice(0, 4);
+            setRelatedEvents(filtered);
+          } catch (err) {
+            console.error("Fetch related events error:", err);
+          } finally {
+            setIsRelatedLoading(false);
+          }
+        }
       } catch (error) {
         if (error.status === 404) {
           window.location.href = "/notfound";
@@ -381,6 +403,55 @@ function EventInfor() {
                 </div>
               </div>
             </section>
+
+            {/* Sự kiện liên quan */}
+            {event?.category && (relatedEvents.length > 0 || isRelatedLoading) && (
+              <section className="mt-12 bg-[#1E1E21] rounded-2xl overflow-hidden shadow-xl p-6">
+                <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    Sự kiện liên quan: <span className="text-[#2DC275]">{event?.category?.name}</span>
+                  </h2>
+                  <Link
+                    to={`/search?categoryIds=${event?.category?.id}`}
+                    className="text-[#2DC275] hover:text-[#22A05E] font-bold text-sm flex items-center gap-1 transition-colors"
+                  >
+                    Xem thêm
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </Link>
+                </div>
+
+                {isRelatedLoading ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <EventCardSkeleton key={i} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {relatedEvents.map((item) => (
+                      <EventCard
+                        key={item.id}
+                        event={item}
+                        user={user}
+                        openLogin={openLogin}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
           </div>
 
           <footer className="mt-20 py-10 border-t border-white/10 text-center text-[#9CA3AF] text-sm">

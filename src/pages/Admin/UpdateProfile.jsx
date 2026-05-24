@@ -182,10 +182,13 @@ function UpdateProfile() {
       )}
       <main className="flex-1 p-6 lg:p-10 max-w-[1000px] mx-auto w-full">
         {/* Tiêu đề */}
-        <div className="mb-8 border-b border-[#474848]/20 pb-4">
-          <h3 className="text-2xl font-bold text-black tracking-tight">
+        <div className="bg-white/60 dark:bg-[#1c2e18]/60 backdrop-blur-md p-6 rounded-2xl border border-white/40 dark:border-[#2a4225]/40 shadow-sm flex flex-col gap-1 mb-8">
+          <h2 className="text-2xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
             Thông tin tài khoản
-          </h3>
+          </h2>
+          <p className="text-xs text-[#6b7280] dark:text-[#a1aebf] font-medium">
+            Quản lý thông tin hồ sơ cá nhân và cập nhật thông tin liên hệ của bạn.
+          </p>
         </div>
 
         {/* Form */}

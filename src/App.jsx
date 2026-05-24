@@ -5,6 +5,7 @@ import AdminLoginPage from "./pages/Login/AdminLoginPage";
 import SignUpPage from "./pages/SignUp/SignUpPage";
 import VerifyWaitingSignUpPage from "./pages/VerifyWaitingSignUp/VerifyWaitingSignUpPage";
 import Dashboard from "./pages/Admin/Dashboard";
+import DashboardOverview from "./pages/Admin/DashboardOverview";
 import UserList from "./pages/Admin/UserList";
 import AddUser from "./pages/Admin/AddUser";
 import UpdateUser from "./pages/Admin/UpdateUser";
@@ -59,6 +60,7 @@ function App() {
         <Route path="/general-error" element={<GeneralError />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<Dashboard />}>
+            <Route index element={<DashboardOverview />} />
             <Route path="update-profile" element={<UpdateProfile />} />
             
             <Route path="users" element={<UserList />} />

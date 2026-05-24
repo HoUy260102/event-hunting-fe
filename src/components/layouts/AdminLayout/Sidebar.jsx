@@ -89,14 +89,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
                 <ul
                   ref={usersRef}
                   className="dropdown"
-                  style={{
+                  style={isOpen ? {
                     height:
                       openDropdown === "users"
-                        ? `${usersRef.current?.scrollHeight}px`
+                        ? `${usersRef.current?.scrollHeight || 0}px`
                         : 0,
                     overflow: "hidden",
                     transition: "height 0.3s ease",
-                  }}
+                  } : {}}
                 >
                   <li className="nav-item">
                     <Link className="nav-link dropdown-title">
@@ -153,14 +153,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
                 <ul
                   ref={categoriesRef}
                   className="dropdown"
-                  style={{
+                  style={isOpen ? {
                     height:
                       openDropdown === "categories"
-                        ? `${categoriesRef.current?.scrollHeight}px`
+                        ? `${categoriesRef.current?.scrollHeight || 0}px`
                         : 0,
                     overflow: "hidden",
                     transition: "height 0.3s ease",
-                  }}
+                  } : {}}
                 >
                   <li className="nav-item">
                     <Link className="nav-link dropdown-title">Chủ đề</Link>
@@ -212,14 +212,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
               <ul
                 ref={eventsRef}
                 className="dropdown"
-                style={{
+                style={isOpen ? {
                   height:
                     openDropdown === "events"
-                      ? `${eventsRef.current?.scrollHeight}px`
+                      ? `${eventsRef.current?.scrollHeight || 0}px`
                       : 0,
                   overflow: "hidden",
                   transition: "height 0.3s ease",
-                }}
+                } : {}}
               >
                 <li className="nav-item">
                   <Link className="nav-link dropdown-title">Sự kiện</Link>
@@ -270,14 +270,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
               <ul
                 ref={reservationsRef}
                 className="dropdown"
-                style={{
+                style={isOpen ? {
                   height:
                     openDropdown === "reservations"
-                      ? `${reservationsRef.current?.scrollHeight}px`
+                      ? `${reservationsRef.current?.scrollHeight || 0}px`
                       : 0,
                   overflow: "hidden",
                   transition: "height 0.3s ease",
-                }}
+                } : {}}
               >
                 <li className="nav-item">
                   <Link className="nav-link dropdown-title">Đặt chỗ</Link>
@@ -317,14 +317,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
               <ul
                 ref={vouchersRef}
                 className="dropdown"
-                style={{
+                style={isOpen ? {
                   height:
                     openDropdown === "vouchers"
-                      ? `${vouchersRef.current?.scrollHeight}px`
+                      ? `${vouchersRef.current?.scrollHeight || 0}px`
                       : 0,
                   overflow: "hidden",
                   transition: "height 0.3s ease",
-                }}
+                } : {}}
               >
                 <li className="nav-item">
                   <Link className="nav-link dropdown-title">Khuyến mãi</Link>
@@ -377,14 +377,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
                 <ul
                   ref={permissionsRef}
                   className="dropdown"
-                  style={{
+                  style={isOpen ? {
                     height:
                       openDropdown === "permissions"
-                        ? `${permissionsRef.current?.scrollHeight}px`
+                        ? `${permissionsRef.current?.scrollHeight || 0}px`
                         : 0,
                     overflow: "hidden",
                     transition: "height 0.3s ease",
-                  }}
+                  } : {}}
                 >
                   <li className="nav-item">
                     <Link className="nav-link dropdown-title">
@@ -450,4 +450,3 @@ function Sidebar({ isOpen, handleIsOpen }) {
 }
 
 export default Sidebar;
-

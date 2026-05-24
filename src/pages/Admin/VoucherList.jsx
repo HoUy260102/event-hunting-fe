@@ -257,10 +257,15 @@ function VoucherList() {
         onClose={closeConfirmModal}
         onConfirm={confirmModal?.onConfirm}
       ></ConfirmModal>
-      <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h2 className="text-2xl min-[480px]:text-3xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
-          Danh sách khuyến mãi
-        </h2>
+      <div className="bg-white/60 dark:bg-[#1c2e18]/60 backdrop-blur-md p-6 rounded-2xl border border-white/40 dark:border-[#2a4225]/40 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 className="text-2xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
+            Danh sách khuyến mãi
+          </h2>
+          <p className="mt-1.5 text-xs text-[#6b7280] dark:text-[#a1aebf] font-medium max-w-2xl">
+            Quản lý và theo dõi tất cả các chương trình khuyến mãi, mã giảm giá và chiến dịch ưu đãi trong hệ thống.
+          </p>
+        </div>
         {can("VOUCHER:CREATE") && (
           <button
             onClick={() => {
@@ -275,7 +280,7 @@ function VoucherList() {
       </div>
       <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-4 mb-6">
         <div className="flex md:flex-wrap flex-col md:flex-row gap-4">
-          <div className="relative flex-2">
+          <div className="relative flex-1">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <span className="material-symbols-outlined text-[#6b7280] dark:text-[#a1aebf]">
                 search
@@ -306,8 +311,24 @@ function VoucherList() {
               <option value="DELETED">Đã xóa</option>
             </select>
             <button
+              onClick={() => {
+                setFilters({
+                  keyword: "",
+                  status: "ALL",
+                  page: 1,
+                });
+                setSearchParams({});
+              }}
+              className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px] mr-1.5">
+                restart_alt
+              </span>
+              Làm mới
+            </button>
+            <button
               onClick={applyFilters}
-              className="inline-flex items-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20"
+              className="inline-flex items-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20 cursor-pointer"
             >
               Tìm kiếm
             </button>

@@ -210,7 +210,7 @@ function TrendingEvent({ events }) {
       <div className="relative">
         <button
           ref={setPrevEl}
-          className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#00000080] backdrop-blur-md shadow-md border border-white/50 flex items-center justify-center text-gray-500 hover:text-green-500 hover:border-green-400 transition-all duration-200"
+          className="absolute -left-4 top-[102px] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#00000080] backdrop-blur-md shadow-md border border-white/50 flex items-center justify-center text-gray-500 hover:text-green-500 hover:border-green-400 transition-all duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -304,7 +304,7 @@ function TrendingEvent({ events }) {
         </Swiper>
         <button
           ref={setNextEl}
-          className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#00000080] backdrop-blur-md shadow-md border border-white/50 flex items-center justify-center text-gray-500 hover:text-green-500 hover:border-green-400 transition-all duration-200"
+          className="absolute -right-4 top-[102px] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#00000080] backdrop-blur-md shadow-md border border-white/50 flex items-center justify-center text-gray-500 hover:text-green-500 hover:border-green-400 transition-all duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
