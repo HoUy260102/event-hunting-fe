@@ -62,6 +62,17 @@ function EventInfor() {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (event?.name) {
+      document.title = `${event.name} | Event Hunting`;
+    } else {
+      document.title = "Đang tải sự kiện... | Event Hunting";
+    }
+    return () => {
+      document.title = "Event Hunting";
+    };
+  }, [event]);
+
   const scrollToShows = () => {
     showSectionRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -75,6 +86,30 @@ function EventInfor() {
 
   const renderBuyButton = () => {
     const baseClass = "w-full py-3 font-bold rounded-lg transition-colors";
+
+    if (event?.status === "CANCELLED") {
+      return (
+        <div className={`${baseClass} bg-red-700 text-white text-center cursor-default`}>
+          Đã hủy
+        </div>
+      );
+    }
+
+    if (event?.status === "POSTPONED") {
+      return (
+        <div className={`${baseClass} bg-yellow-500 text-white text-center cursor-default`}>
+          Hoãn lại
+        </div>
+      );
+    }
+
+    if (event?.status !== "PUBLISHED") {
+      return (
+        <div className={`${baseClass} bg-gray-600 text-white text-center cursor-default`}>
+          Chưa mở bán
+        </div>
+      );
+    }
 
     if (!shows || shows.length === 0) {
       return (
@@ -272,7 +307,7 @@ function EventInfor() {
 
               <div className="flex-1 relative min-h-[300px] max-h-[471px]">
                 <img
-                  alt="Hoàng Dũng"
+                  alt={event?.name || "Banner"}
                   className="w-full h-full object-cover"
                   src={event?.banner?.url}
                 />
@@ -366,10 +401,49 @@ function EventInfor() {
                         key={show.id}
                         show={show}
                         handleBuy={handleBuy}
+                        eventStatus={event?.status}
                       />
                     );
                   })}
                 </div>
+
+                {/* Bản đồ địa điểm */}
+                {(event?.address || event?.location) && (
+                  <div className="bg-[#1E1E21] rounded-2xl overflow-hidden shadow-xl">
+                    <div className="bg-[#2D2D32] px-6 py-4 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[#2DC275] text-[20px]">
+                        map
+                      </span>
+                      <h2 className="text-lg font-bold text-[#2DC275]">
+                        Bản đồ địa điểm
+                      </h2>
+                    </div>
+                    <div className="p-6">
+                      <p className="text-sm text-gray-300 mb-4 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[#2DC275] text-[18px]">
+                          location_on
+                        </span>
+                        <span>
+                          <strong>{event?.location}</strong>
+                          {event?.address && ` - ${event?.address}`}
+                        </span>
+                      </p>
+                      <div className="w-full h-[350px] rounded-xl overflow-hidden shadow-md border border-white/10">
+                        <iframe
+                          title="Google Map Location"
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                          src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                            (event?.location || "") + " " + (event?.address || "")
+                          )}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                          allowFullScreen
+                          loading="lazy"
+                        ></iframe>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </section>
             </div>
             <section
@@ -456,8 +530,7 @@ function EventInfor() {
 
           <footer className="mt-20 py-10 border-t border-white/10 text-center text-[#9CA3AF] text-sm">
             <p>
-              © 2026 Ticketbox Co. Ltd. Bản quyền thuộc về Hoàng Dũng & Lirico
-              Entertainment.
+              © 2026 Bản quyền thuộc về {event?.organizerName || "Ban tổ chức"} & Event Hunting.
             </p>
           </footer>
         </main>

@@ -1,6 +1,15 @@
 const ShowStatusButton = ({ status, onBuy }) => {
   const baseClass = "px-6 py-2 font-bold rounded-lg text-sm transition-all";
   switch (status) {
+    case "AWAITING_PUBLICATION":
+      return (
+        <div
+          className={`${baseClass} bg-gray-600 text-white cursor-default text-center`}
+        >
+          Chưa mở bán
+        </div>
+      );
+
     case "ON_SALE":
       return (
         <button
@@ -64,7 +73,7 @@ const ShowStatusButton = ({ status, onBuy }) => {
         <div
           className={`${baseClass} bg-yellow-500 text-white cursor-default text-center opacity-70`}
         >
-          Đã hủy
+          Hoãn lại
         </div>
       );
 

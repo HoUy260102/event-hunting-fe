@@ -4,9 +4,13 @@ import TicketItem from "./TicketTypeItem";
 function TicketTypeSelector({ ticketTypes, onSelectTicket, activeTypeId }) {
   const [activeId, setActiveId] = useState();
   const handleToggle = (id, type) => {
-    setActiveId(activeId === id ? null : id);
+    const isCurrentActive = activeId === id;
     if (onSelectTicket) {
-      onSelectTicket(type?.sectionId);
+      if (isCurrentActive) {
+        onSelectTicket(null, null);
+      } else {
+        onSelectTicket(type?.sectionId, type?.id);
+      }
     }
   };
 

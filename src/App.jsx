@@ -26,6 +26,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
 import LoginModal from "./components/modals/LoginModal";
 import MyTickets from "./pages/User/MyTickets";
+import MyCalendar from "./pages/User/MyCalendar";
 import TicketDetail from "./components/common/TicketDetail";
 import PaymentSuccess from "./pages/User/Booking/PaymentSuccess";
 import ReservationSummary from "./pages/User/ReservationSummary";
@@ -44,6 +45,7 @@ import Home from "./pages/User/Home";
 import GeneralError from "./pages/GeneralError";
 import ReservationList from "./pages/Admin/ReservationList";
 import UpdateProfile from "./pages/Admin/UpdateProfile";
+
 function App() {
   const { isLoginModalOpen, closeLogin } = useAuth();
   useScrollToTop();
@@ -102,6 +104,7 @@ function App() {
             />
             <Route path="my-favorite-events" element={<MyfavoriteEvent />} />
             <Route path="my-tickets" element={<MyTickets />} />
+            <Route path="my-calendar" element={<MyCalendar />} />
             <Route path="my-tickets/:id" element={<TicketDetail />} />
             <Route path="payments/success/:id" element={<PaymentSuccess />} />
             <Route

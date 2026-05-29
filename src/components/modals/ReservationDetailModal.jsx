@@ -51,7 +51,7 @@ const ReservationDetailModal = ({ isOpen, onClose, reservationId }) => {
         <div className="flex justify-between items-center px-8 py-6 border-b border-slate-100 bg-slate-50/50">
           <div>
             <h2 className="text-xl font-black text-slate-800">Chi tiết đặt chỗ</h2>
-            <p className="text-xs text-slate-500 mt-1 font-mono uppercase tracking-wider">Mã đơn: #{reservationId}</p>
+            <p className="text-xs text-slate-500 mt-1 font-mono uppercase tracking-wider">Mã đơn: #{data?.code || reservationId}</p>
           </div>
           <button onClick={onClose} className="size-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-slate-600 hover:shadow-md transition-all">
             <span className="material-symbols-outlined">close</span>

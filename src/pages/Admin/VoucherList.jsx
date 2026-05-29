@@ -187,7 +187,7 @@ function VoucherList() {
             setConfirmModal({
               isOpen: true,
               title: "Xác nhận xóa voucher",
-              message: "Bạn có chắc sẽ xóa voucher có id: " + item.id,
+              message: `Bạn có chắc chắn muốn xóa voucher có mã "${item.code}" không?`,
               onConfirm: async () => {
                 try {
                   await axiosClient.patch(`/vouchers/${item.id}/soft-delete`);
@@ -220,7 +220,7 @@ function VoucherList() {
             setConfirmModal({
               isOpen: true,
               title: "Xác nhận khôi phục voucher",
-              message: "Bạn có chắc sẽ khôi phục voucher có id: " + item.id,
+              message: `Bạn có chắc chắn muốn khôi phục voucher có mã "${item.code}" không?`,
               onConfirm: async () => {
                 try {
                   await axiosClient.patch(`/vouchers/${item.id}/restore`);

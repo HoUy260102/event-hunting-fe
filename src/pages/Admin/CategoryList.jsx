@@ -183,7 +183,7 @@ function CategoryList() {
             setConfirmModal({
               isOpen: true,
               title: "Xác nhận xóa chủ đề",
-              message: "Bạn có chắc sẽ xóa chủ đề có id: " + item.id,
+              message: `Bạn có chắc chắn muốn xóa chủ đề "${item.name}" không?`,
               onConfirm: async () => {
                 try {
                   await axiosClient.patch(`/categories/${item.id}/soft-delete`);
@@ -229,7 +229,7 @@ function CategoryList() {
             setConfirmModal({
               isOpen: true,
               title: "Xác nhận khôi phục chủ đề",
-              message: "Bạn có chắc sẽ khôi phục chủ đề có id: " + item.id,
+              message: `Bạn có chắc chắn muốn khôi phục chủ đề "${item.name}" không?`,
               onConfirm: async () => {
                 try {
                   await axiosClient.patch(`/categories/${item.id}/restore`);
@@ -310,8 +310,9 @@ function CategoryList() {
         )}
       </div>
       <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-5 mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-end">
-          <div className="relative">
+        <div className="flex flex-col gap-4">
+          {/* Dòng 1: Ô tìm kiếm chiếm trọn 1 dòng */}
+          <div className="relative w-full">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <span className="material-symbols-outlined text-[20px] text-[#6b7280] dark:text-[#a1aebf]">
                 search
@@ -327,21 +328,23 @@ function CategoryList() {
               }}
             />
           </div>
-          <div>
-            <select
-              value={filters.status || "ALL"}
-              onChange={(e) => {
-                handleFilterChange("status", e.target.value);
-              }}
-              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
-            >
-              <option value="ALL">Tất cả trạng thái</option>
-              <option value="ACTIVE">Hoạt động</option>
-              <option value="INACTIVE">Không hoạt động</option>
-              <option value="DELETED">Đã xóa</option>
-            </select>
-          </div>
-          <div className="flex gap-2">
+
+          {/* Dòng 2: Trạng thái, Làm mới, Tìm kiếm */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="w-full">
+              <select
+                value={filters.status || "ALL"}
+                onChange={(e) => {
+                  handleFilterChange("status", e.target.value);
+                }}
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+              >
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="ACTIVE">Hoạt động</option>
+                <option value="INACTIVE">Không hoạt động</option>
+                <option value="DELETED">Đã xóa</option>
+              </select>
+            </div>
             <button
               onClick={() => {
                 setFilters({
@@ -351,7 +354,7 @@ function CategoryList() {
                 });
                 setSearchParams({});
               }}
-              className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm"
+              className="w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px] mr-2">
                 restart_alt
@@ -360,7 +363,7 @@ function CategoryList() {
             </button>
             <button
               onClick={applyFilters}
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20"
+              className="w-full inline-flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20 cursor-pointer"
             >
               Tìm kiếm
             </button>

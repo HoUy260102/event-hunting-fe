@@ -19,6 +19,11 @@ const ProfileSidebar = () => {
       icon: "confirmation_number",
       path: "/my-tickets",
     },
+    {
+      title: "Lịch của tôi",
+      icon: "calendar_month",
+      path: "/my-calendar",
+    },
   ];
 
   return (

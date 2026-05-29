@@ -69,7 +69,7 @@ function InfoEvent() {
         try {
           await axiosClient.patch(`/events/${id}/approve`);
           closeConfirmModal();
-          window.location.reload();
+          fetchEventData();
         } catch (error) {
           console.log("Duyệt thất bại: ", error.message);
         }
@@ -86,9 +86,26 @@ function InfoEvent() {
             rejectionReason: reason,
           });
           closeRejectModal();
-          window.location.reload();
+          fetchEventData();
         } catch (error) {
           console.log("Từ chối thất bại: ", error.message);
+        }
+      },
+    });
+  };
+
+  const handleSubmitApproval = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Xác nhận gửi yêu cầu duyệt",
+      message: "Bạn có chắc chắn muốn gửi yêu cầu duyệt cho sự kiện này?",
+      onConfirm: async () => {
+        try {
+          await axiosClient.patch(`/events/${id}/submit`);
+          closeConfirmModal();
+          fetchEventData();
+        } catch (error) {
+          console.log("Gửi yêu cầu duyệt thất bại: ", error.message);
         }
       },
     });
@@ -168,6 +185,15 @@ function InfoEvent() {
                   </button>
                 )}
               </>
+            )}
+            {(eventData?.status === "DRAFT" || eventData?.status === "REJECTED") && (
+              <button
+                type="button"
+                onClick={handleSubmitApproval}
+                className="px-4 md:px-6 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 font-semibold transition-colors text-sm md:text-base whitespace-nowrap"
+              >
+                Gửi yêu cầu duyệt
+              </button>
             )}
             <button
               type="button"

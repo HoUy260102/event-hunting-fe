@@ -8,6 +8,13 @@ import SearchEmpty from "../../components/common/SearchEmpty";
 import { useAuth } from "../../hooks/useAuth";
 
 function EventSearch() {
+  useEffect(() => {
+    document.title = "Tìm kiếm sự kiện | Event Hunting";
+    return () => {
+      document.title = "Event Hunting";
+    };
+  }, []);
+
   const { user, openLogin } = useAuth();
   const [categories, setCategories] = useState([]);
   const [locations, setLocations] = useState([]);

@@ -54,10 +54,10 @@ function PaginationV2({
         <div className="hidden md:flex md:flex-1 md:items-center md:justify-between">
           <div>
             <p className="text-sm text-[#6b7280] dark:text-[#a1aebf]">
-              Showing <span className="font-bold text-white">{from}</span> to{" "}
-              <span className="font-bold text-white">{to}</span> of{" "}
+              Hiển thị <span className="font-bold text-white">{from}</span> đến{" "}
+              <span className="font-bold text-white">{to}</span> trong số{" "}
               <span className="font-bold text-white">{totalElements}</span>{" "}
-              results
+              kết quả
             </p>
           </div>
           <div>
@@ -138,7 +138,7 @@ function PaginationV2({
             }}
             className="relative inline-flex items-center rounded-md border border-black bg-black px-4 py-2 text-sm font-medium text-white hover:bg-white/5"
           >
-            Previous
+            Trang trước
           </Link>
           <Link
             to="#"
@@ -149,7 +149,7 @@ function PaginationV2({
             }}
             className="relative inline-flex items-center rounded-md border border-black bg-black px-4 py-2 text-sm font-medium text-white hover:bg-white/5"
           >
-            Next
+            Trang sau
           </Link>
         </div>
       </div>

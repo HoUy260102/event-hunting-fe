@@ -234,7 +234,7 @@ function UserList() {
             setConfirmModal({
               isOpen: true,
               title: "Xác nhận xóa tài khoản",
-              message: "Bạn có chắc sẽ xóa tài khoản có id: " + item.id,
+              message: `Bạn có chắc chắn muốn xóa tài khoản của "${item.name}" không?`,
               onConfirm: async () => {
                 try {
                   await axiosClient.patch(`/users/${item.id}/soft-delete`);
@@ -282,7 +282,7 @@ function UserList() {
             setConfirmModal({
               isOpen: true,
               title: "Xác nhận khôi phục tài khoản",
-              message: "Bạn có chắc sẽ khôi phục tài khoản có id: " + item.id,
+              message: `Bạn có chắc chắn muốn khôi phục tài khoản của "${item.name}" không?`,
               onConfirm: async () => {
                 try {
                   await axiosClient.patch(`/users/${item.id}/restore`);

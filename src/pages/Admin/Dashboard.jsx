@@ -4,23 +4,28 @@ import { useState, useEffect } from "react";
 import Header from "../../components/layouts/AdminLayout/Header";
 import { HeaderProvider } from "../../contexts/HeaderContext";
 function Dashboard() {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(window.innerWidth >= 1024);
+
   useEffect(() => {
+    let prevWidth = window.innerWidth;
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
+      const currentWidth = window.innerWidth;
+      // Only override user preference when crossing the 1024px boundary
+      if (prevWidth >= 1024 && currentWidth < 1024) {
         setIsOpen(false);
-      } else {
+      } else if (prevWidth < 1024 && currentWidth >= 1024) {
         setIsOpen(true);
       }
+      prevWidth = currentWidth;
     };
     window.addEventListener("resize", handleResize);
-    handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
   const sidebarWidth = isOpen ? "270px" : "85px";
   const toggleSidebar = () => {
     if (window.innerWidth >= 1024) {
-      setIsOpen(!isOpen);
+      setIsOpen((prev) => !prev);
     }
   };
 

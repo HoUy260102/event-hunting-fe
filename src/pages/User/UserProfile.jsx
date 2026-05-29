@@ -42,6 +42,13 @@ const schema = z.object({
 });
 
 function UserProfile() {
+  useEffect(() => {
+    document.title = "Thông tin tài khoản | Event Hunting";
+    return () => {
+      document.title = "Event Hunting";
+    };
+  }, []);
+
   const { user, refreshUser } = useAuth();
   const id = user?.id;
   const [userInfo, setUserInfo] = useState();

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
-import { formatDateVN } from "../../utils/format";
+import { formatDateVN, formatShowTime } from "../../utils/format";
 import Pagination from "../../components/common/Pagination";
 import QrScanModal from "../../components/modals/QrScanModal";
 import { useHeader } from "../../hooks/useHeader";
@@ -217,26 +217,28 @@ const TicketList = () => {
         </style>
 
         {/* Main Content Canvas */}
-        <main className="pt-5 pb-32 px-4 md:px-8 max-w-7xl mx-auto min-h-screen">
-          {/* Hero Section */}
-          <section className="mb-10 space-y-4">
-            <div className="flex flex-col md:flex-row md:items-end justify-between items-center gap-6">
-              <div className="space-y-2">
-                <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#1a1c1e] font-['Manrope'] leading-tight">
+        <div className="pb-20 max-w-7xl mx-auto">
+          {/* Event Header Banner */}
+          <section className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/60 shadow-sm mb-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full uppercase tracking-wider">
+                  Đang diễn ra
+                </div>
+                <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-800 font-['Plus Jakarta Sans'] leading-tight">
                   {show?.eventName}
                 </h3>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[#444748] text-sm font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-base">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-slate-500 text-sm font-medium">
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-emerald-500 text-lg">
                       calendar_today
                     </span>
                     <span>
-                      {formatDateVN(show?.startTime)} -{" "}
-                      {formatDateVN(show?.endTime)}
+                      {formatShowTime(show?.startTime, show?.endTime)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-base">
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-emerald-500 text-lg">
                       location_on
                     </span>
                     <span>{show?.eventLocation}</span>
@@ -248,7 +250,7 @@ const TicketList = () => {
                 onClick={() => {
                   setIsOpenScanModal(true);
                 }}
-                className="whitespace-nowrap w-full md:w-auto flex items-center justify-center gap-3 bg-[#16a34a] text-[#ffffff] px-8 py-4 rounded-xl font-bold font-['Manrope'] shadow-lg shadow-[#16a34a]/20 active:scale-95 transition-transform hover:brightness-110"
+                className="whitespace-nowrap w-full lg:w-auto flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-2xl font-bold font-['Plus Jakarta Sans'] shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
               >
                 <span
                   className="material-symbols-outlined"
@@ -410,8 +412,8 @@ const TicketList = () => {
                           </div>
                         </td>
                         <td className="px-6 py-5">
-                          <span className="font-mono text-sm text-[#444748]">
-                            #{ticket?.reservationId}
+                          <span className="font-mono text-sm text-[#444748]" title={ticket?.reservationCode || ticket?.reservationId}>
+                            #{ticket?.reservationCode || ticket?.reservationId}
                           </span>
                         </td>
                         <td className="px-6 py-5">
@@ -591,7 +593,7 @@ const TicketList = () => {
             totalPage={totalPages}
             handlePagination={handlePagination}
           ></Pagination>
-        </main>
+        </div>
       </div>
     </>
   );

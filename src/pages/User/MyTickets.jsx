@@ -6,6 +6,13 @@ import PaginationV2 from "../../components/common/PaginationV2";
 import ProfileSidebar from "./ProfileSidebar";
 
 const MyTickets = () => {
+  useEffect(() => {
+    document.title = "Vé của tôi | Event Hunting";
+    return () => {
+      document.title = "Event Hunting";
+    };
+  }, []);
+
   // Dữ liệu mẫu
   const [isFinished, setIsFinished] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
@@ -99,7 +106,10 @@ const MyTickets = () => {
         <div className="flex-1 min-w-0">
           {/* Section Header */}
           <div className="mb-5">
-            <h3 className="border-b border-[#474848]/20 py-5 font-headline text-white text-2xl font-extrabold tracking-tight text-on-surface">
+            <h3 className="border-b border-[#474848]/20 py-5 font-headline text-white text-2xl font-extrabold tracking-tight text-on-surface flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-[#2DC275] text-[28px] shrink-0">
+                confirmation_number
+              </span>
               Vé của tôi
             </h3>
           </div>

@@ -10,17 +10,59 @@ const ConfirmModal = ({
 }) => {
   if (!isOpen) return null;
 
+  const isLogoutAction = (titleText) => {
+    const text = (titleText || "").toLowerCase().normalize("NFC");
+    const textNFD = (titleText || "").toLowerCase().normalize("NFD");
+    return (
+      text.includes("đăng xuất") ||
+      textNFD.includes("đăng xuất") ||
+      text.includes("dang xuat") ||
+      text.includes("thoát") ||
+      textNFD.includes("thoát") ||
+      text.includes("thoat") ||
+      text.includes("logout") ||
+      text.includes("xuất") ||
+      text.includes("xuat")
+    );
+  };
+
   const getConfirmButtonClass = () => {
     const lowerTitle = (title || "").toLowerCase();
     if (
-      lowerTitle.includes("đăng xuất") ||
-      lowerTitle.includes("thoát") ||
+      isLogoutAction(title) ||
       lowerTitle.includes("xóa") ||
       lowerTitle.includes("hủy")
     ) {
       return "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 shadow-red-500/20 hover:shadow-red-500/30";
     }
     return "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/20 hover:shadow-emerald-500/30";
+  };
+
+  const getIcon = () => {
+    if (isLogoutAction(title)) {
+      return (
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 shrink-0 mt-0.5 animate-pulse">
+          <span className="material-symbols-outlined text-[22px] font-bold">logout</span>
+        </div>
+      );
+    }
+    const lowerTitle = (title || "").toLowerCase();
+    if (
+      lowerTitle.includes("xóa") ||
+      lowerTitle.includes("hủy") ||
+      lowerTitle.includes("từ chối")
+    ) {
+      return (
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 shrink-0 mt-0.5">
+          <span className="material-symbols-outlined text-[22px] font-bold">warning</span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 shrink-0 mt-0.5">
+        <span className="material-symbols-outlined text-[22px] font-bold">help</span>
+      </div>
+    );
   };
 
   return createPortal(
@@ -49,9 +91,12 @@ const ConfirmModal = ({
         </div>
 
         {/* Nội dung */}
-        <p className="mt-2 text-sm md:text-base leading-relaxed text-gray-500 dark:text-gray-400 text-center">
-          {message}
-        </p>
+        <div className="flex items-start gap-4 text-left my-2">
+          {getIcon()}
+          <p className="flex-1 text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-300 font-medium">
+            {message}
+          </p>
+        </div>
 
         {/* Nút thao tác */}
         <div className="flex justify-between gap-3 w-full mt-6">

@@ -86,11 +86,14 @@ const EventCard = ({ event, user, openLogin }) => {
           {event?.name}
         </h5>
         <div className="flex flex-col gap-1 text-slate-500 text-[12px] md:text-[13px]">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px] text-white">
+          <div className="flex items-start gap-2">
+            <span className="material-symbols-outlined text-[18px] text-white mt-0.5">
               location_on
             </span>
-            <span className="line-clamp-2 text-white">{event?.location}</span>
+            <span className="line-clamp-2 text-white">
+              {event?.location}
+              {event?.address ? ` - ${event.address}` : ""}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px] text-white">

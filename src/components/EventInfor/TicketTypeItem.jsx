@@ -1,7 +1,7 @@
 import { useState } from "react";
 import TicketTypeStatusBadge from "../common/TicketTypeStatusBadge";
 
-const TicketTypeItem = ({ ticketType }) => {
+const TicketTypeItem = ({ ticketType, eventStatus, showStatus }) => {
   const [showDesc, setShowDesc] = useState(false);
 
   return (
@@ -24,7 +24,23 @@ const TicketTypeItem = ({ ticketType }) => {
             {ticketType?.tierPrice?.toLocaleString("vi-VN")} đ
           </span>
           {/* Status Badge */}
-          <TicketTypeStatusBadge status={ticketType?.status}></TicketTypeStatusBadge>
+          <TicketTypeStatusBadge
+            status={
+              eventStatus === "CANCELLED" || showStatus === "CANCELLED"
+                ? "CANCELLED"
+                : eventStatus === "POSTPONED" || showStatus === "POSTPONED"
+                ? "POSTPONED"
+                : eventStatus !== "PUBLISHED" || showStatus === "DRAFT"
+                ? "AWAITING_PUBLICATION"
+                : showStatus === "SOLD_OUT"
+                ? "SOLD_OUT"
+                : showStatus === "FINISHED"
+                ? "EXPIRED"
+                : showStatus === "UPCOMING"
+                ? "COMING_SOON"
+                : ticketType?.status
+            }
+          />
         </div>
       </div>
 

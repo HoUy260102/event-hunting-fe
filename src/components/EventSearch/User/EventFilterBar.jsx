@@ -21,6 +21,12 @@ const EventFilterBar = ({
     const newCats = filters?.categoryIds.filter((catId) => catId !== id);
     handleFilterChange("categoryIds", newCats);
   };
+  const removeLocation = () => {
+    handleFilterChange("provinceId", "");
+  };
+  const removePrice = () => {
+    handleFilterChange("minPrice", "0");
+  };
   return (
     <>
       <EventFilterModal
@@ -87,18 +93,73 @@ const EventFilterBar = ({
             Xóa tất cả
           </button>
           <div className="flex flex-wrap gap-2 items-center">
+            {/* Tỉnh thành / Thành phố */}
+            {filters?.provinceId && (
+              (() => {
+                const location = locations.find((l) => l.id === filters.provinceId);
+                if (!location) return null;
+                return (
+                  <div
+                    key="location-badge"
+                    className="flex items-center gap-2 px-3 py-1 bg-green-500 border border-green-500 rounded-full text-xs font-bold text-white"
+                  >
+                    <span>{location.name}</span>
+                    <button
+                      onClick={removeLocation}
+                      className="flex items-center justify-center rounded-full p-0.5 transition-colors"
+                    >
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: "14px", fontWeight: "bold" }}
+                      >
+                        close
+                      </span>
+                    </button>
+                  </div>
+                );
+              })()
+            )}
+
+            {/* Mức giá */}
+            {Number(filters?.minPrice) > 0 && (
+              <div
+                key="price-badge"
+                className="flex items-center gap-2 px-3 py-1 bg-green-500 border border-green-500 rounded-full text-xs font-bold text-white"
+              >
+                <span>
+                  Từ {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                    maximumFractionDigits: 0,
+                  }).format(Number(filters.minPrice))}
+                </span>
+                <button
+                  onClick={removePrice}
+                  className="flex items-center justify-center rounded-full p-0.5 transition-colors"
+                >
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: "14px", fontWeight: "bold" }}
+                  >
+                    close
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Thể loại */}
             {filters?.categoryIds?.map((id) => {
               const category = categories.find((c) => c.id === id);
               if (!category) return null;
               return (
                 <div
                   key={id}
-                  className="flex items-center gap-2 px-3 py-1 bg-green-500 text-green-600 border border-green-500 rounded-full text-xs font-bold text-white"
+                  className="flex items-center gap-2 px-3 py-1 bg-green-500 border border-green-500 rounded-full text-xs font-bold text-white"
                 >
                   <span>{category.name}</span>
                   <button
                     onClick={() => removeCategory(id)}
-                    className="flex items-center justify-cente rounded-full p-0.5 transition-colors"
+                    className="flex items-center justify-center rounded-full p-0.5 transition-colors"
                   >
                     <span
                       className="material-symbols-outlined"

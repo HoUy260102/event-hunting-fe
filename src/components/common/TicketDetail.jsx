@@ -69,10 +69,20 @@ const TicketDetails = () => {
                     src={ticket?.eventPoster?.url}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1f2020] to-transparent"></div>
-                  <div className="absolute bottom-4 left-6">
-                    <span className="bg-green-500/20 text-green-500 text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-widest border border-green-500/30">
-                      Valid
-                    </span>
+                  <div className="absolute bottom-4 left-6 flex gap-2">
+                    {ticket?.status === "USED" ? (
+                      <span className="bg-green-500/20 text-green-400 text-[10px] font-black px-2.5 py-1 rounded-sm uppercase tracking-widest border border-green-500/40 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                        ĐÃ CHECK-IN
+                      </span>
+                    ) : ticket?.status === "EXPIRED" ? (
+                      <span className="bg-red-500/20 text-red-400 text-[10px] font-black px-2.5 py-1 rounded-sm uppercase tracking-widest border border-red-500/40">
+                        HẾT HẠN
+                      </span>
+                    ) : (
+                      <span className="bg-blue-500/20 text-blue-400 text-[10px] font-black px-2.5 py-1 rounded-sm uppercase tracking-widest border border-blue-500/40">
+                        CÓ HIỆU LỰC (CHƯA DÙNG)
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -83,7 +93,7 @@ const TicketDetails = () => {
                       {ticket?.eventName}
                     </h3>
                     <p className="mt-10 text-[#acabab] font-medium uppercase text-sm">
-                      Mã đơn đặt hàng: {ticket?.reservationId}
+                      Mã đơn đặt hàng: {ticket?.reservationCode || ticket?.reservationId}
                     </p>
                     <p className="mt-2 text-[#acabab] font-medium uppercase text-sm">
                       Mã vé: {ticket?.id}
@@ -122,6 +132,46 @@ const TicketDetails = () => {
                     </div>
                   </div>
 
+                  {/* Trạng thái kiểm soát vé */}
+                  <div className="pt-5 border-t border-[#474848]/20 space-y-4">
+                    <p className="text-[#acabab] uppercase font-medium text-sm flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[16px] text-green-400">verified</span>
+                      Trạng thái kiểm soát vé:
+                    </p>
+                    
+                    <div className="bg-white/[0.02] border border-[#474848]/15 rounded-xl p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-[#acabab]">Trạng thái:</span>
+                        {ticket?.status === "USED" ? (
+                          <span className="text-xs font-black text-green-400 uppercase tracking-wider bg-green-500/10 px-2.5 py-1 rounded-md border border-green-500/20">
+                            Đã Check-in
+                          </span>
+                        ) : (
+                          <span className="text-xs font-black text-amber-400 uppercase tracking-wider bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20">
+                            Chưa Check-in
+                          </span>
+                        )}
+                      </div>
+
+                      {ticket?.status === "USED" && (
+                        <>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#474848]/10">
+                            <span className="text-xs text-[#acabab]">Thời gian check-in:</span>
+                            <span className="text-xs font-bold text-white">
+                              {formatDateVN(ticket?.checkInAt)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-[#acabab]">Phương thức:</span>
+                            <span className="text-xs font-bold text-white">
+                              {ticket?.checkInMethod === "QR_CODE" ? "Quét mã QR Code" : "Xác thực thủ công"}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-y-6 gap-x-4 border-t border-[#474848]/20 pt-6">
                     <div className="col-span-2">
                       <p className="text-[10px] uppercase tracking-widest text-[#acabab] mb-1">
@@ -151,12 +201,13 @@ const TicketDetails = () => {
                     </div>
                   </div>
 
-                  <div className="pt-2 flex items-center gap-3 text-[#acabab]">
-                    <span className="material-symbols-outlined text-green-500">
+                  <div className="pt-2 flex items-start gap-3 text-[#acabab]">
+                    <span className="material-symbols-outlined text-green-500 mt-0.5">
                       location_on
                     </span>
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-medium line-clamp-2">
                       {ticket?.eventLocation}
+                      {ticket?.eventAddress ? ` - ${ticket.eventAddress}` : ""}
                     </p>
                   </div>
                 </div>

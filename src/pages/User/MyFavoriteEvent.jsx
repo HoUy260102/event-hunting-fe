@@ -7,6 +7,13 @@ import SearchEmpty from "../../components/common/SearchEmpty";
 import { useAuth } from "../../hooks/useAuth";
 
 function MyfavoriteEvent() {
+  useEffect(() => {
+    document.title = "Sự kiện yêu thích | Event Hunting";
+    return () => {
+      document.title = "Event Hunting";
+    };
+  }, []);
+
   const { user, openLogin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);

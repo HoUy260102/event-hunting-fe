@@ -279,7 +279,7 @@ function ReservationList() {
             </div>
             <input
               type="text"
-              placeholder="ID đặt chỗ..."
+              placeholder="Mã đơn / ID đặt chỗ..."
               className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white outline-none"
               value={filters.keyword}
               onChange={(e) => handleFilterChange("keyword", e.target.value)}
@@ -408,7 +408,7 @@ function ReservationList() {
                       className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
                     >
                       <td className="px-6 py-4 text-sm font-medium text-black dark:text-[#a1aebf]">
-                        <span title={res?.id}>{res?.id}</span>
+                        <span title={res?.code || res?.id} className="font-mono">{res?.code || res?.id}</span>
                       </td>
 
                       <td className="px-6 py-4 text-sm">

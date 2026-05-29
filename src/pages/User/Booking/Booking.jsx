@@ -92,6 +92,7 @@ function Booking() {
         });
       });
     }
+
     const bookedSeatsCode = [];
     map.forEach((value) => {
       if (value.status !== "AVAILABLE") {
@@ -126,8 +127,47 @@ function Booking() {
     fetchData();
   }, [showId]);
 
-  const handleSectionSelect = (sectionId) => {
+  useEffect(() => {
+    if (activeTicketType?.id) {
+      const fetchSeats = async () => {
+        try {
+          console.log("Đang nạp danh sách ghế cho loại vé:", activeTicketType.name, "ID:", activeTicketType.id);
+          const result = await axiosClient.get(`/shows/${showId}/ticket-types/${activeTicketType.id}/seats`);
+          const seats = result?.data;
+          console.log("Đã nạp xong số lượng ghế:", seats?.length);
+          setShow((prevShow) => {
+            if (!prevShow) return prevShow;
+            const updatedTypes = prevShow.ticketTypes.map((type) => {
+              if (type.id === activeTicketType.id) {
+                const updatedType = { ...type, seats: seats };
+                setActiveTicketType(updatedType);
+                return updatedType;
+              }
+              return type;
+            });
+            return { ...prevShow, ticketTypes: updatedTypes };
+          });
+        } catch (error) {
+          console.log("Lấy danh sách ghế thất bại:", error.message);
+        }
+      };
+      fetchSeats();
+    }
+  }, [activeTicketType?.id, showId]);
+
+  const handleSectionSelect = (sectionId, ticketTypeId) => {
+    if (sectionId === null && ticketTypeId === null) {
+      setActiveTicketType(null);
+      return;
+    }
     if (soldOutSectionIds.includes(sectionId)) return;
+    if (ticketTypeId) {
+      const typeObj = show?.ticketTypes?.find((t) => t.id === ticketTypeId);
+      if (typeObj) {
+        setActiveTicketType(typeObj);
+        return;
+      }
+    }
     setActiveTicketType(ticketTypeMap.get(sectionId));
   };
 
@@ -147,13 +187,13 @@ function Booking() {
             const updatedSeats = isSelected
               ? item.selectedSeats.filter((s) => s.seatCode !== seatCode)
               : [
-                  ...item.selectedSeats,
-                  {
-                    ...activeSeat,
-                    displayName:
-                      activeSeat.rowName + "-" + activeSeat.seatNumber,
-                  },
-                ];
+                ...item.selectedSeats,
+                {
+                  ...activeSeat,
+                  displayName:
+                    activeSeat.rowName + "-" + activeSeat.seatNumber,
+                },
+              ];
             return {
               ...item,
               selectedSeats: updatedSeats,

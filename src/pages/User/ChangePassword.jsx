@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,6 +20,13 @@ const schema = z
   });
 
 const ChangePassword = () => {
+  useEffect(() => {
+    document.title = "Đổi mật khẩu | Event Hunting";
+    return () => {
+      document.title = "Event Hunting";
+    };
+  }, []);
+
   const [isLoading, setIsLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);

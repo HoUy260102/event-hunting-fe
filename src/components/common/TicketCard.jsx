@@ -37,6 +37,19 @@ const TicketCard = ({ ticket, isFinished }) => {
               <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase border border-[#474848] text-[#acabab] bg-[#131313]">
                 Vé điện tử
               </span>
+              {ticket?.status === "USED" ? (
+                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-green-500/10 text-green-400 border border-green-500/30 shadow-[0_0_10px_rgba(34,197,94,0.15)]">
+                  Đã check-in
+                </span>
+              ) : ticket?.status === "EXPIRED" ? (
+                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-red-500/10 text-red-500 border border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.15)]">
+                  Hết hạn
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 shadow-[0_0_10px_rgba(234,179,8,0.15)]">
+                  Chưa check-in
+                </span>
+              )}
             </div>
 
             {/* Title */}
@@ -55,7 +68,7 @@ const TicketCard = ({ ticket, isFinished }) => {
                 </span>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-[#e7e5e5]">
-                    Mã đơn đặt hàng: {ticket?.reservationId}
+                    Mã đơn đặt hàng: {ticket?.reservationCode || ticket?.reservationId}
                   </span>
                 </div>
               </div>
@@ -73,7 +86,7 @@ const TicketCard = ({ ticket, isFinished }) => {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 <span
                   className="material-symbols-outlined text-[#acabab] mt-0.5"
                   data-icon="location_on"
@@ -81,8 +94,9 @@ const TicketCard = ({ ticket, isFinished }) => {
                   location_on
                 </span>
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-[#e7e5e5] leading-relaxed">
+                  <span className="text-sm font-medium text-[#e7e5e5] leading-relaxed line-clamp-2">
                     {ticket?.eventLocation}
+                    {ticket?.eventAddress ? ` - ${ticket.eventAddress}` : ""}
                   </span>
                 </div>
               </div>

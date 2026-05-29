@@ -4,7 +4,7 @@ import axiosClient from "../../api/axiosClient";
 import { toast, ToastContainer } from "react-toastify";
 import { formatDateVN } from "../../utils/format";
 
-const QrScanModal = ({ isOpen, onClose, showId, handleUpdateTicket}) => {
+const QrScanModal = ({ isOpen, onClose, showId, handleUpdateTicket }) => {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const qrCodeRef = useRef(null);
@@ -66,7 +66,7 @@ const QrScanModal = ({ isOpen, onClose, showId, handleUpdateTicket}) => {
           console.log(decodedText);
           setScanResult(decodedText);
         },
-        (errorMessage) => {},
+        (errorMessage) => { },
       );
     } catch (err) {
       console.error("Lỗi camera:", err);
@@ -86,33 +86,42 @@ const QrScanModal = ({ isOpen, onClose, showId, handleUpdateTicket}) => {
   useEffect(() => {
     if (!isOpen) stopScanning();
   }, [isOpen]);
-  
+
   const handleClose = async () => {
     if (qrCodeRef.current) {
       await stopScanning();
     }
     onClose();
   };
-  
+
   if (!isOpen) return null;
   return (
     <>
       <div
         onClick={handleClose}
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in"
       >
-        {/* Modal Container */}
+        {/* Modal Container: Premium High-End Light Glassmorphic Design */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-7xl h-[95vh] bg-[#fcfdfd] text-[#1a1c1c] font-sans overflow-hidden flex flex-col rounded-3xl shadow-2xl overflow-y-auto"
+          className="relative w-full max-w-7xl h-[92vh] bg-gradient-to-br from-[#fcfdfd] via-[#f8faf9] to-[#f4f6f5] text-[#1a1c1c] font-sans overflow-hidden flex flex-col rounded-3xl border border-emerald-100 shadow-[0_20px_60px_rgba(74,99,99,0.15)]"
         >
-          {/* Nút đóng Modal (Thêm vào để điều khiển) */}
-          <div className="flex justify-end items-center px-8 py-5 border-b border-[#eaf3e7]">
+          {/* Header */}
+          <div className="flex justify-between items-center px-8 py-5 border-b border-emerald-100 bg-white/40 backdrop-blur-md shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                <span className="material-symbols-outlined text-emerald-600 font-semibold">qr_code_scanner</span>
+              </div>
+              <div>
+                <h2 className="text-lg font-black tracking-wide text-[#1a1c1c]">Hệ Thống Check-in Sự Kiện</h2>
+                <p className="text-xs text-[#5c6060]">Quét mã QR Code của vé để xác thực check-in nhanh</p>
+              </div>
+            </div>
             <button
-              onClick={onClose}
-              className="size-10 flex items-center justify-center rounded-xl bg-background-light hover:scale-120 transition-all"
+              onClick={handleClose}
+              className="size-10 flex items-center justify-center rounded-xl bg-white/80 border border-emerald-100/50 hover:bg-emerald-50 text-[#1a1c1c] active:scale-95 transition-all shadow-sm"
             >
-              <span className="material-symbols-outlined font-bold">close</span>
+              <span className="material-symbols-outlined text-xl">close</span>
             </button>
           </div>
 
@@ -122,385 +131,290 @@ const QrScanModal = ({ isOpen, onClose, showId, handleUpdateTicket}) => {
           .material-symbols-outlined {
               font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
           }
+          #reader {
+              border: none !important;
+          }
+          #reader video {
+              object-fit: cover !important;
+              border-radius: 1.5rem !important;
+          }
+          .custom-scrollbar::-webkit-scrollbar {
+              width: 6px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+              background: rgba(74, 99, 99, 0.02);
+              border-radius: 8px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+              background: rgba(16, 185, 129, 0.2);
+              border-radius: 8px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+              background: rgba(16, 185, 129, 0.4);
+          }
           .scanner-line {
-              height: 2px;
-              background: linear-gradient(90deg, transparent, #4a6363, transparent);
-              box-shadow: 0 0 15px rgba(74, 99, 99, 0.5);
+              height: 3px;
+              background: linear-gradient(90deg, transparent, #10b981, transparent);
+              box-shadow: 0 0 15px #10b981, 0 0 5px #10b981;
               position: absolute;
               width: 100%;
               top: 50%;
               left: 0;
-              animation: scan 3s linear infinite;
+              animation: scan 2.2s ease-in-out infinite;
+              z-index: 10;
           }
           @keyframes scan {
-              0% { top: 0%; }
-              50% { top: 100%; }
-              100% { top: 0%; }
+              0% { top: 5%; }
+              50% { top: 95%; }
+              100% { top: 5%; }
           }
-          .qr-gradient {
-              background: radial-gradient(circle at top left, #f8f9f9 0%, #f0f1f1 100%);
+          .corner-target {
+              position: absolute;
+              width: 24px;
+              height: 24px;
+              border-color: #10b981;
+              border-style: solid;
+              z-index: 20;
+              filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.4));
+          }
+          .slide-in {
+              animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+          }
+          @keyframes slideIn {
+              from {
+                  opacity: 0;
+                  transform: translateY(16px);
+              }
+              to {
+                  opacity: 1;
+                  transform: translateY(0);
+              }
+          }
+          .animate-pulse-glow {
+              animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          }
+          @keyframes pulseGlow {
+              0%, 100% {
+                  opacity: 1;
+                  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+              }
+              50% {
+                  opacity: .75;
+                  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+              }
           }
         `,
             }}
           />
 
-          {/* <main className="qr-gradient flex-1 flex flex-col md:flex-row overflow-y-auto overflow-hidden min-h-0">
-          <section className="flex-1 p-6 p-10 flex flex-col items-center justify-start lg:justify-center">
-            <div className="mt-45 relative shrink-0 w-full max-w-md h-[350px] bg-[#ffffff] border border-[#c4c7c7]/50 rounded-3xl overflow-hidden shadow-xl flex items-center justify-center group">
-              <div className="absolute top-8 left-8 w-12 h-12 border-t-4 border-l-4 border-[#4a6363] rounded-tl-lg"></div>
-              <div className="absolute top-8 right-8 w-12 h-12 border-t-4 border-r-4 border-[#4a6363] rounded-tr-lg"></div>
-              <div className="absolute bottom-8 left-8 w-12 h-12 border-b-4 border-l-4 border-[#4a6363] rounded-bl-lg"></div>
-              <div className="absolute bottom-8 right-8 w-12 h-12 border-b-4 border-r-4 border-[#4a6363] rounded-br-lg"></div>
-              <div className="w-[250px] h-[250px] bg-[#f8f9f9] rounded-xl flex items-center justify-center relative border border-[#c4c7c7]/30 overflow-hidden">
-                <img
-                  alt="QR Code"
-                  className="w-full h-full object-cover opacity-80"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe6Ms9S9qiPorQ1LGaiW_CSWy_qoycX8nWKpRWj7a_4LdHIhK-qdpRnj5JJewvzflPpMRbV_yQ7SJ6KZMq_2w2RkRNqJEFNlW0RDw3TQx9OkDejPFiTiufG0Os0S1aBijPrxYyTjVZRe5d8YZRy1O_4ExvxYro9Z_8ZJldk_RLx-Goir8XIiuC_6LVR8RO8SzxZQ_tv4r_qU9gUgBceLtLSzWYIbH8iGiPZ2BiBXFVh171bqDC7eJ5lHPTond3TTcP2f28nRdJi7oe"
-                />
-                <div className="scanner-line"></div>
-              </div>
-              <div className="absolute bottom-8 px-6 py-2 bg-[#fcfdfd]/90 backdrop-blur-md rounded-full border border-[#c4c7c7]/50 flex items-center gap-2 shadow-sm">
-                <div className="w-2 h-2 bg-[#ba1a1a] rounded-full animate-pulse"></div>
-                <span className="text-xs font-bold tracking-widest uppercase text-[#1a1c1c]">
-                  Live Camera Active
-                </span>
-              </div>
-            </div>
-            <div className="mt-8 w-full max-w-md bg-white rounded-2xl p-6 shadow-xl border border-[#c4c7c7]/20">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#444748] mb-1">
-                    Scanning Result
-                  </span>
-                  <h2 className="font-sans text-2xl font-extrabold text-[#1a1c1c]">
-                    Alex Nguyen
-                  </h2>
-                </div>
-                <div className="bg-[#e8f5e9] text-[#2e7d32] px-3 py-1.5 rounded-lg border border-[#2e7d32]/20 flex items-center gap-1.5">
-                  <span
-                    className="material-symbols-outlined text-sm"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    check_circle
-                  </span>
-                  <span className="text-xs font-bold tracking-wide">VALID</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-[10px] uppercase text-[#444748] font-bold tracking-widest">
-                    Ticket Type
-                  </p>
-                  <p className="text-sm font-semibold text-[#1a1c1c]">
-                    VIP - SEATED
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] uppercase text-[#444748] font-bold tracking-widest">
-                    Seat Number
-                  </p>
-                  <p className="text-sm font-semibold text-[#1a1c1c]">
-                    Row A - Seat 12
-                  </p>
-                </div>
-                <div className="col-span-2 space-y-1 pt-2 border-t border-[#c4c7c7]/10">
-                  <p className="text-[10px] uppercase text-[#444748] font-bold tracking-widest">
-                    Event Name
-                  </p>
-                  <p className="text-sm font-semibold text-[#1a1c1c]">
-                    [HCMC] Monochrome Nights
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-          <aside className="flex w-80 bg-[#f6f7f7] flex-col border-l border-[#c4c7c7]/20">
-            <div className="p-6 border-b border-[#c4c7c7]/20 flex items-center justify-between">
-              <h3 className="font-sans font-bold text-[#1a1c1c]">
-                Recent Check-ins
-              </h3>
-              <span className="bg-[#ebeeed] px-2 py-1 rounded text-[10px] font-bold text-[#444748]">
-                248 / 500
-              </span>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              <div className="bg-[#fcfdfd] p-3 rounded-xl border border-[#c4c7c7]/20 flex items-center gap-3 hover:bg-[#f8f9f9] transition-colors cursor-pointer group">
-                <div className="w-10 h-10 rounded-full bg-[#ebeeed] flex items-center justify-center group-hover:bg-[#4a6363]/10 transition-colors">
-                  <span className="material-symbols-outlined text-[#444748] group-hover:text-[#4a6363]">
-                    person
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate text-[#1a1c1c]">
-                    Sarah Jenkins
-                  </p>
-                  <p className="text-[11px] text-[#444748]">
-                    2 mins ago • General Entry
-                  </p>
-                </div>
-                <span
-                  className="material-symbols-outlined text-[#2e7d32] text-sm"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  verified
-                </span>
-              </div>
-              <div className="bg-[#fcfdfd] p-3 rounded-xl border border-[#c4c7c7]/20 flex items-center gap-3 hover:bg-[#f8f9f9] transition-colors cursor-pointer group">
-                <div className="w-10 h-10 rounded-full bg-[#ebeeed] flex items-center justify-center group-hover:bg-[#4a6363]/10 transition-colors">
-                  <span className="material-symbols-outlined text-[#444748] group-hover:text-[#4a6363]">
-                    person
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate text-[#1a1c1c]">
-                    Marcus Thorne
-                  </p>
-                  <p className="text-[11px] text-[#444748]">
-                    5 mins ago • VIP Access
-                  </p>
-                </div>
-                <span
-                  className="material-symbols-outlined text-[#2e7d32] text-sm"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  verified
-                </span>
-              </div>
-              <div className="bg-[#fcfdfd] p-3 rounded-xl border border-[#c4c7c7]/20 flex items-center gap-3 hover:bg-[#f8f9f9] transition-colors cursor-pointer group">
-                <div className="w-10 h-10 rounded-full bg-[#ebeeed] flex items-center justify-center group-hover:bg-[#4a6363]/10 transition-colors">
-                  <span className="material-symbols-outlined text-[#444748] group-hover:text-[#4a6363]">
-                    person
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate text-[#1a1c1c]">
-                    Linh Pham
-                  </p>
-                  <p className="text-[11px] text-[#444748]">
-                    12 mins ago • Backstage Pass
-                  </p>
-                </div>
-                <span
-                  className="material-symbols-outlined text-[#2e7d32] text-sm"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  verified
-                </span>
-              </div>
-              <div className="bg-[#fcfdfd] p-3 rounded-xl border border-[#c4c7c7]/20 flex items-center gap-3 hover:bg-[#f8f9f9] transition-colors cursor-pointer group">
-                <div className="w-10 h-10 rounded-full bg-[#ebeeed] flex items-center justify-center group-hover:bg-[#ba1a1a]/10 transition-colors">
-                  <span className="material-symbols-outlined text-[#444748] group-hover:text-[#ba1a1a]">
-                    person
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate text-[#1a1c1c]">
-                    David Miller
-                  </p>
-                  <p className="text-[11px] text-[#444748]">
-                    15 mins ago • General Entry
-                  </p>
-                </div>
-                <span
-                  className="material-symbols-outlined text-[#ba1a1a] text-sm"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  error
-                </span>
-              </div>
-              <div className="bg-[#fcfdfd] p-3 rounded-xl border border-[#c4c7c7]/20 flex items-center gap-3 hover:bg-[#f8f9f9] transition-colors cursor-pointer group">
-                <div className="w-10 h-10 rounded-full bg-[#ebeeed] flex items-center justify-center group-hover:bg-[#4a6363]/10 transition-colors">
-                  <span className="material-symbols-outlined text-[#444748] group-hover:text-[#4a6363]">
-                    person
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate text-[#1a1c1c]">
-                    Sofia Rossi
-                  </p>
-                  <p className="text-[11px] text-[#444748]">
-                    18 mins ago • VIP Access
-                  </p>
-                </div>
-                <span
-                  className="material-symbols-outlined text-[#2e7d32] text-sm"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  verified
-                </span>
-              </div>
-            </div>
-            <div className="p-4 bg-[#fcfdfd] border-t border-[#c4c7c7]/10">
-              <button className="w-full py-3 bg-[#ebeeed] rounded-xl text-xs font-bold uppercase tracking-widest text-[#1a1c1c] hover:bg-[#4a6363] hover:text-white transition-all duration-300">
-                View All Activity
-              </button>
-            </div>
-          </aside>
-        </main> */}
+          {/* Main Grid Layout */}
+          <main className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_360px] min-h-0 overflow-hidden">
+            {/* COLUMN 1: Scan Workspace - Changed to justify-start with top padding to prevent clipping */}
+            <section className="relative h-full p-6 lg:p-10 flex flex-col items-center justify-start pt-10 pb-8 overflow-y-auto border-b md:border-b-0 border-emerald-100/50 bg-gradient-to-br from-white/30 to-[#f4f6f5]/20">
 
-          {/* THAY ĐỔI: main bây giờ là Grid container */}
-          <main className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_320px] min-h-0 overflow-hidden">
-            {/* CỘT 1: Scanner Area */}
-            <section className="qr-gradient h-full p-6 lg:p-10 flex flex-col items-center justify-center overflow-y-auto border-b md:border-b-0">
-              <div className="relative shrink-0 mt-5 bg-[#ffffff] border border-[#c4c7c7]/50 rounded-3xl overflow-hidden shadow-xl flex items-center justify-center group">
-                <div className="w-auto h-auto bg-[#f8f9f9] rounded-xl flex items-center justify-center relative border border-[#c4c7c7]/30 overflow-hidden">
+              {/* Camera Container Frame */}
+              <div className="relative shrink-0 p-4 bg-white border border-emerald-100 rounded-[2.5rem] shadow-[0_15px_35px_rgba(74,99,99,0.06)] flex items-center justify-center group backdrop-blur-md">
+
+                <div className="w-[350px] h-[350px] bg-slate-900 rounded-3xl flex items-center justify-center relative border border-emerald-100/30 overflow-hidden shadow-inner">
+                  {/* Neon Target Corners inside the camera viewfinder */}
+                  <div className="corner-target top-4 left-4 border-t-4 border-l-4 rounded-tl-xl"></div>
+                  <div className="corner-target top-4 right-4 border-t-4 border-r-4 rounded-tr-xl"></div>
+                  <div className="corner-target bottom-4 left-4 border-b-4 border-l-4 rounded-bl-xl"></div>
+                  <div className="corner-target bottom-4 right-4 border-b-4 border-r-4 rounded-br-xl"></div>
+
                   <div
                     id="reader"
-                    className="w-[350px] h-[350px] object-cover"
+                    className="w-full h-full object-cover"
                   ></div>
-                  <div className="scanner-line"></div>
-                </div>
 
-                {/* Live Feed Overlay */}
-                <div className="absolute bottom-8 px-6 py-2 bg-[#fcfdfd]/90 backdrop-blur-md rounded-full border border-[#c4c7c7]/50 flex items-center gap-2 shadow-sm">
-                  <div className="w-2 h-2 bg-[#ba1a1a] rounded-full animate-pulse"></div>
-                  <span className="text-xs font-bold tracking-widest uppercase text-[#1a1c1c]">
-                    Live Camera Active
-                  </span>
-                </div>
-              </div>
-              {!isCameraActive && (
-                <div className="absolute inset-0 bg-white flex flex-col items-center justify-center z-10">
-                  <button
-                    onClick={startScanning}
-                    className="flex flex-col items-center gap-4 group"
-                  >
-                    <div className="w-20 h-20 rounded-full bg-[#4a6363]/10 flex items-center justify-center group-hover:bg-[#4a6363]/20 transition-all">
-                      <span className="material-symbols-outlined text-[#4a6363] text-4xl">
-                        videocam
+                  {isCameraActive && <div className="scanner-line"></div>}
+
+                  {/* Camera Offline Overlay */}
+                  {!isCameraActive && (
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#f8faf9] to-[#eff2f1] flex flex-col items-center justify-center z-10 transition-all">
+                      <button
+                        onClick={startScanning}
+                        className="flex flex-col items-center gap-4 group"
+                      >
+                        <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/20 group-hover:scale-105 active:scale-95 transition-all duration-300 shadow-[0_4px_12px_rgba(16,185,129,0.08)]">
+                          <span className="material-symbols-outlined text-emerald-600 text-4xl animate-pulse">
+                            videocam
+                          </span>
+                        </div>
+                        <span className="font-bold text-emerald-700 tracking-widest uppercase text-[10px] bg-emerald-500/15 px-5 py-2 rounded-full border border-emerald-500/20 transition-all group-hover:bg-emerald-500/25">
+                          BẬT CAMERA QUÉT
+                        </span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Active Camera Live Badge */}
+                  {isCameraActive && (
+                    <div className="absolute bottom-6 px-4 py-1.5 bg-black/80 backdrop-blur-md rounded-full border border-red-500/30 flex items-center gap-2 shadow-lg z-20">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+                      <span className="text-[10px] font-extrabold tracking-widest uppercase text-red-400">
+                        LIVE CAMERA
                       </span>
                     </div>
-                    <span className="font-bold text-[#4a6363] tracking-widest uppercase text-sm">
-                      Nhấn để Live Cam
-                    </span>
-                  </button>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {/* Result Card */}
-              {checkInResult ? (
-                <div className="mt-8 w-full max-w-md bg-white rounded-2xl p-6 shadow-xl border border-[#c4c7c7]/20 shrink-0 mb-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#444748] mb-1">
-                        Kết quả quét
+              {/* Scanning Result Area */}
+              <div className="w-full max-w-lg mt-8 shrink-0">
+                {checkInResult ? (
+                  <div className="w-full bg-white rounded-2xl p-6 shadow-[0_10px_30px_rgba(74,99,99,0.08)] border border-emerald-200 slide-in relative overflow-hidden backdrop-blur-md">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div className="flex items-start justify-between mb-4 pb-4 border-b border-slate-100">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[9px] font-extrabold uppercase tracking-widest text-emerald-600 mb-1">
+                          KẾT QUẢ QUÉT
+                        </span>
+                        <h2 className="font-sans text-xl font-extrabold text-[#1a1c1c] truncate pr-2">
+                          {checkInResult.customerName}
+                        </h2>
+                      </div>
+                      <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl border border-emerald-200 flex items-center gap-1.5 shrink-0 shadow-sm animate-pulse-glow">
+                        <span
+                          className="material-symbols-outlined text-sm font-semibold"
+                          style={{ fontVariationSettings: "'FILL' 1" }}
+                        >
+                          check_circle
+                        </span>
+                        <span className="text-xs font-black tracking-widest uppercase">HỢP LỆ</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-[9px] uppercase text-gray-500 font-bold tracking-widest">
+                          Khu vực vé
+                        </p>
+                        <p className="text-sm font-bold text-slate-800">
+                          {checkInResult?.section || "N/A"}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[9px] uppercase text-gray-500 font-bold tracking-widest">
+                          Số ghế
+                        </p>
+                        <p className="text-sm font-bold text-slate-800">
+                          {checkInResult?.seatLabel || "N/A"}
+                        </p>
+                      </div>
+                      <div className="space-y-1 pt-2 border-t border-slate-100">
+                        <p className="text-[9px] uppercase text-gray-500 font-bold tracking-widest">
+                          Mã đặt chỗ
+                        </p>
+                        <p className="text-sm font-bold text-emerald-600 font-mono">
+                          {checkInResult?.reservationCode || checkInResult?.reservationId || "N/A"}
+                        </p>
+                      </div>
+                      <div className="space-y-1 pt-2 border-t border-slate-100">
+                        <p className="text-[9px] uppercase text-gray-500 font-bold tracking-widest">
+                          Thời gian quét
+                        </p>
+                        <p className="text-sm font-bold text-slate-800">
+                          {formatDateVN(checkInResult?.checkInAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full bg-white rounded-2xl p-6 border border-emerald-100 shrink-0 flex items-center gap-4 backdrop-blur-md shadow-[0_10px_25px_rgba(74,99,99,0.04)]">
+                    <div className="size-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 shadow-inner">
+                      <span className="material-symbols-outlined text-2xl">sensors</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-[#5c6060]">
+                        TRẠNG THÁI QUÉT
                       </span>
-                      <h2 className="font-sans text-2xl font-extrabold text-[#1a1c1c]">
-                        {checkInResult.customerName}
+                      <h2 className="text-base font-extrabold text-slate-600 mt-0.5 truncate flex items-center gap-2">
+                        {isCameraActive ? (
+                          <>
+                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                            Đang chờ quét QR...
+                          </>
+                        ) : (
+                          "Vui lòng bật Camera để bắt đầu"
+                        )}
                       </h2>
                     </div>
-                    <div className="bg-[#e8f5e9] text-[#2e7d32] px-3 py-1.5 rounded-lg border border-[#2e7d32]/20 flex items-center gap-1.5">
-                      <span
-                        className="material-symbols-outlined text-sm"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        check_circle
-                      </span>
-                      <span className="text-xs font-bold tracking-wide">
-                        VALID
-                      </span>
-                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <div className="space-y-1">
-                      <p className="text-[10px] uppercase text-[#444748] font-bold tracking-widest">
-                        Khu vực
-                      </p>
-                      <p className="text-sm font-semibold text-[#1a1c1c]">
-                        {checkInResult?.section}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] uppercase text-[#444748] font-bold tracking-widest">
-                        Số ghế / Queue
-                      </p>
-                      <p className="text-sm font-semibold text-[#1a1c1c]">
-                        {checkInResult?.seatLabel}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-2 col-span-2 space-y-1 pt-2 border-t border-[#c4c7c7]/10">
-                    <p className="text-[10px] uppercase text-[#444748] font-bold tracking-widest">
-                      Mã đơn hàng
-                    </p>
-                    <p className="text-sm font-semibold text-[#1a1c1c]">
-                      {checkInResult?.reservationId}
-                    </p>
-                  </div>
-                  <div className="mt-2 col-span-2 space-y-1 pt-2 border-t border-[#c4c7c7]/10">
-                    <p className="text-[10px] uppercase text-[#444748] font-bold tracking-widest">
-                      Ngày check in
-                    </p>
-                    <p className="text-sm font-semibold text-[#1a1c1c]">
-                      {formatDateVN(checkInResult?.checkInAt)}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-8 w-full max-w-md bg-white rounded-2xl p-6 shadow-xl border border-gray-100 shrink-0">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                    Kết quả quét
-                  </span>
-                  <h2 className="text-2xl font-extrabold text-[#1a1c1c] mt-1 truncate">
-                    Đang chờ...
-                  </h2>
-                </div>
-              )}
+                )}
+              </div>
             </section>
 
-            {/* CỘT 2: Side Panel */}
-            <aside className="bg-[#f6f7f7] flex flex-col border-l border-[#c4c7c7]/20 overflow-hidden">
-              <div className="p-6 border-b border-[#c4c7c7]/20 flex items-center justify-between shrink-0">
-                <h3 className="font-sans font-bold text-[#1a1c1c]">
-                  Recent Check-ins
+            {/* COLUMN 2: Side Activity Panel */}
+            <aside className="bg-[#f5f7f6]/80 flex flex-col border-l border-emerald-100/70 overflow-hidden">
+              <div className="p-6 border-b border-emerald-100/70 flex items-center justify-between shrink-0 bg-white/40">
+                <h3 className="font-sans font-black text-sm tracking-widest uppercase text-[#1a1c1c] flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Lịch Sử Check-in
                 </h3>
+                <span className="bg-emerald-500/10 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-extrabold border border-emerald-500/20 shrink-0">
+                  {tickets?.length || 0} Lượt
+                </span>
               </div>
 
-              {/* Danh sách cuộn riêng biệt */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {tickets?.map((ticket) => {
-                  return (
-                    <div
-                      key={ticket?.id}
-                      className="bg-[#fcfdfd] p-3 rounded-xl border border-[#c4c7c7]/20 flex items-center gap-3 hover:bg-[#f8f9f9] transition-colors cursor-pointer group"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-[#ebeeed] flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-[#444748]">
-                          person
+              {/* Scrollable list */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                {tickets?.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                    <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">
+                      person_off
+                    </span>
+                    <p className="text-xs font-bold text-slate-500">Chưa có lượt quét nào</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Mọi lượt check-in thành công sẽ hiển thị ở đây</p>
+                  </div>
+                ) : (
+                  tickets?.map((ticket, index) => {
+                    return (
+                      <div
+                        key={ticket?.id || index}
+                        className="bg-white p-3.5 rounded-xl border border-emerald-100/50 flex items-center gap-3.5 hover:bg-emerald-50/20 hover:border-emerald-300 hover:shadow-md transition-all duration-300 cursor-pointer group slide-in shadow-sm"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all shadow-inner">
+                          <span className="material-symbols-outlined text-slate-500 group-hover:text-emerald-600 text-xl transition-all">
+                            person
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate text-slate-800">
+                            {ticket?.customerName}
+                          </p>
+                          <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                            {ticket?.displayName || "Vé Hợp Lệ"}
+                          </p>
+                          <p className="text-[9px] text-emerald-600 font-mono mt-0.5 font-bold">
+                            {formatDateVN(ticket?.checkInAt)}
+                          </p>
+                        </div>
+                        <span
+                          className="material-symbols-outlined text-emerald-600 text-base shrink-0 bg-emerald-50 p-1 rounded-full border border-emerald-200"
+                          style={{ fontVariationSettings: "'FILL' 1" }}
+                        >
+                          verified
                         </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate text-[#1a1c1c]">
-                          {ticket?.customerName}
-                        </p>
-                        <p className="text-[11px] text-[#444748]">
-                          {formatDateVN(ticket?.checkInAt)} •{" "}
-                          {ticket?.displayName}
-                        </p>
-                      </div>
-                      <span
-                        className="material-symbols-outlined text-[#2e7d32] text-sm"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        verified
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
 
               {/* Footer Aside */}
-              <div className="p-4 bg-[#fcfdfd] border-t border-[#c4c7c7]/10 shrink-0">
-                <button className="w-full py-3 bg-[#ebeeed] rounded-xl text-xs font-bold uppercase tracking-widest text-[#1a1c1c] hover:bg-[#4a6363] hover:text-white transition-all duration-300">
-                  View All Activity
+              <div className="p-4 bg-white/40 border-t border-emerald-100/70 shrink-0">
+                <button className="w-full py-3.5 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-700 hover:shadow-[0_4px_15px_rgba(16,185,129,0.3)] active:scale-95 transition-all duration-300 shadow-sm border border-emerald-700">
+                  XEM TOÀN BỘ HOẠT ĐỘNG
                 </button>
               </div>
             </aside>
           </main>
 
-          {/* Background Decoration */}
-          <div className="absolute top-0 left-0 w-1/3 h-1/3 bg-[#4a6363]/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
-          <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-[#ebeeed]/20 rounded-full blur-[150px] -z-10 pointer-events-none"></div>
+          {/* Ambient decorative glowing soft light */}
+          <div className="absolute top-0 left-0 w-1/4 h-1/4 bg-emerald-500/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+          <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-emerald-500/5 rounded-full blur-[150px] -z-10 pointer-events-none"></div>
         </div>
       </div>
       <ToastContainer />

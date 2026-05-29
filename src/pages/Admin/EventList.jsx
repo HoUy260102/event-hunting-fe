@@ -10,6 +10,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import RestoreIcon from "@mui/icons-material/Restore";
 import CancelIcon from "@mui/icons-material/Cancel";
+import SendIcon from "@mui/icons-material/Send";
 import UserDetailModal from "../../components/modals/UserDetailModal";
 import axiosClient from "../../api/axiosClient";
 import ConfirmModal from "../../components/modals/ConfirmModal";
@@ -261,13 +262,31 @@ function EventList() {
           setConfirmModal({
             isOpen: true,
             title: "Xác nhận duyệt sự kiện này",
-            message: "Bạn có chắc sẽ xác nhận duyệt sự kiện có id: " + item.id,
+            message: `Bạn có chắc chắn muốn duyệt sự kiện "${item.name}" không?`,
             onConfirm: async () => {
               try {
                 await axiosClient.patch(`/events/${item.id}/approve`);
                 closeConfirmModal();
-                window.location.reload();
+                setModal({
+                  isOpen: true,
+                  title: "Duyệt sự kiện",
+                  message: "Duyệt sự kiện thành công!",
+                  type: "success",
+                });
+                const keyword = searchParams.get("keyword") || "";
+                const status = searchParams.get("status") || "ALL";
+                const categoryId = searchParams.get("categoryId") || "";
+                const provinceId = searchParams.get("provinceId") || "";
+                let page = parseInt(searchParams.get("page")) || 1;
+                fetchEvents(page, keyword, status, categoryId, provinceId);
               } catch (error) {
+                closeConfirmModal();
+                setModal({
+                  isOpen: true,
+                  title: "Duyệt sự kiện thất bại",
+                  message: error?.response?.data?.message || error?.message,
+                  type: "error",
+                });
                 console.log("Duyệt thất bại: ", error.message);
               }
             },
@@ -289,8 +308,26 @@ function EventList() {
                   rejectionReason: reason,
                 });
                 closeRejectModal();
-                window.location.reload();
+                setModal({
+                  isOpen: true,
+                  title: "Từ chối sự kiện",
+                  message: "Từ chối sự kiện thành công!",
+                  type: "success",
+                });
+                const keyword = searchParams.get("keyword") || "";
+                const status = searchParams.get("status") || "ALL";
+                const categoryId = searchParams.get("categoryId") || "";
+                const provinceId = searchParams.get("provinceId") || "";
+                let page = parseInt(searchParams.get("page")) || 1;
+                fetchEvents(page, keyword, status, categoryId, provinceId);
               } catch (error) {
+                closeRejectModal();
+                setModal({
+                  isOpen: true,
+                  title: "Từ chối sự kiện thất bại",
+                  message: error?.response?.data?.message || error?.message,
+                  type: "error",
+                });
                 console.log("Từ chối thất bại: ", error.message);
               }
             },
@@ -310,6 +347,45 @@ function EventList() {
         },
       });
     }
+    if (!event.deletedAt && (event?.status === "DRAFT" || event?.status === "REJECTED")) {
+      actions.push({
+        label: "Gửi yêu cầu duyệt",
+        icon: <SendIcon fontSize="small" />,
+        onClick: (item) => {
+          setConfirmModal({
+            isOpen: true,
+            title: "Xác nhận gửi yêu cầu duyệt",
+            message: "Bạn có chắc chắn muốn gửi yêu cầu duyệt cho sự kiện: " + item.name + "?",
+            onConfirm: async () => {
+              try {
+                await axiosClient.patch(`/events/${item.id}/submit`);
+                closeConfirmModal();
+                setModal({
+                  isOpen: true,
+                  title: "Gửi yêu cầu duyệt sự kiện",
+                  message: "Gửi yêu cầu duyệt sự kiện thành công!",
+                  type: "success",
+                });
+                const keyword = searchParams.get("keyword") || "";
+                const status = searchParams.get("status") || "ALL";
+                const categoryId = searchParams.get("categoryId") || "";
+                const provinceId = searchParams.get("provinceId") || "";
+                let page = parseInt(searchParams.get("page")) || 1;
+                fetchEvents(page, keyword, status, categoryId, provinceId);
+              } catch (error) {
+                closeConfirmModal();
+                setModal({
+                  isOpen: true,
+                  title: "Gửi yêu cầu duyệt sự kiện",
+                  message: "Gửi yêu cầu duyệt thất bại: " + (error?.response?.data?.message || error?.message),
+                  type: "error",
+                });
+              }
+            },
+          });
+        },
+      });
+    }
     if (!event.deletedAt) {
       if (can("EVENT:DELETE")) {
         actions.push({
@@ -320,7 +396,7 @@ function EventList() {
             setConfirmModal({
               isOpen: true,
               title: "Xác nhận xóa sự kiện",
-              message: "Bạn có chắc sẽ xóa sự kiện có id: " + item.id,
+              message: `Bạn có chắc chắn muốn xóa sự kiện "${item.name}" không?`,
               onConfirm: async () => {
                 try {
                   await axiosClient.patch(`/events/${item.id}/soft-delete`);
@@ -368,7 +444,7 @@ function EventList() {
             setConfirmModal({
               isOpen: true,
               title: "Xác nhận khôi phục sự kiện",
-              message: "Bạn có chắc sẽ khôi phục sự kiện có id: " + item.id,
+              message: `Bạn có chắc chắn muốn khôi phục sự kiện "${item.name}" không?`,
               onConfirm: async () => {
                 try {
                   await axiosClient.patch(`/events/${item.id}/restore`);
@@ -461,29 +537,59 @@ function EventList() {
         )}
       </div>
       <div className="bg-white dark:bg-[#1c2e18] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-[#2a4225] p-5 mb-6">
-        <div className="flex flex-col gap-3">
-          {/* HÀNG 1: Tìm kiếm chính và Thể loại */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2 relative">
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <span className="material-symbols-outlined text-[20px] text-[#6b7280] dark:text-[#a1aebf]">
-                    search
-                  </span>
-                </div>
-                <input
-                  className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none"
-                  placeholder="Nhập tên sự kiện hoặc địa điểm..."
-                  value={filters.keyword}
-                  type="text"
-                  onChange={(e) =>
-                    handleFilterChange("keyword", e.target.value)
-                  }
-                />
+        <div className="flex flex-col gap-4">
+          {/* Dòng 1: Tìm kiếm (2/3) và Làm mới/Tìm kiếm (1/3) */}
+          <div className="flex flex-col md:flex-row gap-4 items-center w-full">
+            <div className="relative flex-[2] w-full">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <span className="material-symbols-outlined text-[20px] text-[#6b7280] dark:text-[#a1aebf]">
+                  search
+                </span>
               </div>
+              <input
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none"
+                placeholder="Nhập tên sự kiện hoặc địa điểm..."
+                value={filters.keyword}
+                type="text"
+                onChange={(e) =>
+                  handleFilterChange("keyword", e.target.value)
+                }
+              />
             </div>
+            <div className="flex gap-2 flex-[1] w-full md:min-w-[280px]">
+              <button
+                onClick={() => {
+                  setFilters({
+                    keyword: "",
+                    status: "ALL",
+                    categoryId: "",
+                    provinceId: "",
+                    page: 1,
+                  });
+                  setSearchParams({});
+                }}
+                className="flex-1 flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px] mr-2">
+                  restart_alt
+                </span>
+                Làm mới
+              </button>
+              <button
+                onClick={applyFilters}
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  search
+                </span>
+                Tìm kiếm
+              </button>
+            </div>
+          </div>
 
-            <div className="md:col-span-1">
+          {/* Dòng 2: Ba bộ lọc còn lại */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="w-full">
               <select
                 value={filters.categoryId || ""}
                 onChange={(e) =>
@@ -499,10 +605,8 @@ function EventList() {
                 ))}
               </select>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-            <div className="md:col-span-1">
+            <div className="w-full">
               <select
                 value={filters.provinceId || ""}
                 onChange={(e) =>
@@ -519,7 +623,7 @@ function EventList() {
               </select>
             </div>
 
-            <div className="md:col-span-1">
+            <div className="w-full">
               <select
                 value={filters.status || "ALL"}
                 onChange={(e) => handleFilterChange("status", e.target.value)}
@@ -535,36 +639,6 @@ function EventList() {
                 <option value="HAPPENING">Đang diễn ra</option>
                 <option value="FINISHED">Kết thúc</option>
               </select>
-            </div>
-
-            <div className="md:col-span-1 flex gap-2">
-              <button
-                onClick={() => {
-                  setFilters({
-                    keyword: "",
-                    status: "ALL",
-                    categoryId: "",
-                    provinceId: "",
-                    page: 1,
-                  });
-                  setSearchParams({});
-                }}
-                className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none"
-              >
-                <span className="material-symbols-outlined text-[18px] mr-2">
-                  restart_alt
-                </span>
-                Làm mới
-              </button>
-              <button
-                onClick={applyFilters}
-                className="whitespace-nowrap flex-[2] flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-4 rounded-lg text-sm transition-all active:scale-[0.98] shadow-md shadow-[#46ec13]/20"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  search
-                </span>
-                Tìm kiếm
-              </button>
             </div>
           </div>
         </div>

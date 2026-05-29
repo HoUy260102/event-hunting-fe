@@ -6,6 +6,13 @@ import { formatDateVN } from "../../utils/format";
 import ReservationSummarySkeleton from "../../components/common/ReservationSummarySkeleton";
 
 const ReservationSummary = () => {
+  useEffect(() => {
+    document.title = "Thanh toán đặt vé | Event Hunting";
+    return () => {
+      document.title = "Event Hunting";
+    };
+  }, []);
+
   const PAYMENT_METHOD_MAP = {
     VNPAY: "Cổng thanh toán VNPAY",
     MOMO: "Ví điện tử MoMo",
@@ -101,7 +108,7 @@ const ReservationSummary = () => {
                     Mã đơn hàng
                   </p>
                   <p className="font-mono text-[#4ade80] font-bold text-xl">
-                    {reservation?.id}
+                    {reservation?.code || reservation?.id}
                   </p>
                 </div>
                 <div className="text-right">

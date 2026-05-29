@@ -1,14 +1,95 @@
-import React, { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useRef, useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./Sidebar.css";
 import { useAuth } from "../../../hooks/useAuth";
+import axiosClient from "../../../api/axiosClient";
+import ConfirmModal from "../../modals/ConfirmModal";
 
 function Sidebar({ isOpen, handleIsOpen }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const role = user?.role;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const pathname = location.pathname;
 
-  const [activeMenu, setActiveMenu] = useState("dashboard");
-  const [openDropdown, setOpenDropdown] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+  });
+
+  const handleLogout = async () => {
+    try {
+      await axiosClient.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout error:", error.message);
+    } finally {
+      logout();
+      setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+      navigate("/login", { replace: true });
+    }
+  };
+
+  // Hàm xác định trạng thái active dựa trên đường dẫn hiện tại
+  const getActiveState = () => {
+    if (pathname === "/admin" || pathname === "/admin/") {
+      return { menu: "dashboard", dropdown: null };
+    }
+    if (pathname.includes("/admin/users") || pathname.includes("/admin/add-user")) {
+      return { menu: "users", dropdown: "users" };
+    }
+    if (pathname.includes("/admin/categories") || pathname.includes("/admin/add-category")) {
+      return { menu: "categories", dropdown: "categories" };
+    }
+    if (pathname.includes("/admin/events") || pathname.includes("/admin/add-event")) {
+      return { menu: "events", dropdown: "events" };
+    }
+    if (pathname.includes("/admin/reservations")) {
+      return { menu: "reservations", dropdown: "reservations" };
+    }
+    if (pathname.includes("/admin/vouchers") || pathname.includes("/admin/add-voucher")) {
+      return { menu: "vouchers", dropdown: "vouchers" };
+    }
+    if (pathname.includes("/admin/roles") || pathname.includes("/admin/permissions")) {
+      return { menu: "permissions", dropdown: "permissions" };
+    }
+    return { menu: "dashboard", dropdown: null };
+  };
+
+  const [activeMenu, setActiveMenu] = useState(() => getActiveState().menu);
+  const [openDropdown, setOpenDropdown] = useState(() => getActiveState().dropdown);
+
+  // Đồng bộ lại trạng thái khi thay đổi trang hoặc tải lại trang
+  useEffect(() => {
+    const state = getActiveState();
+    setActiveMenu(state.menu);
+    if (state.dropdown) {
+      setOpenDropdown(state.dropdown);
+    }
+  }, [pathname]);
+
+  const [activeHoveredTop, setActiveHoveredTop] = useState(0);
+  const [hoveredDropdown, setHoveredDropdown] = useState(null);
+  const hoverTimeoutRef = useRef(null);
+
+  const handleMouseEnterDropdown = (key, rectTop) => {
+    if (!isOpen) {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      if (rectTop !== undefined) setActiveHoveredTop(rectTop);
+      setHoveredDropdown(key);
+    }
+  };
+
+  const handleMouseLeaveDropdown = () => {
+    if (!isOpen) {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = setTimeout(() => {
+        setHoveredDropdown(null);
+      }, 150);
+    }
+  };
+
   const usersRef = useRef(null);
   const vouchersRef = useRef(null);
   const reservationsRef = useRef(null);
@@ -35,15 +116,42 @@ function Sidebar({ isOpen, handleIsOpen }) {
 
   return (
     <>
+      <ConfirmModal
+        isOpen={confirmModal?.isOpen}
+        title={confirmModal?.title}
+        message={confirmModal?.message}
+        onConfirm={confirmModal?.onConfirm}
+        onClose={() => {
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        }}
+      />
       <aside className={`sidebar ${!isOpen ? "collapsed" : ""}`}>
         <header className="sidebar-header">
-          <a href="#" className="header-logo">
-            <div>
-              <span className="material-symbols-outlined">
-                confirmation_number
-              </span>
+          <Link to="/admin" className="header-logo relative flex items-center w-[160px] h-[54px] overflow-visible">
+            {/* Expanded Text Logo */}
+            <img
+              src="https://res.cloudinary.com/dstmcgsoa/image/upload/v1779946512/eventhuntinglogochu_lpzadg.png"
+              alt="EventHunting Logo"
+              className={`h-[54px] w-auto object-contain transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) drop-shadow-[0_0_15px_rgba(16,185,129,0.85)] drop-shadow-[0_0_4px_rgba(16,185,129,0.45)] hover:scale-105 hover:drop-shadow-[0_0_28px_rgba(16,185,129,0.98)] hover:drop-shadow-[0_0_10px_rgba(16,185,129,0.75)] ${isOpen
+                ? "opacity-100 scale-100 translate-x-0 pointer-events-auto"
+                : "opacity-0 scale-75 -translate-x-12 pointer-events-none absolute"
+                }`}
+            />
+
+            {/* Collapsed Icon Logo */}
+            <div
+              className={`transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${!isOpen
+                ? "opacity-100 scale-100 translate-x-0 pointer-events-auto"
+                : "opacity-0 scale-75 translate-x-12 pointer-events-none absolute"
+                }`}
+            >
+              <img
+                src="https://res.cloudinary.com/dstmcgsoa/image/upload/v1779947380/eventhuntinglogo_drv0cb.png"
+                alt="EventHunting Icon"
+                className="w-[45px] h-[45px] object-contain"
+              />
             </div>
-          </a>
+          </Link>
           <button className="sidebar-toggler" onClick={toggleSidebar}>
             <span className="material-symbols-rounded">chevron_left</span>
           </button>
@@ -67,8 +175,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
             {/* Quản lý tài khoản */}
             {isAdmin && (
               <li
-                className={`nav-item dropdown-container ${openDropdown === "users" ? "open" : ""
-                  }`}
+                className={`nav-item dropdown-container ${openDropdown === "users" ? "open" : ""} ${
+                  !isOpen && hoveredDropdown === "users" ? "active-hover" : ""
+                }`}
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  handleMouseEnterDropdown("users", rect.top);
+                }}
+                onMouseLeave={handleMouseLeaveDropdown}
               >
                 <Link
                   to="#"
@@ -89,14 +203,20 @@ function Sidebar({ isOpen, handleIsOpen }) {
                 <ul
                   ref={usersRef}
                   className="dropdown"
-                  style={isOpen ? {
+                  onMouseEnter={() => handleMouseEnterDropdown("users")}
+                  onMouseLeave={handleMouseLeaveDropdown}
+                  style={!isOpen ? {
+                    position: "fixed",
+                    left: "85px",
+                    top: `${activeHoveredTop - 12}px`,
+                  } : {
                     height:
                       openDropdown === "users"
                         ? `${usersRef.current?.scrollHeight || 0}px`
                         : 0,
                     overflow: "hidden",
                     transition: "height 0.3s ease",
-                  } : {}}
+                  }}
                 >
                   <li className="nav-item">
                     <Link className="nav-link dropdown-title">
@@ -132,8 +252,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
             {/* Thể loại */}
             {isAdmin && (
               <li
-                className={`nav-item dropdown-container ${openDropdown === "categories" ? "open" : ""
-                  }`}
+                className={`nav-item dropdown-container ${openDropdown === "categories" ? "open" : ""} ${
+                  !isOpen && hoveredDropdown === "categories" ? "active-hover" : ""
+                }`}
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  handleMouseEnterDropdown("categories", rect.top);
+                }}
+                onMouseLeave={handleMouseLeaveDropdown}
               >
                 <a
                   href="#"
@@ -153,14 +279,20 @@ function Sidebar({ isOpen, handleIsOpen }) {
                 <ul
                   ref={categoriesRef}
                   className="dropdown"
-                  style={isOpen ? {
+                  onMouseEnter={() => handleMouseEnterDropdown("categories")}
+                  onMouseLeave={handleMouseLeaveDropdown}
+                  style={!isOpen ? {
+                    position: "fixed",
+                    left: "85px",
+                    top: `${activeHoveredTop - 12}px`,
+                  } : {
                     height:
                       openDropdown === "categories"
                         ? `${categoriesRef.current?.scrollHeight || 0}px`
                         : 0,
                     overflow: "hidden",
                     transition: "height 0.3s ease",
-                  } : {}}
+                  }}
                 >
                   <li className="nav-item">
                     <Link className="nav-link dropdown-title">Chủ đề</Link>
@@ -193,8 +325,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
 
             {/* Events */}
             <li
-              className={`nav-item dropdown-container ${openDropdown === "events" ? "open" : ""
-                }`}
+              className={`nav-item dropdown-container ${openDropdown === "events" ? "open" : ""} ${
+                !isOpen && hoveredDropdown === "events" ? "active-hover" : ""
+              }`}
+              onMouseEnter={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                handleMouseEnterDropdown("events", rect.top);
+              }}
+              onMouseLeave={handleMouseLeaveDropdown}
             >
               <a
                 className={`nav-link custom-dropdown-toggle ${activeMenu === "events" ? "active" : ""}`}
@@ -212,14 +350,20 @@ function Sidebar({ isOpen, handleIsOpen }) {
               <ul
                 ref={eventsRef}
                 className="dropdown"
-                style={isOpen ? {
+                onMouseEnter={() => handleMouseEnterDropdown("events")}
+                onMouseLeave={handleMouseLeaveDropdown}
+                style={!isOpen ? {
+                  position: "fixed",
+                  left: "85px",
+                  top: `${activeHoveredTop - 12}px`,
+                } : {
                   height:
                     openDropdown === "events"
                       ? `${eventsRef.current?.scrollHeight || 0}px`
                       : 0,
                   overflow: "hidden",
                   transition: "height 0.3s ease",
-                } : {}}
+                }}
               >
                 <li className="nav-item">
                   <Link className="nav-link dropdown-title">Sự kiện</Link>
@@ -251,8 +395,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
 
             {/* Reservations */}
             <li
-              className={`nav-item dropdown-container ${openDropdown === "reservations" ? "open" : ""
-                }`}
+              className={`nav-item dropdown-container ${openDropdown === "reservations" ? "open" : ""} ${
+                !isOpen && hoveredDropdown === "reservations" ? "active-hover" : ""
+              }`}
+              onMouseEnter={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                handleMouseEnterDropdown("reservations", rect.top);
+              }}
+              onMouseLeave={handleMouseLeaveDropdown}
             >
               <a
                 className={`nav-link custom-dropdown-toggle ${activeMenu === "reservations" ? "active" : ""}`}
@@ -270,14 +420,20 @@ function Sidebar({ isOpen, handleIsOpen }) {
               <ul
                 ref={reservationsRef}
                 className="dropdown"
-                style={isOpen ? {
+                onMouseEnter={() => handleMouseEnterDropdown("reservations")}
+                onMouseLeave={handleMouseLeaveDropdown}
+                style={!isOpen ? {
+                  position: "fixed",
+                  left: "85px",
+                  top: `${activeHoveredTop - 12}px`,
+                } : {
                   height:
                     openDropdown === "reservations"
                       ? `${reservationsRef.current?.scrollHeight || 0}px`
                       : 0,
                   overflow: "hidden",
                   transition: "height 0.3s ease",
-                } : {}}
+                }}
               >
                 <li className="nav-item">
                   <Link className="nav-link dropdown-title">Đặt chỗ</Link>
@@ -298,8 +454,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
 
             {/* Vouchers */}
             <li
-              className={`nav-item dropdown-container ${openDropdown === "vouchers" ? "open" : ""
-                }`}
+              className={`nav-item dropdown-container ${openDropdown === "vouchers" ? "open" : ""} ${
+                !isOpen && hoveredDropdown === "vouchers" ? "active-hover" : ""
+              }`}
+              onMouseEnter={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                handleMouseEnterDropdown("vouchers", rect.top);
+              }}
+              onMouseLeave={handleMouseLeaveDropdown}
             >
               <a
                 className={`nav-link custom-dropdown-toggle ${activeMenu === "vouchers" ? "active" : ""}`}
@@ -317,14 +479,20 @@ function Sidebar({ isOpen, handleIsOpen }) {
               <ul
                 ref={vouchersRef}
                 className="dropdown"
-                style={isOpen ? {
+                onMouseEnter={() => handleMouseEnterDropdown("vouchers")}
+                onMouseLeave={handleMouseLeaveDropdown}
+                style={!isOpen ? {
+                  position: "fixed",
+                  left: "85px",
+                  top: `${activeHoveredTop - 12}px`,
+                } : {
                   height:
                     openDropdown === "vouchers"
                       ? `${vouchersRef.current?.scrollHeight || 0}px`
                       : 0,
                   overflow: "hidden",
                   transition: "height 0.3s ease",
-                } : {}}
+                }}
               >
                 <li className="nav-item">
                   <Link className="nav-link dropdown-title">Khuyến mãi</Link>
@@ -357,8 +525,14 @@ function Sidebar({ isOpen, handleIsOpen }) {
             {/* Phân quyền */}
             {isAdmin && (
               <li
-                className={`nav-item dropdown-container ${openDropdown === "permissions" ? "open" : ""
-                  }`}
+                className={`nav-item dropdown-container ${openDropdown === "permissions" ? "open" : ""} ${
+                  !isOpen && hoveredDropdown === "permissions" ? "active-hover" : ""
+                }`}
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  handleMouseEnterDropdown("permissions", rect.top);
+                }}
+                onMouseLeave={handleMouseLeaveDropdown}
               >
                 <Link
                   to="#"
@@ -377,14 +551,20 @@ function Sidebar({ isOpen, handleIsOpen }) {
                 <ul
                   ref={permissionsRef}
                   className="dropdown"
-                  style={isOpen ? {
+                  onMouseEnter={() => handleMouseEnterDropdown("permissions")}
+                  onMouseLeave={handleMouseLeaveDropdown}
+                  style={!isOpen ? {
+                    position: "fixed",
+                    left: "85px",
+                    top: `${activeHoveredTop - 12}px`,
+                  } : {
                     height:
                       openDropdown === "permissions"
                         ? `${permissionsRef.current?.scrollHeight || 0}px`
                         : 0,
                     overflow: "hidden",
                     transition: "height 0.3s ease",
-                  } : {}}
+                  }}
                 >
                   <li className="nav-item">
                     <Link className="nav-link dropdown-title">
@@ -433,14 +613,24 @@ function Sidebar({ isOpen, handleIsOpen }) {
             <li className="nav-item">
               <a href="#" className="nav-link">
                 <span className="material-symbols-rounded">help</span>
-                <span className="nav-label">Support</span>
+                <span className="nav-label">Hỗ trợ</span>
               </a>
             </li>
             <li className="nav-item">
-              <a href="#" className="nav-link">
+              <button
+                onClick={() => {
+                  setConfirmModal({
+                    title: "Xác nhận đăng xuất",
+                    message: "Bạn chắc chắn muốn thoát khỏi hệ thống?",
+                    isOpen: true,
+                    onConfirm: handleLogout,
+                  });
+                }}
+                className="nav-link w-full text-left bg-transparent border-none outline-none cursor-pointer"
+              >
                 <span className="material-symbols-rounded">logout</span>
-                <span className="nav-label">Sign Out</span>
-              </a>
+                <span className="nav-label">Đăng xuất</span>
+              </button>
             </li>
           </ul>
         </nav>

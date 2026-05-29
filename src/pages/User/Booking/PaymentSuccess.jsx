@@ -92,7 +92,7 @@ const PaymentSuccess = () => {
                     Mã đơn hàng
                   </p>
                   <p className="font-mono text-[#4ade80] font-bold text-xl">
-                    {reservation?.id}
+                    {reservation?.code || reservation?.id}
                   </p>
                 </div>
                 <div className="text-right">

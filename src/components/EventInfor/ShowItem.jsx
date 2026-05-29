@@ -2,7 +2,7 @@ import { useState } from "react";
 import TicketTypeItem from "./TicketTypeItem";
 import { formatShowTime } from "../../utils/format";
 import ShowStatusButton from "./ShowStatusButton";
-const ShowItem = ({ show, handleBuy }) => {
+const ShowItem = ({ show, handleBuy, eventStatus }) => {
   const [isOpen, setIsOpen] = useState(false);
   const onBuy = () => {
     handleBuy(show);
@@ -20,7 +20,18 @@ const ShowItem = ({ show, handleBuy }) => {
           </span>
           <span className="text-gray-500 text-xs">{isOpen ? "▲" : "▼"}</span>
         </div>
-        <ShowStatusButton status={show?.status} onBuy={onBuy} />
+        <ShowStatusButton
+          status={
+            eventStatus === "CANCELLED"
+              ? "CANCELLED"
+              : eventStatus === "POSTPONED"
+              ? "POSTPONED"
+              : eventStatus !== "PUBLISHED"
+              ? "AWAITING_PUBLICATION"
+              : show?.status
+          }
+          onBuy={onBuy}
+        />
       </div>
 
       {/* Danh sách Ticket Types xổ xuống */}
@@ -31,7 +42,12 @@ const ShowItem = ({ show, handleBuy }) => {
       >
         <div className="space-y-3">
           {show?.ticketTypes?.map((ticketType) => (
-            <TicketTypeItem key={ticketType.id} ticketType={ticketType} />
+            <TicketTypeItem
+              key={ticketType.id}
+              ticketType={ticketType}
+              eventStatus={eventStatus}
+              showStatus={show?.status}
+            />
           ))}
         </div>
       </div>
