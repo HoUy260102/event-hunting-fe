@@ -17,6 +17,11 @@ const VoucherDetailModal = ({ isOpen, onClose, data }) => {
   };
 
   const statusConfig = {
+    DRAFT: {
+      label: "Nháp",
+      class: "bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800/40 dark:text-slate-350 dark:border-slate-700",
+      dot: "bg-slate-400",
+    },
     ACTIVE: {
       label: "Hoạt động",
       class: "bg-emerald-50 text-emerald-700 border border-emerald-250 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-900/30",
@@ -40,7 +45,7 @@ const VoucherDetailModal = ({ isOpen, onClose, data }) => {
   };
 
   const status = data?.status?.toUpperCase() || "ACTIVE";
-  const currentStatus = statusConfig[status] || statusConfig.ACTIVE;
+  const currentStatus = statusConfig[status] || statusConfig.DRAFT;
 
   const formatCurrency = (val) => {
     if (val === undefined || val === null) return "—";
@@ -122,24 +127,22 @@ const VoucherDetailModal = ({ isOpen, onClose, data }) => {
               </div>
 
               {/* Identity info */}
-              <div className="text-center md:text-left space-y-2">
-                <div className="flex flex-col sm:flex-row items-center gap-2">
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">
-                    {data?.name || "Chưa cập nhật"}
-                  </h3>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-800/30 dark:text-amber-350 dark:border-amber-750/30">
-                    Mã: {data?.code || "—"}
-                  </span>
-                </div>
-                <p className="text-sm text-slate-500 dark:text-text-secondary-dark font-medium">
-                  Thời gian hiệu lực: <span className="font-semibold text-slate-700 dark:text-emerald-400">{formatDateVN(data?.startTime) || "—"}</span> đến <span className="font-semibold text-slate-700 dark:text-emerald-400">{formatDateVN(data?.endTime) || "—"}</span>
-                </p>
-                <div className="flex justify-center md:justify-start">
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-bold ${currentStatus.class}`}>
+              <div className="text-center md:text-left space-y-2 flex-1">
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white leading-tight">
+                  {data?.name || "Chưa cập nhật"}
+                </h3>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold ${currentStatus.class}`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${currentStatus.dot}`}></span>
                     {currentStatus.label}
                   </span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/20 dark:text-amber-300 dark:border-amber-900/30">
+                    Mã: {data?.code || "—"}
+                  </span>
                 </div>
+                <p className="text-sm text-slate-500 dark:text-text-secondary-dark font-medium pt-1">
+                  Thời gian hiệu lực: <span className="font-semibold text-slate-700 dark:text-emerald-400">{formatDateVN(data?.startTime) || "—"}</span> đến <span className="font-semibold text-slate-700 dark:text-emerald-400">{formatDateVN(data?.endTime) || "—"}</span>
+                </p>
               </div>
             </div>
 
@@ -249,6 +252,33 @@ const VoucherDetailModal = ({ isOpen, onClose, data }) => {
                       </span>
                       <p className="text-sm font-semibold text-slate-800 dark:text-white">
                         {data?.scope?.toUpperCase() === "SYSTEM" ? "Toàn bộ hệ thống (System)" : "Áp dụng cho suất diễn cụ thể (Organizer)"}
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-text-secondary-dark tracking-wider block">
+                        Số lượng phát hành
+                      </span>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                        {(data?.isUnlimited || data?.quantity === null || data?.quantity === undefined) ? "Không giới hạn" : data?.quantity?.toLocaleString()}
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-text-secondary-dark tracking-wider block">
+                        Số lượng đang tạm giữ
+                      </span>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                        {data?.reservedQuantity?.toLocaleString() || "0"}
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-text-secondary-dark tracking-wider block">
+                        Số lượng đã sử dụng
+                      </span>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                        {data?.usedQuantity?.toLocaleString() || "0"}
                       </p>
                     </div>
 

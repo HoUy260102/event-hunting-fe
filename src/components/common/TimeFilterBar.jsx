@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 
 function TimeFilterBar({ onFilterChange }) {
   const [filterMode, setFilterMode] = useState("year"); // "date-range" | "month" | "year"
-  
+
   // Khởi tạo với tháng và năm hiện tại
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  
+
   // State lưu khoảng ngày tự chọn (Mặc định 'Đến ngày' là ngày hôm nay)
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState(() => {
@@ -37,7 +37,7 @@ function TimeFilterBar({ onFilterChange }) {
       if (!customStartDate) {
         return;
       }
-      
+
       // Nếu 'Đến ngày' bị trống, tự động mặc định lấy ngày hôm nay
       let finalEndDate = customEndDate;
       if (!finalEndDate) {

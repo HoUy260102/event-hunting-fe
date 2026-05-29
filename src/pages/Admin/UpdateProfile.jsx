@@ -225,9 +225,9 @@ function UpdateProfile() {
 
                     <label
                       htmlFor="avatar-upload"
-                      className={`${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} absolute bottom-0 right-0 bg-[#46ec13] p-2 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center border-2 border-white`}
+                      className={`${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} absolute bottom-0 right-0 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 p-2 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center border-2 border-white`}
                     >
-                      <span className="material-symbols-outlined text-slate-900 text-sm">
+                      <span className="material-symbols-outlined text-white text-sm">
                         photo_camera
                       </span>
                       <input
@@ -352,7 +352,12 @@ function UpdateProfile() {
             </button>
             <button
               type="submit"
-              className={` ${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} w-full md:w-auto px-8 h-12 rounded-xl bg-[#46ec13] text-slate-900 font-bold hover:brightness-110 flex items-center justify-center gap-2 transition-all`}
+              disabled={isLoading}
+              className={`w-full md:w-auto px-8 h-12 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-2 outline-none cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
+                isLoading
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20"
+              }`}
             >
               <span className="material-symbols-outlined">check</span>
               Cập nhật

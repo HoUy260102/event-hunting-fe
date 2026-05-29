@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import TicketTypeModal from "../../../components/modals/TicketTypeModal";
 function StepAddShow() {
@@ -38,9 +38,32 @@ function StepAddShow() {
     },
   ];
 
+  const prevShowsRef = useRef([]);
+
   useEffect(() => {
-    setValue("shows", shows, { shouldValidate: true });
-  }, [shows, setValue]);
+    const prevShows = prevShowsRef.current;
+    prevShowsRef.current = shows;
+
+    if (shows.length !== prevShows.length) {
+      setValue("shows", shows, { shouldValidate: false });
+      return;
+    }
+
+    let updatedIndex = -1;
+    for (let i = 0; i < shows.length; i++) {
+      if (shows[i] !== prevShows[i]) {
+        updatedIndex = i;
+        break;
+      }
+    }
+
+    if (updatedIndex !== -1) {
+      setValue("shows", shows, { shouldValidate: false });
+      trigger(`shows.${updatedIndex}`);
+    } else {
+      setValue("shows", shows, { shouldValidate: false });
+    }
+  }, [shows, setValue, trigger]);
 
   const updateShow = (showId, updatedData) => {
     setShows((prevShows) =>
@@ -94,6 +117,37 @@ function StepAddShow() {
     if (isValid) {
       addShow();
     }
+  };
+
+  const handleCopyShowData = (currentShowId, sourceShowId) => {
+    const sourceShow = shows.find((s) => s.id === sourceShowId);
+    if (!sourceShow) return;
+
+    setShows((prevShows) =>
+      prevShows.map((show) => {
+        if (show.id === currentShowId) {
+          return {
+            ...show,
+            minOrder: sourceShow.minOrder,
+            maxOrder: sourceShow.maxOrder,
+            seatMapType: sourceShow.seatMapType || "NONE",
+            seatMapSvg: sourceShow.seatMapSvg || "",
+            sections: sourceShow.sections || [],
+            ticketTypes: sourceShow.ticketTypes?.map((ticketType) => ({
+              ...ticketType,
+              id: crypto.randomUUID(),
+              ticketTiers: ticketType.ticketTiers?.map((tier) => ({
+                ...tier,
+                id: crypto.randomUUID(),
+                saleStartTime: "",
+                saleEndTime: "",
+              })) || [],
+            })) || [],
+          };
+        }
+        return show;
+      }),
+    );
   };
 
   const handleOpenAddTicket = async (showId, index) => {
@@ -239,9 +293,36 @@ function StepAddShow() {
                   <span className="material-symbols-outlined text-slate-400 group-hover:text-slate-600 transition-colors text-lg">
                     expand_less
                   </span>
-                  <span className="text-slate-800 font-bold text-lg">
+                  <span className="text-slate-800 font-bold text-lg mr-2 select-none">
                     Suất diễn {shows.length > 1 ? index + 1 : ""}
                   </span>
+
+                  {show.status === "DRAFT" && shows.filter((s) => s.id !== show.id).length > 0 && (
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <span className="text-slate-300 text-xs select-none">|</span>
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            handleCopyShowData(show.id, e.target.value);
+                            e.target.value = "";
+                          }
+                        }}
+                        className="bg-slate-50 border border-slate-200 text-slate-600 font-bold px-2 py-1 rounded-md outline-none cursor-pointer focus:ring-1 focus:ring-emerald-500 text-[11px] shadow-sm hover:border-slate-300 transition-all"
+                      >
+                        <option value="">Sao chép cấu hình từ...</option>
+                        {shows
+                          .filter((s) => s.id !== show.id)
+                          .map((otherShow) => {
+                            const originalIdx = shows.findIndex((s) => s.id === otherShow.id);
+                            return (
+                              <option key={otherShow.id} value={otherShow.id}>
+                                Suất diễn {originalIdx + 1} {otherShow.startTime ? `(${new Date(otherShow.startTime).toLocaleDateString("vi-VN")})` : ""}
+                              </option>
+                            );
+                          })}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 <button

@@ -191,6 +191,8 @@ function TicketTypeModal({
   });
 
   useEffect(() => {
+    if (!isOpen) return;
+    if (!formData.name) return;
     const currentTicketTypeErrors =
       globalErrors?.shows?.[showIndex]?.ticketTypes?.[ticketTypeIndex];
     if (!currentTicketTypeErrors) return;
@@ -227,7 +229,7 @@ function TicketTypeModal({
         };
       });
     }
-  }, [globalErrors, showIndex, ticketTypeIndex]);
+  }, [isOpen, globalErrors, showIndex, ticketTypeIndex, formData.name]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -241,28 +243,30 @@ function TicketTypeModal({
     setFormData(initialData);
 
     const fieldErrors = {};
-    const currentTicketTypeErrors =
-      globalErrors?.shows?.[showIndex]?.ticketTypes?.[ticketTypeIndex];
+    if (initialData.name) {
+      const currentTicketTypeErrors =
+        globalErrors?.shows?.[showIndex]?.ticketTypes?.[ticketTypeIndex];
 
-    if (currentTicketTypeErrors) {
-      Object.keys(currentTicketTypeErrors).forEach((key) => {
-        if (currentTicketTypeErrors[key]?.message) {
-          fieldErrors[key] = currentTicketTypeErrors[key].message;
-        }
-      });
-
-      const tiersError = currentTicketTypeErrors.ticketTiers;
-      if (Array.isArray(tiersError)) {
-        tiersError.forEach((tierErr, idx) => {
-          if (tierErr) {
-            Object.keys(tierErr).forEach((field) => {
-              if (tierErr[field]?.message) {
-                fieldErrors[`ticketTiers.${idx}.${field}`] =
-                  tierErr[field].message;
-              }
-            });
+      if (currentTicketTypeErrors) {
+        Object.keys(currentTicketTypeErrors).forEach((key) => {
+          if (currentTicketTypeErrors[key]?.message) {
+            fieldErrors[key] = currentTicketTypeErrors[key].message;
           }
         });
+
+        const tiersError = currentTicketTypeErrors.ticketTiers;
+        if (Array.isArray(tiersError)) {
+          tiersError.forEach((tierErr, idx) => {
+            if (tierErr) {
+              Object.keys(tierErr).forEach((field) => {
+                if (tierErr[field]?.message) {
+                  fieldErrors[`ticketTiers.${idx}.${field}`] =
+                    tierErr[field].message;
+                }
+              });
+            }
+          });
+        }
       }
     }
     setErrors(fieldErrors);
@@ -467,9 +471,8 @@ function TicketTypeModal({
 
             {/* Seating Type */}
             <div
-              className={`md:col-span-4 bg-slate-50/50 p-4 rounded-xl border-2 transition-all ${
-                errors.seatingType ? "border-red-300" : "border-slate-100 "
-              }`}
+              className={`md:col-span-4 bg-slate-50/50 p-4 rounded-xl border-2 transition-all ${errors.seatingType ? "border-red-300" : "border-slate-100 "
+                }`}
             >
               <label className="block text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-emerald-600">
@@ -485,13 +488,12 @@ function TicketTypeModal({
                       key={type.id}
                       className={`flex-1 flex items-start gap-3 p-4 rounded-lg border-2 transition-all 
         ${isLocked ? "cursor-not-allowed opacity-70" : "cursor-pointer"} 
-        ${
-          formData.seatingType === type.id
-            ? "border-emerald-500 bg-white shadow-md shadow-emerald-100"
-            : isLocked
-              ? "border-slate-100 bg-slate-50"
-              : "border-white bg-white hover:border-slate-200"
-        }`}
+        ${formData.seatingType === type.id
+                          ? "border-emerald-500 bg-white shadow-md shadow-emerald-100"
+                          : isLocked
+                            ? "border-slate-100 bg-slate-50"
+                            : "border-white bg-white hover:border-slate-200"
+                        }`}
                     >
                       <input
                         type="radio"
@@ -533,46 +535,45 @@ function TicketTypeModal({
             {/* Loại section */}
             {(show.seatMapType === "SECTION_ONLY" ||
               show.seatMapType === "SECTION_WITH_SEATS") && (
-              <div className="md:col-span-2 space-y-2">
-                <label className="block text-sm font-bold">
-                  {show?.seatMapSvg && <span className="text-red-500">*</span>}{" "}
-                  Khu vực trên sơ đồ
-                </label>
-                <select
-                  className={`w-full bg-slate-50 border ${errors.sectionId ? "border-red-500" : "border-slate-200"} rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500`}
-                  value={formData.sectionId}
-                  onChange={(e) => validateField("sectionId", e.target.value)}
-                  disabled={!show?.seatMapSvg || show?.status !== "DRAFT"}
-                >
-                  <option value="">
-                    --{" "}
-                    {show?.seatMapSvg
-                      ? "Chọn khu vực"
-                      : "Cần upload sơ đồ trước"}{" "}
-                    --
-                  </option>
-
-                  {/* Render danh sách ID lấy từ file SVG đã quét được ở component cha */}
-                  {show?.sections?.map((section) => (
-                    <option key={section.sectionId} value={section.sectionId}>
-                      {section.sectionName || section.sectionId}
+                <div className="md:col-span-2 space-y-2">
+                  <label className="block text-sm font-bold">
+                    {show?.seatMapSvg && <span className="text-red-500">*</span>}{" "}
+                    Khu vực trên sơ đồ
+                  </label>
+                  <select
+                    className={`w-full bg-slate-50 border ${errors.sectionId ? "border-red-500" : "border-slate-200"} rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500`}
+                    value={formData.sectionId}
+                    onChange={(e) => validateField("sectionId", e.target.value)}
+                    disabled={!show?.seatMapSvg || show?.status !== "DRAFT"}
+                  >
+                    <option value="">
+                      --{" "}
+                      {show?.seatMapSvg
+                        ? "Chọn khu vực"
+                        : "Cần upload sơ đồ trước"}{" "}
+                      --
                     </option>
-                  ))}
-                </select>
-                {errors.sectionId && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.sectionId}
-                  </p>
-                )}
-              </div>
-            )}
+
+                    {/* Render danh sách ID lấy từ file SVG đã quét được ở component cha */}
+                    {show?.sections?.map((section) => (
+                      <option key={section.sectionId} value={section.sectionId}>
+                        {section.sectionName || section.sectionId}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.sectionId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.sectionId}
+                    </p>
+                  )}
+                </div>
+              )}
 
             {/* Svg cho seat */}
             {show?.seatMapType === "SECTION_WITH_SEATS" && formData.seatingType === "SEATED" && (
               <div
-                className={`md:col-span-4 mb-8 bg-slate-50/50 p-4 rounded-xl border-2 transition-all ${
-                  errors?.seatMapSvg ? "border-red-400" : "border-slate-200"
-                }`}
+                className={`md:col-span-4 mb-8 bg-slate-50/50 p-4 rounded-xl border-2 transition-all ${errors?.seatMapSvg ? "border-red-400" : "border-slate-200"
+                  }`}
               >
                 <div className="flex flex-col gap-8">
                   {/* Cột bên trái: Upload Input */}
@@ -737,10 +738,9 @@ function TicketTypeModal({
                             })
                           }
                           disabled={ticketTier?.id?.includes("-")}
-                          className={`w-full h-[50px] bg-slate-50 border rounded-lg px-4 py-2 outline-none font-semibold transition-all focus:ring-2 ${
-                            statusStyles[ticketTier.status] ||
+                          className={`w-full h-[50px] bg-slate-50 border rounded-lg px-4 py-2 outline-none font-semibold transition-all focus:ring-2 ${statusStyles[ticketTier.status] ||
                             "border-slate-200 text-slate-600"
-                          }`}
+                            }`}
                         >
                           <option
                             value="ACTIVE"

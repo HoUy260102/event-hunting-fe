@@ -280,7 +280,7 @@ function ReservationList() {
             <input
               type="text"
               placeholder="Mã đơn / ID đặt chỗ..."
-              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white outline-none"
+              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white outline-none"
               value={filters.keyword}
               onChange={(e) => handleFilterChange("keyword", e.target.value)}
             />
@@ -292,7 +292,7 @@ function ReservationList() {
             onChange={(e) => {
               handleFilterChange("eventId", e.target.value);
             }}
-            className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white outline-none"
+            className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white outline-none cursor-pointer"
           >
             <option value="">Tất cả sự kiện</option>
             {events?.map((event) => (
@@ -308,7 +308,7 @@ function ReservationList() {
             onChange={(e) => {
               handleFilterChange("showId", e.target.value);
             }}
-            className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white outline-none"
+            className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white outline-none cursor-pointer"
           >
             <option value="">Tất cả suất diễn</option>
             {shows?.map((show) => (
@@ -322,7 +322,7 @@ function ReservationList() {
           <select
             value={filters.status || "ALL"}
             onChange={(e) => handleFilterChange("status", e.target.value)}
-            className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white outline-none"
+            className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white outline-none cursor-pointer"
           >
             <option value="ALL">Tất cả trạng thái</option>
             <option value="PENDING">Chờ xử lý (Pending)</option>
@@ -346,9 +346,9 @@ function ReservationList() {
           <div className="grid grid-cols-2 gap-3 w-full sm:w-auto">
             <button
               onClick={handleReset}
-              className="whitespace-nowrap inline-flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 dark:bg-[#142210] border border-[#e5e7eb] dark:border-[#2a4225] dark:text-white text-gray-700 font-semibold py-2 px-5 rounded-lg text-sm transition-all active:scale-95"
+              className="group whitespace-nowrap inline-flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 dark:bg-[#142210] border border-[#e5e7eb] dark:border-[#2a4225] dark:text-white text-gray-700 font-semibold py-2 px-5 rounded-lg text-sm transition-all active:scale-95 cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px]">
+              <span className="material-symbols-outlined text-[18px] transition-transform duration-500 ease-in-out group-hover:rotate-[360deg]">
                 restart_alt
               </span>
               Làm mới
@@ -356,7 +356,7 @@ function ReservationList() {
 
             <button
               onClick={applyFilters}
-              className="whitespace-nowrap inline-flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2 px-10 rounded-lg text-sm transition-all active:scale-95 shadow-sm shadow-[#46ec13]/20"
+              className="whitespace-nowrap inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-2 px-10 rounded-lg text-sm transition-all active:scale-95 shadow-md shadow-emerald-400/10 hover:shadow-emerald-400/20 cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">
                 search
@@ -462,7 +462,7 @@ function ReservationList() {
                               -{res?.discountAmount?.toLocaleString("vi-VN")}đ
                             </span>
                           </div>
-                          <div className="flex justify-between gap-4 text-[13px] font-bold text-[#46ec13] mt-1 pt-1 border-t border-gray-100 dark:border-gray-800">
+                          <div className="flex justify-between gap-4 text-[13px] font-bold text-emerald-600 dark:text-emerald-400 mt-1 pt-1 border-t border-gray-100 dark:border-gray-800">
                             <span>Tổng:</span>
                             <span>
                               {res?.finalAmount?.toLocaleString("vi-VN")}đ

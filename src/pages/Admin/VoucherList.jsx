@@ -271,7 +271,7 @@ function VoucherList() {
             onClick={() => {
               navigate("/admin/add-voucher");
             }}
-            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
+            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white shadow-md shadow-emerald-400/10 hover:shadow-emerald-400/20 px-5 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
           >
             <span className="material-symbols-outlined text-[20px]">add</span>{" "}
             Thêm mới khuyến mãi
@@ -287,7 +287,7 @@ function VoucherList() {
               </span>
             </div>
             <input
-              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
+              className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white outline-none"
               placeholder="Nhập id, code, show id..."
               value={filters.keyword}
               type="text"
@@ -302,7 +302,7 @@ function VoucherList() {
               onChange={(e) => {
                 handleFilterChange("status", e.target.value);
               }}
-              className="block w-full md:w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-[#46ec13] dark:text-white"
+              className="block w-full md:w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white outline-none cursor-pointer"
             >
               <option value="ALL">All Statuses</option>
               <option value="DRAFT">Nháp</option>
@@ -319,16 +319,16 @@ function VoucherList() {
                 });
                 setSearchParams({});
               }}
-              className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm cursor-pointer"
+              className="group flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px] mr-1.5">
+              <span className="material-symbols-outlined text-[18px] mr-1.5 transition-transform duration-500 ease-in-out group-hover:rotate-[360deg]">
                 restart_alt
               </span>
               Làm mới
             </button>
             <button
               onClick={applyFilters}
-              className="inline-flex items-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20 cursor-pointer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-md shadow-emerald-400/10 hover:shadow-emerald-400/20 cursor-pointer"
             >
               Tìm kiếm
             </button>
@@ -433,7 +433,7 @@ function VoucherList() {
                       key={voucher?.id}
                       className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
                     >
-                      <td className="font-[500] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[500] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div
                           className="line-clamp-2 font-medium"
                           title={voucher?.id}
@@ -441,22 +441,28 @@ function VoucherList() {
                           {voucher?.id}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div className="line-clamp-2" title={voucher?.name}>
                           {voucher?.name}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div className="line-clamp-2" title={voucher?.code}>
                           {voucher?.code}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
-                        <div className="line-clamp-2" title={voucher?.quantity}>
-                          {voucher?.quantity}
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
+                        <div className="line-clamp-2" title={(voucher?.isUnlimited || voucher?.quantity === null || voucher?.quantity === undefined) ? "Không giới hạn" : voucher?.quantity}>
+                          {(voucher?.isUnlimited || voucher?.quantity === null || voucher?.quantity === undefined) ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-900/35">
+                              Không giới hạn
+                            </span>
+                          ) : (
+                            voucher?.quantity
+                          )}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div
                           className="line-clamp-2"
                           title={voucher?.startTime}
@@ -464,12 +470,12 @@ function VoucherList() {
                           {formatDateVN(voucher?.startTime)}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div className="line-clamp-2" title={voucher?.endTime}>
                           {formatDateVN(voucher?.endTime)}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div
                           className="line-clamp-2"
                           title={voucher?.discountType}
@@ -477,7 +483,7 @@ function VoucherList() {
                           {voucher?.discountType}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div
                           className="line-clamp-2"
                           title={voucher?.discountValue}
@@ -485,7 +491,7 @@ function VoucherList() {
                           {voucher?.discountValue}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div
                           className="line-clamp-2"
                           title={voucher?.minOrderValue}
@@ -493,7 +499,7 @@ function VoucherList() {
                           {voucher?.minOrderValue}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div
                           className="line-clamp-2"
                           title={voucher?.maxDiscountValue}
@@ -501,7 +507,7 @@ function VoucherList() {
                           {voucher?.maxDiscountValue}
                         </div>
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div className="line-clamp-2" title={voucher?.scope}>
                           {voucher?.scope}
                         </div>
@@ -509,7 +515,7 @@ function VoucherList() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {renderStatusBadge(voucher?.status)}
                       </td>
-                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf]">
+                      <td className="font-[400] px-6 py-4 text-sm text-black dark:text-[#a1aebf] whitespace-nowrap">
                         <div className="line-clamp-2" title={voucher?.showId}>
                           {voucher?.showId}
                         </div>

@@ -111,7 +111,7 @@ function Pagination({
                     }}
                     className={
                       currentPage === page
-                        ? "relative z-10 inline-flex items-center bg-[#46ec13] px-4 py-2 text-sm font-bold text-black focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#46ec13]"
+                        ? "relative z-10 inline-flex items-center bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white px-4 py-2 text-sm font-bold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
                         : "relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#111b0d] dark:text-white ring-1 ring-inset ring-[#e5e7eb] dark:ring-[#2a4225] hover:bg-gray-50 dark:hover:bg-white/5 focus:z-20 focus:outline-offset-0"
                     }
                   >

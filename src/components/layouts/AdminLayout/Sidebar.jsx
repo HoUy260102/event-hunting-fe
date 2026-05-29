@@ -36,19 +36,37 @@ function Sidebar({ isOpen, handleIsOpen }) {
     if (pathname === "/admin" || pathname === "/admin/") {
       return { menu: "dashboard", dropdown: null };
     }
-    if (pathname.includes("/admin/users") || pathname.includes("/admin/add-user")) {
+    if (
+      pathname.includes("/admin/users") ||
+      pathname.includes("/admin/add-user") ||
+      pathname.includes("/admin/update-user")
+    ) {
       return { menu: "users", dropdown: "users" };
     }
-    if (pathname.includes("/admin/categories") || pathname.includes("/admin/add-category")) {
+    if (
+      pathname.includes("/admin/categories") ||
+      pathname.includes("/admin/add-category") ||
+      pathname.includes("/admin/update-category")
+    ) {
       return { menu: "categories", dropdown: "categories" };
     }
-    if (pathname.includes("/admin/events") || pathname.includes("/admin/add-event")) {
+    if (
+      pathname.includes("/admin/events") ||
+      pathname.includes("/admin/add-event") ||
+      pathname.includes("/admin/update-event") ||
+      pathname.includes("/admin/info-event") ||
+      pathname.includes("/admin/shows")
+    ) {
       return { menu: "events", dropdown: "events" };
     }
     if (pathname.includes("/admin/reservations")) {
       return { menu: "reservations", dropdown: "reservations" };
     }
-    if (pathname.includes("/admin/vouchers") || pathname.includes("/admin/add-voucher")) {
+    if (
+      pathname.includes("/admin/vouchers") ||
+      pathname.includes("/admin/add-voucher") ||
+      pathname.includes("/admin/update-voucher")
+    ) {
       return { menu: "vouchers", dropdown: "vouchers" };
     }
     if (pathname.includes("/admin/roles") || pathname.includes("/admin/permissions")) {

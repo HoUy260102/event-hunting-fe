@@ -229,7 +229,7 @@ function UserList() {
         actions.push({
           label: "Xóa",
           icon: <DeleteIcon fontSize="small" />,
-          color: "error.main", 
+          color: "error.main",
           onClick: (item) => {
             setConfirmModal({
               isOpen: true,
@@ -358,7 +358,7 @@ function UserList() {
             onClick={() => {
               navigate("/admin/add-user");
             }}
-            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
+            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white shadow-md shadow-emerald-400/10 hover:shadow-emerald-400/20 px-5 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
           >
             <span className="material-symbols-outlined text-[20px]">add</span>{" "}
             Thêm mới tài khoản
@@ -376,7 +376,7 @@ function UserList() {
                 </span>
               </div>
               <input
-                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none"
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white transition-all outline-none"
                 placeholder="Nhập tên, email hoặc SĐT..."
                 value={filters.keyword}
                 type="text"
@@ -396,16 +396,16 @@ function UserList() {
                   });
                   setSearchParams({});
                 }}
-                className="flex flex-1 items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm"
+                className="group flex flex-1 items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px] mr-2">
+                <span className="material-symbols-outlined text-[18px] mr-2 transition-transform duration-500 ease-in-out group-hover:rotate-[360deg]">
                   restart_alt
                 </span>
                 Làm mới
               </button>
               <button
                 onClick={applyFilters}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20"
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-md shadow-emerald-400/10 hover:shadow-emerald-400/20 cursor-pointer"
               >
                 Tìm kiếm
               </button>
@@ -425,7 +425,7 @@ function UserList() {
                 onChange={(e) => {
                   handleFilterChange("roleId", e.target.value);
                 }}
-                className="pl-10 block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+                className="pl-10 block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white transition-all outline-none cursor-pointer"
               >
                 <option value="">Tất cả vai trò</option>
                 {roles?.map((role) => (
@@ -442,7 +442,7 @@ function UserList() {
                 onChange={(e) => {
                   handleFilterChange("status", e.target.value);
                 }}
-                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white transition-all outline-none cursor-pointer"
               >
                 <option value="all">Tất cả trạng thái</option>
                 <option value="active">Hoạt động</option>

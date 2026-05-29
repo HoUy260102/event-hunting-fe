@@ -227,7 +227,7 @@ function RoleAssignment() {
                     </span>
                   </div>
                   <input
-                    className="block w-full rounded-xl border border-[#e5e7eb] dark:border-[#2a4225] bg-white dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm focus:ring-2 focus:ring-[#46ec13] focus:border-transparent outline-none transition-all dark:text-white"
+                    className="block w-full rounded-xl border border-[#e5e7eb] dark:border-[#2a4225] bg-white dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all dark:text-white"
                     placeholder="Nhập từ khóa..."
                     value={keyword}
                     type="text"
@@ -236,7 +236,7 @@ function RoleAssignment() {
                 </div>
                 <button
                   onClick={handleOnsearch}
-                  className="inline-flex items-center justify-center bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-xl text-sm transition-all active:scale-95 whitespace-nowrap shadow-md shadow-[#46ec13]/20"
+                  className="inline-flex items-center justify-center bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all active:scale-95 whitespace-nowrap shadow-md shadow-emerald-400/10 hover:shadow-emerald-400/20 cursor-pointer"
                 >
                   Tìm kiếm
                 </button>
@@ -278,7 +278,7 @@ function RoleAssignment() {
                       <span>Chọn</span>
                       <input
                         type="checkbox"
-                        className="w-4 h-4 text-[#46ec13] rounded border-gray-300 focus:ring-[#46ec13] cursor-pointer bg-white dark:bg-[#142210]"
+                        className="w-4 h-4 text-emerald-500 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer bg-white dark:bg-[#142210]"
                         checked={isAllSelected}
                         onChange={handleSelectAll}
                         disabled={!selectedRole || permissions.length === 0}
@@ -333,7 +333,7 @@ function RoleAssignment() {
                 Hủy bỏ
               </button>
 
-              <button onClick={handleSavePermissions} className="inline-flex items-center justify-center bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-xl text-sm transition-all active:scale-95 whitespace-nowrap shadow-md shadow-[#46ec13]/20">
+              <button onClick={handleSavePermissions} className="inline-flex items-center justify-center bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all active:scale-95 whitespace-nowrap shadow-md shadow-emerald-400/10 hover:shadow-emerald-400/20 cursor-pointer">
                 Lưu thay đổi
               </button>
             </div>

@@ -529,7 +529,7 @@ function EventList() {
             onClick={() => {
               navigate("/admin/add-event");
             }}
-            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#46ec13] px-5 py-2.5 text-sm font-bold text-black shadow-sm hover:bg-[#3ad60f] focus:outline-none focus:ring-2 focus:ring-[#46ec13] focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
+            className="whitespace-nowrap md:px-5 md:py-2 inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white shadow-md shadow-emerald-400/10 hover:shadow-emerald-400/20 px-5 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 dark:focus:ring-offset-[#142210] transition-all"
           >
             <span className="material-symbols-outlined text-[20px]">add</span>{" "}
             Thêm mới sự kiện
@@ -547,7 +547,7 @@ function EventList() {
                 </span>
               </div>
               <input
-                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none"
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 pl-10 pr-3 text-sm placeholder:text-[#6b7280] dark:placeholder:text-[#a1aebf] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white transition-all outline-none"
                 placeholder="Nhập tên sự kiện hoặc địa điểm..."
                 value={filters.keyword}
                 type="text"
@@ -568,16 +568,16 @@ function EventList() {
                   });
                   setSearchParams({});
                 }}
-                className="flex-1 flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm cursor-pointer"
+                className="group flex-1 flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-[#2a4225] dark:hover:bg-[#36532f] text-gray-700 dark:text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all outline-none whitespace-nowrap shadow-sm cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px] mr-2">
+                <span className="material-symbols-outlined text-[18px] mr-2 transition-transform duration-500 ease-in-out group-hover:rotate-[360deg]">
                   restart_alt
                 </span>
                 Làm mới
               </button>
               <button
                 onClick={applyFilters}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#46ec13] hover:bg-[#3ad60f] text-black font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-sm shadow-[#46ec13]/20 cursor-pointer"
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition-all active:scale-95 whitespace-nowrap shadow-md shadow-emerald-400/10 hover:shadow-emerald-400/20 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   search
@@ -595,7 +595,7 @@ function EventList() {
                 onChange={(e) =>
                   handleFilterChange("categoryId", e.target.value)
                 }
-                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white transition-all outline-none cursor-pointer"
               >
                 <option value="">Tất cả thể loại</option>
                 {categories.map((cate) => (
@@ -612,7 +612,7 @@ function EventList() {
                 onChange={(e) =>
                   handleFilterChange("provinceId", e.target.value)
                 }
-                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white transition-all outline-none cursor-pointer"
               >
                 <option value="">Toàn quốc</option>
                 {provinces.map((provin) => (
@@ -627,7 +627,7 @@ function EventList() {
               <select
                 value={filters.status || "ALL"}
                 onChange={(e) => handleFilterChange("status", e.target.value)}
-                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-[#46ec13] focus:ring-2 focus:ring-[#46ec13]/20 dark:text-white transition-all outline-none cursor-pointer"
+                className="block w-full rounded-lg border-[#e5e7eb] dark:border-[#2a4225] bg-[#f6f8f6]/50 dark:bg-[#142210]/50 py-2.5 px-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:text-white transition-all outline-none cursor-pointer"
               >
                 <option value="ALL">Tất cả trạng thái</option>
                 <option value="DRAFT">Bản nháp</option>

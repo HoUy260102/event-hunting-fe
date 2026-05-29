@@ -339,3 +339,41 @@
     /* Mathematically ends exactly at the border-line! */
   }
 }
+
+/* Premium Volumetric Spotlight / Flashlight Beam Effect under the Logo Header ONLY when the Sidebar is Collapsed */
+.sidebar.collapsed .sidebar-header .header-logo::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 180px;
+  background: linear-gradient(
+    to bottom,
+    rgba(16, 185, 129, 0.45) 0%,
+    rgba(16, 185, 129, 0.2) 20%,
+    rgba(16, 185, 129, 0.08) 50%,
+    rgba(16, 185, 129, 0) 100%
+  );
+  clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.85;
+  filter: blur(5px); /* Soften the edges for realistic volumetric light beam */
+  animation: pulse-spotlight 6s ease-in-out infinite alternate;
+  margin-top: 5px;
+}
+
+@keyframes pulse-spotlight {
+  0% {
+    opacity: 0.65;
+    transform: translateX(-50%) scaleX(0.93) scaleY(0.96);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 0.95;
+    transform: translateX(-50%) scaleX(1.07) scaleY(1.04);
+    filter: blur(6px);
+  }
+}

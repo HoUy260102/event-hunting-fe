@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import Modal from "../../components/common/Modal";
+
 const schema = z.object({
   name: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
   phone: z
@@ -40,6 +41,7 @@ const schema = z.object({
       .optional(),
   ),
 });
+
 function UpdateUser() {
   const { id } = useParams();
   const [user, setUser] = useState();
@@ -58,6 +60,7 @@ function UpdateUser() {
     setValue,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
@@ -68,50 +71,59 @@ function UpdateUser() {
     try {
       setIsLoading(true);
       const response = await axiosClient.put(`/users/${id}`, data);
+      const updatedUser = response?.data; // Vì response là ApiResponse, dữ liệu thực tế nằm ở .data!
       reset({
-        name: response?.data?.name || "",
-        email: response?.data?.email || "",
-        address: response?.data?.address || "",
-        roleId: response?.data?.role?.id ? String(response.data?.role?.id) : "",
-        fileId: response?.data?.avatar?.id
-          ? String(response.data?.avatar?.id)
-          : "",
-        phone: response?.data?.phone || "",
-        dob: response?.data?.dob ? response?.data?.dob.split("T")[0] : "",
+        name: updatedUser?.name || "",
+        email: updatedUser?.email || "",
+        address: updatedUser?.address || "",
+        roleId: updatedUser?.role?.id ? String(updatedUser?.role?.id) : "",
+        fileId: updatedUser?.avatar?.id ? String(updatedUser?.avatar?.id) : "",
+        phone: updatedUser?.phone || "",
+        status: updatedUser?.status || "",
+        dob: updatedUser?.dob ? updatedUser?.dob.split("T")[0] : "",
       });
-      setUser(response.data);
-      setPreviewImage(response?.data?.avatar?.url);
+      setUser(updatedUser);
+      setPreviewImage(updatedUser?.avatar?.url);
       setModal({
         isOpen: true,
         title: "Cập nhật tài khoản",
         message: "Cập nhật tài khoản thành công",
         type: "success",
       });
-      console.log(response.data);
+      console.log(response);
     } catch (error) {
-      setModal({
-        isOpen: true,
-        title: "Cập nhật tài khoản",
-        message: "Cập nhật tài khoản thất bại: " + error.message,
-        type: "error",
-      });
-      console.error("Tạo user thất bại:", error.message);
+      console.error("Cập nhật user thất bại:", error);
+      
+      // Vì axiosClient interceptor đã trả về error.response?.data trực tiếp trong Promise.reject,
+      // nên chúng ta đọc trực tiếp từ `error.details` và `error.message`!
+      if (error && error.details) {
+        const fieldErrors = error.details;
+        Object.keys(fieldErrors).forEach((field) => {
+          setError(field, {
+            type: "server",
+            message: fieldErrors[field],
+          });
+        });
+        
+        setModal({
+          isOpen: true,
+          title: "Cập nhật tài khoản",
+          message: "Vui lòng kiểm tra lại các thông tin lỗi được hiển thị trên form.",
+          type: "error",
+        });
+      } else {
+        // Lỗi chung khác
+        setModal({
+          isOpen: true,
+          title: "Cập nhật tài khoản",
+          message: error?.message || "Cập nhật tài khoản thất bại!",
+          type: "error",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await axiosClient.get("/roles/select");
-        setRoles(response.data);
-      } catch (error) {
-        console.error("Lỗi lấy danh sách role:", error.message);
-      }
-    };
-    fetchRoles();
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,8 +132,8 @@ function UpdateUser() {
           axiosClient.get("/roles/select"),
           axiosClient.get(`/users/${id}`),
         ]);
-        setRoles(rolesRes.data);
-        const userData = userRes.data;
+        setRoles(rolesRes.data); // Vì axiosClient.interceptors.response chỉ bóc tách 1 lớp response.data từ Axios, data thực tế nằm ở .data!
+        const userData = userRes.data; // Vì axiosClient.interceptors.response chỉ bóc tách 1 lớp response.data từ Axios, data thực tế nằm ở .data!
         setUser(userData);
         setPreviewImage(userData?.avatar?.url);
         reset({
@@ -135,7 +147,7 @@ function UpdateUser() {
           fileId: userData?.avatar?.id ? String(userData?.avatar?.id) : "",
         });
       } catch (error) {
-        console.error("Lấy dữ liệu thất bại:", error.message);
+        console.error("Lấy dữ liệu thất bại:", error.message || error);
       }
     };
 
@@ -160,20 +172,21 @@ function UpdateUser() {
             "Content-Type": "multipart/form-data",
           },
         });
-        const fileData = response.data;
+        const fileData = response.data; // Vì response là ApiResponse, dữ liệu thực tế nằm ở .data!
         console.log(fileData);
         console.log("Upload thành công, ID file là:", fileData.id);
         setPreviewImage(fileData?.url);
         setValue("fileId", fileData.id, { shouldValidate: true });
       } catch (error) {
         console.error("Lỗi upload rồi ơi:", error);
-        alert("Lỗi:", error.message);
+        alert("Lỗi:", error.message || error);
       } finally {
         setIsLoading(false);
         e.target.value = "";
       }
     }
   };
+
   return (
     <>
       {modal.isOpen && (
@@ -185,78 +198,96 @@ function UpdateUser() {
           type={modal.type}
         />
       )}
-      <main className="flex-1 p-6 lg:p-10 max-w-[1000px] mx-auto w-full">
-        {/* Tiêu đề */}
-        <div className="bg-white/60 dark:bg-[#1c2e18]/60 backdrop-blur-md p-6 rounded-2xl border border-white/40 dark:border-[#2a4225]/40 shadow-sm flex flex-col gap-1 mb-8">
-          <h2 className="text-2xl font-extrabold text-[#111b0d] dark:text-white tracking-tight">
+      <main className="flex-1 p-6 lg:p-10 max-w-[1000px] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+        
+        {/* Header giống hệt ảnh mẫu */}
+        <div className="bg-white dark:bg-[#1a2c15] p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-1 mb-8">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
             Cập nhật tài khoản
           </h2>
-          <p className="text-xs text-[#6b7280] dark:text-[#a1aebf] font-medium">
-            Cập nhật thông tin cá nhân, vai trò phân quyền và trạng thái của người dùng.
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Quản lý thông tin chi tiết, phân quyền và trạng thái hoạt động của tất cả người dùng trong hệ thống.
           </p>
         </div>
 
-        {/* Form */}
+        {/* Form chính */}
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white dark:bg-[#1a2c15] rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-800 p-6 lg:p-10"
+          className="bg-white rounded-3xl shadow-md border border-slate-100 p-6 lg:p-10 transition-all duration-300 hover:shadow-lg"
         >
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-10">
             {/* Section 1: Thông tin cá nhân */}
-            <div className="flex flex-col gap-5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-white/10 pb-4">
-                Thông tin cá nhân
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Full Name */}
-                <div className="flex flex-col gap-2 md:col-span-2 w-fit mb-3">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Ảnh đại diện:
-                  </label>
-                  <div className="relative group">
-                    <div
-                      className={`w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg bg-slate-200 ${isLoading ? "animate-pulse" : ""}`}
-                    >
-                      <img
-                        src={
-                          previewImage ||
-                          user?.avatar?.url ||
-                          "https://via.placeholder.com/150"
-                        }
-                        alt="Avatar"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-4">
+                <span className="material-symbols-outlined text-emerald-500 text-2xl">
+                  badge
+                </span>
+                <h3 className="text-lg font-bold text-slate-800">
+                  Thông tin cá nhân
+                </h3>
+              </div>
 
-                    <label
-                      htmlFor="avatar-upload"
-                      className={`${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} absolute bottom-0 right-0 bg-[#46ec13] p-2 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center border-2 border-white dark:border-slate-900`}
-                    >
-                      <span className="material-symbols-outlined text-slate-900 text-sm">
-                        photo_camera
-                      </span>
-                      <input
-                        id="avatar-upload"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        disabled={isLoading}
-                        onChange={handleImageChange}
-                      />
-                    </label>
+              {/* Avatar upload */}
+              <div className="flex flex-col gap-2 items-center md:items-start mb-4">
+                <label className="text-[13px] font-bold text-slate-600 ml-1">
+                  Ảnh đại diện
+                </label>
+                <div className="relative group">
+                  <div
+                    className={`w-28 h-28 rounded-full overflow-hidden border-4 border-slate-50 shadow-md bg-slate-100 flex items-center justify-center transition-all ${
+                      isLoading ? "animate-pulse brightness-75" : ""
+                    }`}
+                  >
+                    <img
+                      src={
+                        previewImage ||
+                        user?.avatar?.url ||
+                        "https://via.placeholder.com/150"
+                      }
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Họ và tên:
+
+                  <label
+                    htmlFor="avatar-upload"
+                    className={`absolute bottom-0 right-0 bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-full shadow-md cursor-pointer hover:scale-110 active:scale-95 transition-all flex items-center justify-center border-2 border-white ${
+                      isLoading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-white text-sm select-none">
+                      photo_camera
+                    </span>
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={isLoading}
+                      onChange={handleImageChange}
+                    />
                   </label>
-                  <input
-                    {...register("name")}
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.name ? "border-red-500 ring-1 ring-red-500" : ""}`}
-                    placeholder="Nhập họ và tên..."
-                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Full Name */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[13px] font-bold text-slate-600 ml-1">
+                    Họ và tên <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      {...register("name")}
+                      className={`w-full h-11 px-4 rounded-xl bg-slate-50/50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 text-slate-800 transition-all duration-200 outline-none text-sm placeholder:text-slate-400 hover:border-slate-300 ${
+                        errors.name ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""
+                      }`}
+                      placeholder="Nhập họ và tên..."
+                    />
+                  </div>
                   {errors.name && (
-                    <span className="text-red-500 text-xs ml-4">
+                    <span className="text-red-500 text-xs ml-1 flex items-center gap-1 font-medium">
+                      <span className="material-symbols-outlined text-sm">error</span>
                       {errors.name.message}
                     </span>
                   )}
@@ -264,16 +295,21 @@ function UpdateUser() {
 
                 {/* Phone */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Số điện thoại:
+                  <label className="text-[13px] font-bold text-slate-600 ml-1">
+                    Số điện thoại <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    {...register("phone")}
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.phone ? "border-red-500 ring-1 ring-red-500" : ""}`}
-                    placeholder="Nhập số điện thoại..."
-                  />
+                  <div className="relative">
+                    <input
+                      {...register("phone")}
+                      className={`w-full h-11 px-4 rounded-xl bg-slate-50/50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 text-slate-800 transition-all duration-200 outline-none text-sm placeholder:text-slate-400 hover:border-slate-300 ${
+                        errors.phone ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""
+                      }`}
+                      placeholder="Nhập số điện thoại..."
+                    />
+                  </div>
                   {errors.phone && (
-                    <span className="text-red-500 text-xs ml-4">
+                    <span className="text-red-500 text-xs ml-1 flex items-center gap-1 font-medium">
+                      <span className="material-symbols-outlined text-sm">error</span>
                       {errors.phone.message}
                     </span>
                   )}
@@ -281,68 +317,75 @@ function UpdateUser() {
 
                 {/* Email */}
                 <div className="flex flex-col gap-2 md:col-span-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Email:
+                  <label className="text-[13px] font-bold text-slate-600 ml-1">
+                    Email <span className="text-slate-400 font-normal">(Không thể thay đổi)</span>
                   </label>
-                  <input
-                    {...register("email")}
-                    disabled
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.email ? "border-red-500 ring-1 ring-red-500" : ""}`}
-                    placeholder="Nhập địa chỉ email..."
-                  />
-                  {errors.email && (
-                    <span className="text-red-500 text-xs ml-4">
-                      {errors.email.message}
-                    </span>
-                  )}
+                  <div className="relative">
+                    <input
+                      {...register("email")}
+                      disabled
+                      className="w-full h-11 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed outline-none text-sm"
+                      placeholder="Nhập địa chỉ email..."
+                    />
+                  </div>
                 </div>
+
                 {/* Địa chỉ */}
                 <div className="flex flex-col gap-2 md:col-span-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Địa chỉ:
+                  <label className="text-[13px] font-bold text-slate-600 ml-1">
+                    Địa chỉ
                   </label>
-                  <input
-                    {...register("address")}
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.address ? "border-red-500 ring-1 ring-red-500" : ""}`}
-                    placeholder="Nhập địa chỉ ..."
-                  />
+                  <div className="relative">
+                    <input
+                      {...register("address")}
+                      className={`w-full h-11 px-4 rounded-xl bg-slate-50/50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 text-slate-800 transition-all duration-200 outline-none text-sm placeholder:text-slate-400 hover:border-slate-300 ${
+                        errors.address ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""
+                      }`}
+                      placeholder="Nhập địa chỉ..."
+                    />
+                  </div>
                   {errors.address && (
-                    <span className="text-red-500 text-xs ml-4">
+                    <span className="text-red-500 text-xs ml-1 flex items-center gap-1 font-medium">
+                      <span className="material-symbols-outlined text-sm">error</span>
                       {errors.address.message}
                     </span>
                   )}
                 </div>
+
                 {/* Ngày sinh */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Ngày sinh:
+                  <label className="text-[13px] font-bold text-slate-600 ml-1">
+                    Ngày sinh
                   </label>
-                  <input
-                    {...register("dob")}
-                    className={`w-full h-12 px-6 rounded-full bg-slate-50 dark:bg-white/5 border-transparent focus:border-primary focus:ring-0 focus:bg-white dark:focus:bg-black/20 text-slate-900 dark:text-white transition-all ${errors.dob ? "border-red-500 ring-1 ring-red-500" : ""}`}
-                    type="date"
-                  />
+                  <div className="relative">
+                    <input
+                      {...register("dob")}
+                      className={`w-full h-11 px-4 rounded-xl bg-slate-50/50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 text-slate-800 transition-all duration-200 outline-none text-sm hover:border-slate-300 ${
+                        errors.dob ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""
+                      }`}
+                      type="date"
+                    />
+                  </div>
                   {errors.dob && (
-                    <span className="text-red-500 text-xs ml-4">
+                    <span className="text-red-500 text-xs ml-1 flex items-center gap-1 font-medium">
+                      <span className="material-symbols-outlined text-sm">error</span>
                       {errors.dob.message}
                     </span>
                   )}
                 </div>
-                {/* Role */}
+
+                {/* Role (Vai trò) */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Role:
+                  <label className="text-[13px] font-bold text-slate-600 ml-1">
+                    Vai trò <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <select
                       defaultValue={user?.role?.id}
                       {...register("roleId")}
-                      className="focus:shadow-xl w-full h-12 px-6 pr-12 rounded-full 
-               bg-slate-50 
-               border border-transparent 
-               focus:bg-slate-100  
-               text-slate-900 
-               appearance-none cursor-pointer outline-none transition-all"
+                      className={`w-full h-11 pl-4 pr-10 rounded-xl bg-slate-50/50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 text-slate-800 transition-all duration-200 outline-none text-sm appearance-none cursor-pointer hover:border-slate-300 ${
+                        errors.roleId ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""
+                      }`}
                     >
                       {roles?.map((role) => (
                         <option key={role.id} value={role.id}>
@@ -350,43 +393,45 @@ function UpdateUser() {
                         </option>
                       ))}
                     </select>
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 pointer-events-none">
+                      keyboard_arrow_down
+                    </span>
                   </div>
                   {errors.roleId && (
-                    <span className="text-red-500 text-xs ml-4">
+                    <span className="text-red-500 text-xs ml-1 flex items-center gap-1 font-medium">
+                      <span className="material-symbols-outlined text-sm">error</span>
                       {errors.roleId.message}
                     </span>
                   )}
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-3">
-                    Trạng thái:
+                {/* Trạng thái */}
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <label className="text-[13px] font-bold text-slate-600 ml-1">
+                    Trạng thái tài khoản <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <select
                       defaultValue={user?.status}
                       {...register("status")}
-                      className="focus:shadow-xl w-full h-12 px-6 pr-12 rounded-full 
-               bg-slate-50 
-               border border-transparent 
-               focus:bg-slate-100  
-               text-slate-900 
-               appearance-none cursor-pointer outline-none transition-all"
+                      className={`w-full h-11 pl-4 pr-10 rounded-xl bg-slate-50/50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 text-slate-800 transition-all duration-200 outline-none text-sm appearance-none cursor-pointer hover:border-slate-300 ${
+                        errors.status ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""
+                      }`}
                     >
                       <option value="">-- Chọn trạng thái --</option>
                       <option value="ACTIVE">Hoạt động (Active)</option>
-                      <option value="INACTIVE">
-                        Không hoạt động (Inactive)
-                      </option>
+                      <option value="INACTIVE">Không hoạt động (Inactive)</option>
                       <option value="BLOCKED">Bị khóa (Blocked)</option>
                       <option value="DELETED">Đã xóa (Deleted)</option>
-                      <option value="UNVERIFIED">
-                        Chưa xác thực (Unverified)
-                      </option>
+                      <option value="UNVERIFIED">Chưa xác thực (Unverified)</option>
                     </select>
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 pointer-events-none">
+                      keyboard_arrow_down
+                    </span>
                   </div>
                   {errors.status && (
-                    <span className="text-red-500 text-xs ml-4">
+                    <span className="text-red-500 text-xs ml-1 flex items-center gap-1 font-medium">
+                      <span className="material-symbols-outlined text-sm">error</span>
                       {errors.status.message}
                     </span>
                   )}
@@ -396,7 +441,7 @@ function UpdateUser() {
           </div>
 
           {/* Footer Actions */}
-          <div className="flex flex-col-reverse md:flex-row justify-end items-center gap-4 mt-12 pt-6 border-t border-slate-100 dark:border-white/10">
+          <div className="flex flex-col-reverse md:flex-row justify-end items-center gap-3 mt-12 pt-6 border-t border-slate-100">
             <button
               type="button"
               onClick={() => {
@@ -414,15 +459,20 @@ function UpdateUser() {
                   setPreviewImage(user.avatar?.url || null);
                 }
               }}
-              className="w-full md:w-auto px-8 h-12 rounded-full border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-white font-bold hover:bg-slate-50 transition-colors"
+              className="w-full md:w-auto px-6 h-11 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 hover:text-slate-800 transition-all active:scale-95 outline-none"
             >
               Hủy
             </button>
             <button
               type="submit"
-              className={` ${isLoading ? "bg-gray-300 text-gray-500 cursor-not-allowed" : ""} w-full md:w-auto px-8 h-12 rounded-full bg-[#46ec13] text-slate-900 font-bold hover:brightness-110 flex items-center justify-center gap-2 transition-all`}
+              disabled={isLoading}
+              className={`w-full md:w-auto px-6 h-11 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 outline-none ${
+                isLoading
+                  ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98]"
+              }`}
             >
-              <span className="material-symbols-outlined">check</span>
+              <span className="material-symbols-outlined text-lg">check</span>
               Cập nhật tài khoản
             </button>
           </div>
@@ -431,4 +481,5 @@ function UpdateUser() {
     </>
   );
 }
+
 export default UpdateUser;
