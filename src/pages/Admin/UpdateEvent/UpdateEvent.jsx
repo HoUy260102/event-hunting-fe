@@ -1,29 +1,35 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import UpdateEventInfor from "./UpdateEventInfor";
 import UpdateShow from "./UpdateShow";
 import { useHeader } from "../../../hooks/useHeader";
 
 function UpdateEvent() {
   const { setTitle } = useHeader();
+  const location = useLocation();
   const steps = [
     { id: 1, title: "Thông tin sự kiện" },
     { id: 2, title: "Thời gian & Loại vé" },
     { id: 3, title: "Cài đặt" },
     { id: 4, title: "Thông tin thanh toán" },
   ];
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(location.state?.step || 1);
+  
   const handleStep = async (targetStep) => {
     setCurrentStep(targetStep);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  
   const handleNext = async () => {
     if (currentStep < steps.length) {
       setCurrentStep((prev) => prev + 1);
     }
   };
+  
   useEffect(() => {
     setTitle("Quản lý sự kiện");
   }, []);
+  
   return (
     <>
       <header className="rounded-xl shadow bg-white border-b border-slate-200 z-10 sticky top-0">

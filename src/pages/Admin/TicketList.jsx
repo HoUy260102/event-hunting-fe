@@ -179,6 +179,7 @@ const TicketList = () => {
   useEffect(() => {
     setTitle("Danh sách Đăng ký & Soát vé");
   }, []);
+
   return (
     <>
       <ToastContainer />
@@ -206,241 +207,292 @@ const TicketList = () => {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
           }
           body {
-            background-color: #F4F7F6;
-            color: #1a1c1e;
-            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #0f172a;
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
           }
           .no-scrollbar::-webkit-scrollbar {
             display: none;
+          }
+          .btn-refresh:hover .refresh-icon {
+            transform: rotate(360deg);
+          }
+          .refresh-icon {
+            display: inline-block;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
           }
         `}
         </style>
 
         {/* Main Content Canvas */}
-        <div className="pb-20 max-w-7xl mx-auto">
-          {/* Event Header Banner */}
-          <section className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/60 shadow-sm mb-8">
+        <div className="pb-20 max-w-7xl mx-auto space-y-6">
+          
+          {/* Event Header Banner - Premium Glassmorphism với Gradient sang trọng */}
+          <section className="bg-gradient-to-br from-white via-slate-50/30 to-white backdrop-blur-xl border border-white/60 shadow-[0_10px_35px_rgba(0,0,0,0.02)] rounded-3xl p-6 md:p-8 hover:shadow-[0_20px_50px_rgba(16,185,129,0.04)] transition-all duration-300">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full uppercase tracking-wider">
+              <div className="space-y-3 flex-1 min-w-0">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/10 text-emerald-600 text-xs font-black rounded-full uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                   Đang diễn ra
                 </div>
-                <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-800 font-['Plus Jakarta Sans'] leading-tight">
+                <h3 className="text-xl md:text-3xl font-extrabold tracking-tight text-slate-800 break-words leading-tight">
                   {show?.eventName}
                 </h3>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-slate-500 text-sm font-medium">
-                  <div className="flex items-center gap-2.5">
-                    <span className="material-symbols-outlined text-emerald-500 text-lg">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2.5 text-slate-500 text-sm font-semibold">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-slate-400 text-base shrink-0">
                       calendar_today
                     </span>
                     <span>
                       {formatShowTime(show?.startTime, show?.endTime)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="material-symbols-outlined text-emerald-500 text-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-slate-400 text-base shrink-0">
                       location_on
                     </span>
-                    <span>{show?.eventLocation}</span>
+                    <span className="break-words">{show?.eventLocation}</span>
                   </div>
                 </div>
               </div>
+
+              {/* Nút Scan QR Premium */}
               <button
                 type="button"
                 onClick={() => {
                   setIsOpenScanModal(true);
                 }}
-                className="whitespace-nowrap w-full lg:w-auto flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-2xl font-bold font-['Plus Jakarta Sans'] shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
+                className="whitespace-nowrap w-full lg:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-[0_4px_15px_rgba(16,185,129,0.2)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.3)] rounded-2xl text-sm font-extrabold active:scale-95 transition-all shrink-0"
               >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  document_scanner
+                <span className="material-symbols-outlined text-base font-bold">
+                  qr_code_scanner
                 </span>
-                <span>MỞ CAMERA QUÉT QR</span>
+                MỞ CAMERA QUÉT QR
               </button>
             </div>
           </section>
 
-          {/* Stats Overview */}
-          <section className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white p-5 rounded-2xl border border-[#c4c7c7]/30 shadow-sm">
-              <p className="text-xs text-[#444748] uppercase tracking-widest mb-1">
-                Tổng vé
-              </p>
-              <p className="text-2xl font-bold font-['Manrope'] text-[#1a1c1e]">
-                {show?.totalTickets}
-              </p>
-            </div>
-            <div className="bg-white p-5 rounded-2xl border border-[#c4c7c7]/30 shadow-sm">
-              <p className="text-xs text-[#444748] uppercase tracking-widest mb-1">
-                Đã vào
-              </p>
-              <div className="flex items-end gap-2">
-                <p className="text-2xl font-bold font-['Manrope'] text-[#16a34a]">
-                  {show?.checkedInCount}
+          {/* Stats Overview - Premium Cohesive Stat Cards */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {/* Card 1: Tổng Vé */}
+            <div className="min-w-0 p-5 rounded-2xl bg-white border border-slate-100 border-l-4 border-l-blue-500 shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] md:text-xs text-slate-400 uppercase font-extrabold tracking-wider truncate">
+                  Tổng vé
+                </p>
+                <p className="text-xl md:text-2xl font-extrabold text-blue-600 truncate mt-1">
+                  {show?.totalTickets?.toLocaleString()}
                 </p>
               </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner shrink-0">
+                <span className="material-symbols-outlined text-lg font-bold">confirmation_number</span>
+              </div>
             </div>
-            <div className="bg-white p-5 rounded-2xl border border-[#c4c7c7]/30 shadow-sm">
-              <p className="text-xs text-[#444748] uppercase tracking-widest mb-1">
-                Chưa vào
-              </p>
-              <p className="text-2xl font-bold font-['Manrope'] text-[#ba1a1a]">
-                {show?.remainingCount}
-              </p>
+
+            {/* Card 2: Đã Vào */}
+            <div className="min-w-0 p-5 rounded-2xl bg-white border border-slate-100 border-l-4 border-l-emerald-500 shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] md:text-xs text-slate-400 uppercase font-extrabold tracking-wider truncate">
+                  Đã vào
+                </p>
+                <p className="text-xl md:text-2xl font-extrabold text-emerald-600 truncate mt-1">
+                  {show?.checkedInCount?.toLocaleString()}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner shrink-0">
+                <span className="material-symbols-outlined text-lg font-bold">check_circle</span>
+              </div>
+            </div>
+
+            {/* Card 3: Chưa Vào */}
+            <div className="min-w-0 p-5 rounded-2xl bg-white border border-slate-100 border-l-4 border-l-rose-500 shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] md:text-xs text-slate-400 uppercase font-extrabold tracking-wider truncate">
+                  Chưa vào
+                </p>
+                <p className="text-xl md:text-2xl font-extrabold text-rose-600 truncate mt-1">
+                  {show?.remainingCount?.toLocaleString()}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-inner shrink-0">
+                <span className="material-symbols-outlined text-lg font-bold">pending</span>
+              </div>
             </div>
           </section>
 
-          <section className="bg-[#F4F7F6]/80 backdrop-blur-xl py-4 mb-6">
-            {/* Container chính dùng Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-              {/* Ô tìm kiếm chiếm 7 cột trên màn hình lớn (lg) */}
-              <div className="relative w-full lg:col-span-6 group">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#444748] group-focus-within:text-[#16a34a] transition-colors">
-                  search
-                </span>
-                <input
-                  value={filters.keyword}
-                  className="w-full bg-white border border-[#c4c7c7]/50 rounded-xl pl-12 pr-4 py-3.5 text-sm text-[#1a1c1e] placeholder:text-[#444748] focus:ring-2 focus:ring-[#16a34a]/20 focus:border-[#16a34a] transition-all outline-none"
-                  placeholder="Tìm kiếm id vé hoặc mã đơn hàng..."
-                  type="text"
-                  onChange={(e) =>
-                    handleFilterChange("keyword", e.target.value)
-                  }
-                />
-              </div>
+          {/* Search & Filter section - Segmented pill controls & outline buttons */}
+          <section className="flex flex-col lg:flex-row gap-4 items-center justify-between w-full bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/40 shadow-sm">
+            {/* Ô tìm kiếm chiếm rộng rãi, có highlight focus */}
+            <div className="relative w-full lg:flex-1 lg:max-w-xl group shrink-0">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors text-base font-bold">
+                search
+              </span>
+              <input
+                value={filters.keyword}
+                className="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-xs text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none"
+                placeholder="Tìm kiếm ID vé hoặc mã đơn hàng..."
+                type="text"
+                onChange={(e) =>
+                  handleFilterChange("keyword", e.target.value)
+                }
+              />
+            </div>
 
-              {/* Các nút bấm chiếm 5 cột còn lại trên màn hình lớn (lg) */}
-              <div className="lg:col-span-6 grid grid-cols-5 gap-2 w-full">
+            {/* Các nút lọc tinh chỉnh Apple-grade Segmented Control */}
+            <div className="flex flex-wrap md:flex-nowrap gap-3 w-full lg:w-auto items-center justify-end">
+              {/* Segmented controls cho bộ lọc trạng thái */}
+              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/40 shrink-0">
                 <button
                   type="button"
                   onClick={() => handleFilterChange("status", "ALL")}
-                  className={`${filters.status === "ALL" ? "bg-[#16a34a] text-white" : "bg-white text-[#444748]"} col-span-1 px-2 py-3 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap border border-[#c4c7c7]/30 shadow-sm transition-all`}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all duration-200 shrink-0 ${
+                    filters.status === "ALL" 
+                      ? "bg-white text-slate-800 shadow-sm" 
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
                 >
                   Tất cả
                 </button>
-
                 <button
                   type="button"
                   onClick={() => handleFilterChange("status", "UNUSED")}
-                  className={`${filters.status === "UNUSED" ? "bg-[#16a34a] text-white" : "bg-white text-[#444748]"} col-span-1 px-2 py-3 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap border border-[#c4c7c7]/30 transition-colors`}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all duration-200 shrink-0 ${
+                    filters.status === "UNUSED" 
+                      ? "bg-white text-rose-600 shadow-sm" 
+                      : "text-slate-500 hover:text-rose-600"
+                  }`}
                 >
                   Chưa vào
                 </button>
-
                 <button
                   type="button"
                   onClick={() => handleFilterChange("status", "USED")}
-                  className={`${filters.status === "USED" ? "bg-[#16a34a] text-white" : "bg-white text-[#444748]"} col-span-1 px-2 py-3 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap border border-[#c4c7c7]/30 transition-colors`}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all duration-200 shrink-0 ${
+                    filters.status === "USED" 
+                      ? "bg-white text-emerald-600 shadow-sm" 
+                      : "text-slate-500 hover:text-emerald-600"
+                  }`}
                 >
                   Đã vào
                 </button>
+              </div>
 
+              {/* Actions Button */}
+              <div className="flex gap-2 shrink-0">
                 <button
                   type="button"
-                  onClick={() => {
-                    resetFilter();
-                  }}
-                  className="col-span-1 bg-slate-100 hover:bg-slate-200 text-slate-500 px-2 py-3 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm active:scale-95 transition-all"
+                  onClick={resetFilter}
+                  className="btn-refresh px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-black active:scale-95 transition-all flex items-center gap-1 border border-slate-200/40"
                 >
-                  Xóa
+                  <span className="refresh-icon material-symbols-outlined text-sm font-bold">restart_alt</span>
+                  Làm mới
                 </button>
 
                 <button
                   type="button"
                   onClick={applyFilters}
-                  className="col-span-1 bg-[#16a34a] hover:bg-green-700 text-white px-2 py-3 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shadow-sm active:scale-95 transition-all"
+                  className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl text-xs font-black shadow-[0_4px_10px_rgba(16,185,129,0.15)] active:scale-95 transition-all flex items-center gap-1.5"
                 >
+                  <span className="material-symbols-outlined text-sm font-bold">search</span>
                   Tìm kiếm
                 </button>
               </div>
             </div>
           </section>
 
-          {/* Ticket Table */}
-          <div className="bg-white rounded-3xl overflow-hidden border border-[#c4c7c7]/20 shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+          {/* Ticket Table Premium Canvas */}
+          <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)]">
+            <div className="overflow-x-auto pb-1 custom-scrollbar">
+              <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
-                  <tr className="bg-[#f0f1f1]/50 border-b border-[#c4c7c7]/20">
-                    <th className="whitespace-nowrap px-6 py-4 text-xs font-bold text-[#444748] uppercase tracking-widest font-['Inter']">
-                      Id
+                  <tr className="bg-slate-50/80 border-b border-slate-100">
+                    <th className="whitespace-nowrap px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider font-['Plus Jakarta Sans']">
+                      ID Vé
                     </th>
-                    <th className="whitespace-nowrap px-6 py-4 text-xs font-bold text-[#444748] uppercase tracking-widest font-['Inter']">
+                    <th className="whitespace-nowrap px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider font-['Plus Jakarta Sans']">
                       Khách hàng
                     </th>
-                    <th className="whitespace-nowrap px-6 py-4 text-xs font-bold text-[#444748] uppercase tracking-widest font-['Inter']">
+                    <th className="whitespace-nowrap px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider font-['Plus Jakarta Sans']">
                       Mã đơn hàng
                     </th>
-                    <th className="whitespace-nowrap px-6 py-4 text-xs font-bold text-[#444748] uppercase tracking-widest font-['Inter']">
+                    <th className="whitespace-nowrap px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider font-['Plus Jakarta Sans']">
                       Hạng vé / Ghế
                     </th>
-                    <th className="whitespace-nowrap px-6 py-4 text-xs font-bold text-[#444748] uppercase tracking-widest font-['Inter']">
+                    <th className="whitespace-nowrap px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider font-['Plus Jakarta Sans']">
                       Trạng thái
                     </th>
-                    <th className="whitespace-nowrap px-6 py-4 text-xs font-bold text-[#444748] uppercase tracking-widest font-['Inter'] text-right">
+                    <th className="whitespace-nowrap px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider font-['Plus Jakarta Sans'] text-right">
                       Thao tác
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#c4c7c7]/10">
+                <tbody className="divide-y divide-slate-100">
                   {isLoading ? (
                     <TableSkeleton columns={6} rows={5}></TableSkeleton>
                   ) : (
                     tickets?.map((ticket) => (
                       <tr
                         key={ticket?.id}
-                        className="hover:bg-[#f8f9fa] transition-colors group"
+                        className="hover:bg-slate-50/30 transition-colors group"
                       >
-                        <td className="px-6 py-5">
-                          <span className="font-mono text-sm text-[#444748]">
+                        {/* ID Vé với định dạng Monospace sang trọng */}
+                        <td className="px-6 py-4.5 whitespace-nowrap">
+                          <span className="font-mono text-xs text-slate-500 font-medium bg-slate-100/50 border border-slate-200/20 px-2 py-0.5 rounded">
                             {ticket?.id}
                           </span>
                         </td>
-                        <td className="px-6 py-5">
+                        
+                        {/* Khách hàng */}
+                        <td className="px-6 py-4.5 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <div>
-                              <p className="text-[#1a1c1e] font-semibold text-sm">
+                              <p className="text-slate-800 font-bold text-sm">
                                 {ticket?.customerName}
                               </p>
-                              <p className="text-[#444748] text-xs">
+                              <p className="text-slate-400 text-xs font-semibold">
                                 {ticket?.customerEmail}
                               </p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-5">
-                          <span className="font-mono text-sm text-[#444748]" title={ticket?.reservationCode || ticket?.reservationId}>
+
+                        {/* Mã đơn hàng */}
+                        <td className="px-6 py-4.5 whitespace-nowrap">
+                          <span className="font-mono text-xs text-slate-500 font-bold" title={ticket?.reservationCode || ticket?.reservationId}>
                             #{ticket?.reservationCode || ticket?.reservationId}
                           </span>
                         </td>
-                        <td className="px-6 py-5">
+
+                        {/* Hạng vé / Ghế */}
+                        <td className="px-6 py-4.5">
                           <div className="whitespace-nowrap">
-                            <p className="text-[#1a1c1e] text-sm font-medium">
+                            <p className="text-slate-800 text-sm font-black">
                               {ticket?.section}
                             </p>
-                            <p className="text-[#444748] text-xs uppercase tracking-tighter">
-                              {ticket?.seatLabel}
+                            <p className="text-slate-400 text-[10px] font-black uppercase tracking-wider mt-0.5">
+                              {ticket?.seatLabel || "-"}
                             </p>
                           </div>
                         </td>
-                        <td className="px-6 py-5">
-                          {/* Logic đổi màu Badge theo trạng thái */}
+
+                        {/* Trạng thái - Pill Badge */}
+                        <td className="px-6 py-4.5">
                           {ticket?.status === "UNUSED" ? (
-                            <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#ba1a1a]/10 text-[#ba1a1a] border border-[#ba1a1a]/20">
+                            <span className="whitespace-nowrap inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-500/10 border border-rose-500/10 text-rose-600">
                               Chưa vào cửa
                             </span>
                           ) : (
-                            <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#16a34a]/10 text-[#16a34a] border border-[#16a34a]/20">
+                            <span className="whitespace-nowrap inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/10 text-emerald-600">
                               Đã vào cửa
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-5 text-right">
+
+                        {/* Thao tác Check-in */}
+                        <td className="px-6 py-4.5 text-right whitespace-nowrap">
                           {ticket?.status === "UNUSED" ? (
                             <button
+                              type="button"
                               onClick={() => {
                                 setConfirmModal({
                                   isOpen: true,
@@ -451,140 +503,30 @@ const TicketList = () => {
                                   },
                                 });
                               }}
-                              className="bg-[#16a34a]/10 whitespace-nowrap hover:bg-[#16a34a] text-[#16a34a] hover:text-[#ffffff] px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95"
+                              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 hover:shadow-[0_4px_12px_rgba(16,185,129,0.25)] text-white px-5 py-2 rounded-xl text-xs font-black transition-all active:scale-95 uppercase tracking-wider shrink-0"
                             >
-                              CHECK-IN
+                              Check-in
                             </button>
                           ) : (
-                            <div className="text-[#444748] text-xs font-medium italic">
-                              Vào lúc {formatDateVN(ticket?.checkInAt)}
+                            <div className="flex flex-col items-end gap-1 shrink-0 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 text-emerald-600 font-extrabold text-[10px] uppercase tracking-wider bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-100/50">
+                                <span className="material-symbols-outlined text-[10px] font-extrabold">check</span>
+                                Hoàn tất
+                              </span>
+                              <span className="text-slate-400 text-[10px] font-semibold italic">
+                                Vào lúc {formatDateVN(ticket?.checkInAt)}
+                              </span>
                             </div>
                           )}
                         </td>
                       </tr>
                     ))
                   )}
-                  {/* <tr className="hover:bg-[#f8f9fa] transition-colors group">
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <p className="text-[#1a1c1e] font-semibold text-sm">
-                          Nguyễn Thành Trung
-                        </p>
-                        <p className="text-[#444748] text-xs">
-                          trung.nt@example.com
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="font-mono text-sm text-[#444748]">
-                      #TBX-99210-24
-                    </span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div>
-                      <p className="text-[#1a1c1e] text-sm font-medium">
-                        VIP 1
-                      </p>
-                      <p className="text-[#444748] text-xs uppercase tracking-tighter">
-                        Khu A - Hàng 2 - Ghế 15
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#ba1a1a]/10 text-[#ba1a1a] border border-[#ba1a1a]/20">
-                      Chưa vào cửa
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    <button className="bg-[#16a34a]/10 whitespace-nowrap hover:bg-[#16a34a] text-[#16a34a] hover:text-[#ffffff] px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95">
-                      CHECK-IN
-                    </button>
-                  </td>
-                </tr>
-                <tr className="hover:bg-[#f8f9fa] transition-colors group">
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <p className="text-[#1a1c1e] font-semibold text-sm">
-                          Lê Minh Hạnh
-                        </p>
-                        <p className="text-[#444748] text-xs">
-                          hanhle@example.com
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="font-mono text-sm text-[#444748]">
-                      #TBX-99208-24
-                    </span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div>
-                      <p className="text-[#1a1c1e] text-sm font-medium">
-                        Standard
-                      </p>
-                      <p className="text-[#444748] text-xs uppercase tracking-tighter">
-                        Khu C - Hàng 10 - Ghế 42
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#16a34a]/10 text-[#16a34a] border border-[#16a34a]/20">
-                      Đã vào cửa
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    <div className="text-[#444748] text-xs font-medium italic">
-                      Vào lúc 18:42
-                    </div>
-                  </td>
-                </tr>
-                <tr className="hover:bg-[#f8f9fa] transition-colors group">
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <p className="text-[#1a1c1e] font-semibold text-sm">
-                          Phạm Quốc Anh
-                        </p>
-                        <p className="text-[#444748] text-xs">
-                          anh.pq@example.com
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="font-mono text-sm text-[#444748]">
-                      #TBX-99195-24
-                    </span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div>
-                      <p className="text-[#1a1c1e] text-sm font-medium">
-                        Platinum
-                      </p>
-                      <p className="text-[#444748] text-xs uppercase tracking-tighter">
-                        Khu B - Hàng 5 - Ghế 08
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#ba1a1a]/10 text-[#ba1a1a] border border-[#ba1a1a]/20">
-                      Chưa vào cửa
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    <button className="bg-[#16a34a]/10 hover:bg-[#16a34a] text-[#16a34a] hover:text-[#ffffff] px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95">
-                      CHECK-IN
-                    </button>
-                  </td>
-                </tr> */}
                 </tbody>
               </table>
             </div>
           </div>
+
           {/* Pagination */}
           <Pagination
             totalElements={totalElements}

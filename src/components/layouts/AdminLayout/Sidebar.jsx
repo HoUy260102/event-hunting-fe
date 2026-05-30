@@ -52,6 +52,7 @@ function Sidebar({ isOpen, handleIsOpen }) {
     }
     if (
       pathname.includes("/admin/events") ||
+      pathname.includes("/admin/event") ||
       pathname.includes("/admin/add-event") ||
       pathname.includes("/admin/update-event") ||
       pathname.includes("/admin/info-event") ||

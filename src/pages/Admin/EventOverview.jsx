@@ -55,15 +55,16 @@ function EventOverview() {
   return (
     <div className="pt-4 max-w-[1400px] mx-auto space-y-6">
       {/* Khung Thông Tin Sự Kiện Premium Glassmorphism với Gradient Tinh Tế */}
-      <div className="bg-gradient-to-br from-white via-slate-50/30 to-white backdrop-blur-xl border border-white/60 shadow-[0_10px_35px_rgba(0,0,0,0.02)] rounded-3xl p-5 md:p-6 flex flex-col lg:flex-row gap-6 hover:shadow-[0_20px_50px_rgba(99,102,241,0.05)] transition-all duration-300">
-        {/* Poster Sự Kiện với viền sáng sang trọng */}
-        <div
-          className="w-full lg:w-64 h-52 md:h-60 lg:h-52 rounded-2xl bg-cover bg-center shrink-0 shadow-md border-2 border-white hover:scale-[1.02] transition-all duration-500 cursor-pointer"
-          style={{ backgroundImage: `url(${event?.posterUrl})` }}
-        />
+      <div className="bg-gradient-to-br from-white via-slate-50/30 to-white backdrop-blur-xl border border-white/60 shadow-[0_10px_35px_rgba(0,0,0,0.02)] rounded-3xl p-5 md:p-6 flex flex-col hover:shadow-[0_20px_50px_rgba(99,102,241,0.05)] transition-all duration-300">
+        {/* Phần trên: Poster + Thông tin sự kiện */}
+        <div className="flex flex-col lg:flex-row gap-6 w-full">
+          {/* Poster Sự Kiện với viền sáng sang trọng */}
+          <div
+            className="w-full lg:w-64 h-52 md:h-60 lg:h-52 rounded-2xl bg-cover bg-center shrink-0 shadow-md border-2 border-white hover:scale-[1.02] transition-all duration-500 cursor-pointer"
+            style={{ backgroundImage: `url(${event?.posterUrl})` }}
+          />
 
-        <div className="flex-1 flex flex-col justify-between py-1">
-          <div>
+          <div className="flex-1 flex flex-col justify-between py-1">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="inline-block transform scale-95 origin-left">
@@ -107,59 +108,59 @@ function EventOverview() {
                 Chỉnh sửa sự kiện
               </button>
             </div>
-
-            {/* --- GRID THÔNG SỐ KPI HOÀN HẢO --- */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6 border-t border-slate-100 pt-6">
-              <StatBlock
-                label="Doanh thu gộp"
-                value={`${event?.totalAmount?.toLocaleString()} ₫`}
-                icon="payments"
-                color="text-indigo-600"
-                borderColor="border-l-indigo-500"
-                iconBg="bg-indigo-50 text-indigo-600"
-              />
-              <StatBlock
-                label="Chiết khấu"
-                value={`${event?.discountAmount?.toLocaleString()} ₫`}
-                icon="sell"
-                color="text-amber-600"
-                borderColor="border-l-amber-500"
-                iconBg="bg-amber-50 text-amber-600"
-              />
-              <StatBlock
-                label="Doanh thu thuần"
-                value={`${event?.totalFinalAmount?.toLocaleString()} ₫`}
-                icon="monetization_on"
-                color="text-emerald-600"
-                borderColor="border-l-emerald-500"
-                iconBg="bg-emerald-50 text-emerald-600"
-              />
-              <StatBlock
-                label="Tổng vé"
-                value={event?.totalQuantity?.toLocaleString()}
-                icon="confirmation_number"
-                color="text-blue-600"
-                borderColor="border-l-blue-500"
-                iconBg="bg-blue-50 text-blue-600"
-              />
-              <StatBlock
-                label="Đã bán"
-                value={event?.soldQuantity?.toLocaleString()}
-                icon="group"
-                color="text-teal-600"
-                borderColor="border-l-teal-500"
-                iconBg="bg-teal-50 text-teal-600"
-              />
-              <StatBlock
-                label="Lấp đầy"
-                value={`${(((event?.soldQuantity || 0) * 100) / (event?.totalQuantity || 1)).toFixed(1)}%`}
-                icon="percent"
-                color="text-purple-600"
-                borderColor="border-l-purple-500"
-                iconBg="bg-purple-50 text-purple-600"
-              />
-            </div>
           </div>
+        </div>
+
+        {/* --- GRID THÔNG SỐ KPI DÀNH RIÊNG DƯỚI - CHIA LÀM HAI DÒNG CHIẾM 100% CHIỀU RỘNG CỰC KỲ SANG TRỌNG --- */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6 border-t border-slate-100 pt-6 w-full">
+          <StatBlock
+            label="Doanh thu gộp"
+            value={`${event?.totalAmount?.toLocaleString()} ₫`}
+            icon="payments"
+            color="text-indigo-600"
+            borderColor="border-l-indigo-500"
+            iconBg="bg-indigo-50 text-indigo-600"
+          />
+          <StatBlock
+            label="Chiết khấu"
+            value={`${event?.discountAmount?.toLocaleString()} ₫`}
+            icon="sell"
+            color="text-amber-600"
+            borderColor="border-l-amber-500"
+            iconBg="bg-amber-50 text-amber-600"
+          />
+          <StatBlock
+            label="Doanh thu thuần"
+            value={`${event?.totalFinalAmount?.toLocaleString()} ₫`}
+            icon="monetization_on"
+            color="text-emerald-600"
+            borderColor="border-l-emerald-500"
+            iconBg="bg-emerald-50 text-emerald-600"
+          />
+          <StatBlock
+            label="Tổng vé"
+            value={event?.totalQuantity?.toLocaleString()}
+            icon="confirmation_number"
+            color="text-blue-600"
+            borderColor="border-l-blue-500"
+            iconBg="bg-blue-50 text-blue-600"
+          />
+          <StatBlock
+            label="Đã bán"
+            value={event?.soldQuantity?.toLocaleString()}
+            icon="group"
+            color="text-teal-600"
+            borderColor="border-l-teal-500"
+            iconBg="bg-teal-50 text-teal-600"
+          />
+          <StatBlock
+            label="Lấp đầy"
+            value={`${(((event?.soldQuantity || 0) * 100) / (event?.totalQuantity || 1)).toFixed(1)}%`}
+            icon="percent"
+            color="text-purple-600"
+            borderColor="border-l-purple-500"
+            iconBg="bg-purple-50 text-purple-600"
+          />
         </div>
       </div>
 
@@ -172,7 +173,11 @@ function EventOverview() {
               {event?.shows?.length || 0} Suất diễn
             </span>
           </h3>
-          <button className="flex whitespace-nowrap items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-[0_4px_15px_rgba(16,185,129,0.2)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.3)] rounded-xl text-sm font-extrabold active:scale-95 transition-all">
+          <button
+            type="button"
+            onClick={() => navigate(`/admin/update-event/${id}`, { state: { step: 2 } })}
+            className="flex whitespace-nowrap items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-[0_4px_15px_rgba(16,185,129,0.2)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.3)] rounded-xl text-sm font-extrabold active:scale-95 transition-all"
+          >
             <span className="material-symbols-outlined text-sm font-extrabold">
               add
             </span>{" "}

@@ -85,8 +85,11 @@ function Booking() {
     const soldOutSectionIdsLs = [];
     if (show?.ticketTypes) {
       show.ticketTypes.forEach((type) => {
-        if (type?.status !== "ON_SALE")
-          soldOutSectionIdsLs.push(type?.sectionId);
+        if (type?.status !== "ON_SALE") {
+          if (type?.sectionId) {
+            soldOutSectionIdsLs.push(type?.sectionId);
+          }
+        }
         type?.seats.forEach((seat) => {
           map.set(seat?.seatCode, seat);
         });
@@ -99,6 +102,13 @@ function Booking() {
         bookedSeatsCode.push(value?.seatCode);
       }
     });
+    
+    // In log chi tiết để hỗ trợ debug trạng thái loại vé & phân khu bị khóa
+    console.log("--- DEBUG ĐẶT VÉ ---");
+    console.log("Danh sách loại vé (ticketTypes) & trạng thái:", show?.ticketTypes?.map(t => ({ id: t.id, name: t.name, status: t.status, sectionId: t.sectionId })));
+    console.log("Danh sách ID phân khu bị coi là Hết vé / Khóa (soldOutSectionIds):", soldOutSectionIdsLs);
+    console.log("--------------------");
+
     setBookedSeats(bookedSeatsCode);
     setSoldOutSectionIds(soldOutSectionIdsLs);
     return map;
@@ -160,15 +170,18 @@ function Booking() {
       setActiveTicketType(null);
       return;
     }
-    if (soldOutSectionIds.includes(sectionId)) return;
+    if (sectionId !== null && soldOutSectionIds.includes(sectionId)) return;
     if (ticketTypeId) {
       const typeObj = show?.ticketTypes?.find((t) => t.id === ticketTypeId);
       if (typeObj) {
+        if (typeObj?.status !== "ON_SALE") return;
         setActiveTicketType(typeObj);
         return;
       }
     }
-    setActiveTicketType(ticketTypeMap.get(sectionId));
+    const typeObj = ticketTypeMap.get(sectionId);
+    if (typeObj && typeObj?.status !== "ON_SALE") return;
+    setActiveTicketType(typeObj);
   };
 
   const handleSeatClick = (seatCode) => {

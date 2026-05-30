@@ -64,11 +64,11 @@ const SeatMapOverview = ({
         </span>
       </div>
 
-      <div className="w-full bg-gray-50 rounded-lg border border-dashed border-gray-200 relative overflow-hidden flex items-center justify-center p-4">
+      <div className="w-full h-[480px] md:h-[550px] bg-gray-50 rounded-lg border border-dashed border-gray-200 relative overflow-hidden flex items-center justify-center p-4">
         <div
           ref={containerRef}
           onClick={handleSvgClick}
-          className="w-full h-auto flex items-center justify-center svg-container"
+          className="w-full h-full flex items-center justify-center svg-container"
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
         <div className="absolute bottom-4 right-4 flex flex-col gap-2">
@@ -109,7 +109,7 @@ const SeatMapOverview = ({
         }
         .svg-container svg {
           width: 100%;
-          height: auto;
+          height: 100%;
         }
         .svg-container g[id^="section-"] {
           transition: all 0.3s ease;

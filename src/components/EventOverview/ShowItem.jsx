@@ -91,7 +91,7 @@ const ShowItem = ({ show }) => {
         </div>
       </div>
 
-      {/* Dropdown Container sử dụng Grid Layout thay thế Table để tránh cutoffs & double-border */}
+      {/* Dropdown Container sử dụng Grid Layout tỷ lệ vàng tuyệt đối chống mất chữ tên vé */}
       <div
         style={{
           display: "grid",
@@ -102,19 +102,20 @@ const ShowItem = ({ show }) => {
         <div className="overflow-hidden">
           <div className="p-6 bg-slate-50/20 border-t border-slate-100">
             <div className="overflow-x-auto pb-2 custom-scrollbar">
-              <div className="min-w-[1050px] pr-4">
-                {/* Header 24 Columns Grid */}
-                <div className="grid grid-cols-24 gap-2 items-center px-4 py-3 bg-slate-100/60 rounded-2xl text-slate-400 text-[10px] uppercase tracking-wider font-extrabold mb-3">
-                  <div className="col-span-4">Tên loại vé</div>
-                  <div className="col-span-2">Giá vé</div>
+              <div className="min-w-[1150px] pr-4">
+                {/* Header 24 Columns Grid thiết lập kích thước chuẩn chống cắt chữ */}
+                <div className="grid grid-cols-24 gap-3 items-center px-4 py-3 bg-slate-100/60 rounded-2xl text-slate-400 text-[10px] uppercase tracking-wider font-extrabold mb-3">
+                  <div className="col-span-3">Tên loại vé</div>
+                  <div className="col-span-3">Giá vé</div>
                   <div className="col-span-2 text-center">Tổng số</div>
-                  <div className="col-span-3 text-center">Đã bán</div>
-                  <div className="col-span-2 text-center">Vé đã đặt</div>
-                  <div className="col-span-2 text-center">Vé khả dụng</div>
+                  <div className="col-span-2 text-center">Đã bán</div>
+                  <div className="col-span-1 text-center">Vé đã đặt</div>
+                  <div className="col-span-1 text-center">Vé khả dụng</div>
                   <div className="col-span-3 text-right">Doanh thu gộp</div>
                   <div className="col-span-2 text-right">Chiết khấu</div>
-                  <div className="col-span-2 text-right">Doanh thu thuần</div>
-                  <div className="col-span-2 text-center">Trạng thái</div>
+                  <div className="col-span-3 text-right">Doanh thu thuần</div>
+                  <div className="col-span-3 text-center">Trạng thái</div>
+                  <div className="col-span-1"></div>
                 </div>
 
                 {/* Rows container */}

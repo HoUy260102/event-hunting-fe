@@ -6,31 +6,38 @@ const BookingSummary = ({
   removeTicketTypeFromCart,
   handleRemoveSeat,
   onNext,
+  className = "",
 }) => {
   const subTotal = cart.reduce(
     (acc, item) => acc + item.unitPrice * item.quantity,
     0,
   );
   const total = subTotal;
-  const noScrollbarStyles = `
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
+  const customScrollbarStyles = `
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
     }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
     }
   `;
   return (
-    <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-      <style>{noScrollbarStyles}</style>
+    <div className={`bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 flex flex-col ${className}`}>
+      <style>{customScrollbarStyles}</style>
       <div className="p-6 bg-slate-900 text-white">
         <h3 className="text-lg font-bold">Tóm tắt đơn hàng</h3>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 flex-1 flex flex-col justify-between">
         {/* Danh sách các mục trong giỏ hàng */}
-        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
+        <div className="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
           {cart.length === 0 && (
             <p className="text-center text-gray-400 text-sm py-4">
               Giỏ hàng trống
