@@ -91,7 +91,7 @@ const ShowItem = ({ show }) => {
         </div>
       </div>
 
-      {/* Dropdown Container */}
+      {/* Dropdown Container sử dụng Grid Layout thay thế Table để tránh cutoffs & double-border */}
       <div
         style={{
           display: "grid",
@@ -102,28 +102,28 @@ const ShowItem = ({ show }) => {
         <div className="overflow-hidden">
           <div className="p-6 bg-slate-50/20 border-t border-slate-100">
             <div className="overflow-x-auto pb-2 custom-scrollbar">
-              <table className="w-full text-left border-separate border-spacing-y-2">
-                <thead>
-                  <tr className="text-slate-400 text-[10px] uppercase tracking-wider font-extrabold">
-                    <th className="px-4 py-3 bg-slate-100/50 first:rounded-l-xl last:rounded-r-xl whitespace-nowrap">Tên loại vé</th>
-                    <th className="px-4 py-3 bg-slate-100/50 whitespace-nowrap">Giá vé</th>
-                    <th className="px-4 py-3 bg-slate-100/50 whitespace-nowrap">Tổng số</th>
-                    <th className="px-4 py-3 bg-slate-100/50 whitespace-nowrap">Đã bán</th>
-                    <th className="px-4 py-3 bg-slate-100/50 whitespace-nowrap">Vé đã đặt</th>
-                    <th className="px-4 py-3 bg-slate-100/50 whitespace-nowrap">Vé khả dụng</th>
-                    <th className="px-4 py-3 bg-slate-100/50 whitespace-nowrap">Doanh thu gộp</th>
-                    <th className="px-4 py-3 bg-slate-100/50 whitespace-nowrap">Chiết khấu</th>
-                    <th className="px-4 py-3 bg-slate-100/50 whitespace-nowrap">Doanh thu thuần</th>
-                    <th className="px-4 py-3 bg-slate-100/50 whitespace-nowrap">Trạng thái (Hệ thống)</th>
-                    <th className="px-4 py-3 bg-slate-100/50 text-center whitespace-nowrap">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <div className="min-w-[1050px] pr-4">
+                {/* Header 24 Columns Grid */}
+                <div className="grid grid-cols-24 gap-2 items-center px-4 py-3 bg-slate-100/60 rounded-2xl text-slate-400 text-[10px] uppercase tracking-wider font-extrabold mb-3">
+                  <div className="col-span-4">Tên loại vé</div>
+                  <div className="col-span-2">Giá vé</div>
+                  <div className="col-span-2 text-center">Tổng số</div>
+                  <div className="col-span-3 text-center">Đã bán</div>
+                  <div className="col-span-2 text-center">Vé đã đặt</div>
+                  <div className="col-span-2 text-center">Vé khả dụng</div>
+                  <div className="col-span-3 text-right">Doanh thu gộp</div>
+                  <div className="col-span-2 text-right">Chiết khấu</div>
+                  <div className="col-span-2 text-right">Doanh thu thuần</div>
+                  <div className="col-span-2 text-center">Trạng thái</div>
+                </div>
+
+                {/* Rows container */}
+                <div className="space-y-3">
                   {show.ticketTypes?.map((type) => (
                     <TicketTypeGroup key={type.id} type={type} />
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
