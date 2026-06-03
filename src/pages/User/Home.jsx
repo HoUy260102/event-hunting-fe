@@ -93,7 +93,9 @@ function Home() {
   const [trending, setTrending] = useState([]);
   const [cat1, setCat1] = useState([]);
   const [cat2, setCat2] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recLoading, setRecLoading] = useState(true);
 
   const [timeTab, setTimeTab] = useState("week"); // "week" | "month" | "next3months" | "3months"
   const [timeEvents, setTimeEvents] = useState([]);
@@ -106,7 +108,8 @@ function Home() {
     const getTrending = async () => {
       try {
         setLoading(true);
-        const [resTrending, resCat1, resCat2] = await Promise.all([
+        setRecLoading(true);
+        const [resTrending, resCat1, resCat2, resRec] = await Promise.all([
           axiosClient.get(`/events/trending`),
           axiosClient.get("/events/public/search", {
             params: { categoryIds: ["01KGJ1PKYHGAME8BA3QAXYDSCJ"], size: 4 },
@@ -114,14 +117,22 @@ function Home() {
           axiosClient.get("/events/public/search", {
             params: { categoryIds: ["01KGJ1N6SG60BZD68S7W09QD6P"], size: 4 },
           }),
+          axiosClient.get("/events/recommendations", {
+            params: { limit: 4 },
+          }).catch((err) => {
+            console.error("Fetch recommendations error, fallback to empty list", err);
+            return { data: [] };
+          }),
         ]);
         setTrending(resTrending?.data || []);
         setCat1(resCat1?.data?.content || []);
         setCat2(resCat2?.data?.content || []);
+        setRecommendations(resRec?.data || []);
       } catch (error) {
         console.error("Fetch trending error:", error);
       } finally {
         setLoading(false);
+        setRecLoading(false);
       }
     };
     getTrending();
@@ -325,6 +336,44 @@ function Home() {
         </main>
       )}
 
+      {/* Personalized Recommendations Section */}
+      {(!recLoading && recommendations.length === 0) ? null : (
+        <main className="px-2 py-10 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-green-400 text-[35px] animate-pulse">
+                auto_awesome
+              </span>
+              <div>
+                <h3 className="text-xl font-bold text-white">Gợi ý dành riêng cho bạn</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Khám phá các sự kiện được đề xuất dựa trên sở thích của bạn</p>
+              </div>
+            </div>
+          </div>
+
+          {recLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="w-full">
+                  <EventCardSkeleton />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in fade-in duration-500">
+              {recommendations.map((item) => (
+                <EventCard
+                  key={item?.id}
+                  event={item}
+                  user={user}
+                  openLogin={openLogin}
+                />
+              ))}
+            </div>
+          )}
+        </main>
+      )}
+
       {/* Time Filtered Events Tabs Section */}
       <main className="px-2 py-10 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-3">
@@ -400,6 +449,12 @@ function Home() {
             <div className="flex items-center gap-2">
               <h3 className="text-xl font-bold text-white">Liveshow & Concert</h3>
             </div>
+            <button
+              onClick={() => navigate("/search?categoryIds=01KGJ1PKYHGAME8BA3QAXYDSCJ")}
+              className="text-gray-400 hover:text-white text-xs md:text-sm font-medium transition-colors"
+            >
+              Xem thêm &gt;
+            </button>
           </div>
 
           {loading ? (
@@ -433,6 +488,12 @@ function Home() {
                 Sân khấu & Nhạc kịch
               </h3>
             </div>
+            <button
+              onClick={() => navigate("/search?categoryIds=01KGJ1N6SG60BZD68S7W09QD6P")}
+              className="text-gray-400 hover:text-white text-xs md:text-sm font-medium transition-colors"
+            >
+              Xem thêm &gt;
+            </button>
           </div>
 
           {loading ? (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -123,6 +123,10 @@ const AddVoucher = () => {
   const [discountType, setDiscountType] = useState("VALUE");
   const [voucherScope, setVoucherScope] = useState("ORGANIZER");
   const [eventCode, setEventCode] = useState("");
+  const [events, setEvents] = useState([]);
+  const [eventSearchText, setEventSearchText] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const [shows, setShows] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [modal, setModal] = useState({
@@ -131,6 +135,58 @@ const AddVoucher = () => {
     message: "",
     type: "success",
   });
+
+  useEffect(() => {
+    const fetchEventSelection = async () => {
+      try {
+        const endpoint =
+          user?.role === "ORGANIZER"
+            ? `/events/me/selection`
+            : `/events/selection`;
+        const eventRes = await axiosClient.get(endpoint);
+        setEvents(eventRes?.data || []);
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách sự kiện:", error.message);
+      }
+    };
+    if (voucherScope === "ORGANIZER" && user) {
+      fetchEventSelection();
+    }
+  }, [voucherScope, user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSelectEvent = async (event) => {
+    setEventSearchText(event.name);
+    setEventCode(event.id);
+    setIsDropdownOpen(false);
+    try {
+      const response = await axiosClient.get(
+        `/events/${event.id}/shows/selection`,
+      );
+      setShows(response?.data || []);
+      setTickets([]);
+      setValue("ticketTypeIds", []);
+    } catch (err) {
+      setModal({
+        isOpen: true,
+        title: "Tạo mới voucher",
+        message: err.message,
+        type: "error",
+      });
+      console.error(err);
+    }
+  };
 
   const {
     register,
@@ -186,6 +242,11 @@ const AddVoucher = () => {
     ) {
       reset();
       setDiscountType("VALUE");
+      setEventCode("");
+      setEventSearchText("");
+      setShows([]);
+      setTickets([]);
+      setIsDropdownOpen(false);
     }
   };
 
@@ -290,10 +351,12 @@ const AddVoucher = () => {
   useEffect(() => {
     if (voucherScope === "SYSTEM") {
       setEventCode("");
+      setEventSearchText("");
       setShows([]);
       setTickets([]);
       setValue("showId", "");
       setValue("ticketTypeIds", []);
+      setIsDropdownOpen(false);
     }
   }, [voucherScope]);
 
@@ -612,16 +675,22 @@ const AddVoucher = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 relative" ref={dropdownRef}>
                   <label className="text-[13px] font-bold text-slate-600 dark:text-slate-300 ml-1">
-                    Nhập mã sự kiện <span className="text-red-500">*</span>
+                    Tìm kiếm sự kiện (Tên hoặc Mã) <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-2">
                     <input
-                      value={eventCode}
-                      onChange={(e) => setEventCode(e.target.value)}
+                      value={eventSearchText}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEventSearchText(val);
+                        setEventCode(val);
+                        setIsDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsDropdownOpen(true)}
                       className="flex-1 h-11 px-4 rounded-xl bg-slate-50/50 dark:bg-[#142210]/50 border border-slate-200 dark:border-[#2a4225] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 text-slate-800 dark:text-white transition-all duration-200 outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-[#a1aebf] hover:border-slate-300 dark:hover:border-[#36532f]"
-                      placeholder="Ví dụ: EVENT123"
+                      placeholder="Nhập tên sự kiện hoặc mã sự kiện..."
                       type="text"
                     />
                     <button
@@ -632,6 +701,45 @@ const AddVoucher = () => {
                       TÌM KIẾM
                     </button>
                   </div>
+
+                  {isDropdownOpen && (
+                    <div className="absolute left-0 right-0 top-[76px] z-50 max-h-60 overflow-y-auto bg-white dark:bg-[#1c2e18] border border-slate-200 dark:border-[#2a4225] rounded-xl shadow-lg mt-1 divide-y divide-slate-100 dark:divide-[#2a4225]/30">
+                      {events.filter((e) => {
+                        const term = eventSearchText.toLowerCase();
+                        return (
+                          e.name.toLowerCase().includes(term) ||
+                          e.id.toLowerCase().includes(term)
+                        );
+                      }).length > 0 ? (
+                        events
+                          .filter((e) => {
+                            const term = eventSearchText.toLowerCase();
+                            return (
+                              e.name.toLowerCase().includes(term) ||
+                              e.id.toLowerCase().includes(term)
+                            );
+                          })
+                          .map((event) => (
+                            <div
+                              key={event.id}
+                              onClick={() => handleSelectEvent(event)}
+                              className="p-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex flex-col gap-0.5"
+                            >
+                              <span className="text-sm font-bold text-slate-800 dark:text-white line-clamp-1 text-left">
+                                {event.name}
+                              </span>
+                              <span className="text-[11px] font-mono text-slate-400 dark:text-[#a1aebf] text-left">
+                                ID: {event.id}
+                              </span>
+                            </div>
+                          ))
+                      ) : (
+                        <div className="p-3 text-sm text-slate-400 dark:text-[#a1aebf] text-center">
+                          Không tìm thấy sự kiện nào
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2">

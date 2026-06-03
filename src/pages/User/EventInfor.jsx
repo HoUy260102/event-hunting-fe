@@ -7,6 +7,7 @@ import EventSkeleton from "../../components/EventInfor/EventSkeleton";
 import { useAuth } from "../../hooks/useAuth";
 import EventCard from "../../components/EventSearch/User/EventCard";
 import EventCardSkeleton from "../../components/EventSearch/User/EventCardSkeleton";
+import EventComments from "../../components/EventInfor/EventComments";
 
 function EventInfor() {
   const showSectionRef = useRef(null);
@@ -444,6 +445,9 @@ function EventInfor() {
                     </div>
                   </div>
                 )}
+
+                {/* Phần bình luận & cảm xúc chuẩn Facebook */}
+                <EventComments eventId={id} />
               </section>
             </div>
             <section

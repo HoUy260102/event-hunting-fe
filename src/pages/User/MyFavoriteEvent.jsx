@@ -5,6 +5,8 @@ import EventCard from "../../components/EventSearch/User/EventCard";
 import EventCardSkeleton from "../../components/EventSearch/User/EventCardSkeleton";
 import SearchEmpty from "../../components/common/SearchEmpty";
 import { useAuth } from "../../hooks/useAuth";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function MyfavoriteEvent() {
   useEffect(() => {
@@ -62,6 +64,58 @@ function MyfavoriteEvent() {
     fetchEvents();
   }, []);
 
+  const handleSavedChange = (eventId, isSaved) => {
+    if (!isSaved) {
+      const eventToRestore = events.find((e) => e.id === eventId);
+      const originalIndex = events.findIndex((e) => e.id === eventId);
+
+      setEvents((prev) => prev.filter((event) => event.id !== eventId));
+
+      if (eventToRestore) {
+        toast.info(
+          ({ closeToast }) => (
+            <div className="flex items-center justify-between gap-3 text-slate-100 w-full">
+              <span className="text-[13px] font-medium line-clamp-2 pr-1">
+                Đã bỏ thích &ldquo;{eventToRestore.name}&rdquo;
+              </span>
+              <button
+                onClick={async () => {
+                  try {
+                    await axiosClient.post(`/favorites/${eventId}`);
+                    setEvents((prev) => {
+                      const newEvents = [...prev];
+                      const restored = { ...eventToRestore, isSaved: true };
+                      newEvents.splice(originalIndex, 0, restored);
+                      return newEvents;
+                    });
+                    closeToast();
+                  } catch (err) {
+                    console.error("Lỗi khi hoàn tác:", err);
+                    toast.error("Không thể hoàn tác hành động!");
+                  }
+                }}
+                className="shrink-0 whitespace-nowrap px-3 py-1 bg-green-500 hover:bg-green-400 text-black text-xs font-extrabold rounded-md transition-colors shadow-md active:scale-95 duration-150"
+              >
+                Hoàn tác
+              </button>
+            </div>
+          ),
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "dark",
+            icon: false,
+            closeButton: false,
+          }
+        );
+      }
+    }
+  };
+
   return (
     <>
       <main className="px-4">
@@ -82,6 +136,7 @@ function MyfavoriteEvent() {
                 event={event}
                 user={user}
                 openLogin={openLogin}
+                onSavedChange={handleSavedChange}
               />
             ))
           ) : (
@@ -127,6 +182,7 @@ function MyfavoriteEvent() {
           </div>
         )}
       </main>
+      <ToastContainer />
     </>
   );
 }

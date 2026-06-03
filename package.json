@@ -21,6 +21,7 @@
     "ckeditor5": "^47.5.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.19",
+    "emoji-picker-react": "^4.19.1",
     "framer-motion": "^12.38.0",
     "html5-qrcode": "^2.3.8",
     "qrcode.react": "^4.2.0",

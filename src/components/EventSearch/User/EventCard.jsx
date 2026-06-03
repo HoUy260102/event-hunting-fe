@@ -3,7 +3,7 @@ import { formatDateVN } from "../../../utils/format";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../../../api/axiosClient";
 
-const EventCard = ({ event, user, openLogin }) => {
+const EventCard = ({ event, user, openLogin, onSavedChange }) => {
   const navigate = useNavigate();
   const [isSaved, setIsSaved] = useState(event?.isSaved || false);
   const [loading, setLoading] = useState(false);
@@ -19,9 +19,15 @@ const EventCard = ({ event, user, openLogin }) => {
       if (isSaved) {
         await axiosClient.delete(`/favorites/${event.id}`);
         setIsSaved(false);
+        if (onSavedChange) {
+          onSavedChange(event.id, false);
+        }
       } else {
         await axiosClient.post(`/favorites/${event.id}`);
         setIsSaved(true);
+        if (onSavedChange) {
+          onSavedChange(event.id, true);
+        }
       }
     } catch (error) {
       console.error("Lỗi khi xử lý favorite:", error);

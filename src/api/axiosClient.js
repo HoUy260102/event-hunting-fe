@@ -50,9 +50,16 @@ axiosClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const errorData = error.response?.data;
+    const errorResponse = errorData || {
+      status: error.response?.status || 500,
+      message: error.message || "Lỗi kết nối server!",
+      data: null,
+    };
     if (
       error.response?.status === 401 &&
-      errorData?.code === "TOKEN_EXPIRED" &&
+      (errorData?.code === "TOKEN_EXPIRED" || 
+       errorData?.message?.includes("hết hạn") || 
+       errorData?.message?.includes("expired")) &&
       !originalRequest._retry
     ) {
       if (isRefreshing) {
@@ -68,12 +75,21 @@ axiosClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
       const refreshToken = localStorage.getItem("refreshToken");
+      const deviceId = localStorage.getItem("deviceId");
       try {
         const res = await axios.post(
           "http://localhost:8080/api/v1/auth/refresh-token",
           { refreshToken },
+          {
+            headers: {
+              "X-Device-Id": deviceId,
+            },
+          }
         );
-        const newAccessToken = res.data.data.accessToken;
+        const newAccessToken = res.data?.data?.accessToken;
+        if (!newAccessToken) {
+          throw new Error("Không nhận được token mới từ máy chủ.");
+        }
         localStorage.setItem("accessToken", newAccessToken);
         axiosClient.defaults.headers.common["Authorization"] =
           `Bearer ${newAccessToken}`;
@@ -108,11 +124,6 @@ axiosClient.interceptors.response.use(
       }
     }
 
-    const errorResponse = error.response?.data || {
-      status: error.response?.status || 500,
-      message: error.message || "Lỗi kết nối server!",
-      data: null,
-    };
     return Promise.reject(errorResponse);
   },
 );

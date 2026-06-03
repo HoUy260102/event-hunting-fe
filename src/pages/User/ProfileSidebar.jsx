@@ -30,12 +30,13 @@ const ProfileSidebar = () => {
     <div className="flex flex-col gap-6">
       {/* User Info Header */}
       <div className="flex items-center gap-4 p-4 bg-[#131313] rounded-3xl border border-slate-800 shadow-sm">
-        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#46ec13] p-0.5 bg-[#131313]">
+        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#2DC275] p-0.5 bg-[#131313]">
           <div className="w-full h-full rounded-full overflow-hidden">
             <img
               src={user?.avatarUrl || "https://via.placeholder.com/150"}
               alt="Avatar"
               className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
             />
           </div>
         </div>
@@ -78,7 +79,7 @@ const ProfileSidebar = () => {
                       key={subIndex}
                       to={sub.path}
                       className={`text-[14px] py-2 px-2 rounded-lg transition-all duration-200 ${location.pathname === sub.path
-                        ? "text-[#46ec13] font-bold bg-[#46ec13]/5"
+                        ? "text-[#2DC275] font-bold bg-[#2DC275]/10"
                         : "text-slate-500 hover:text-white hover:bg-white/5"
                         }`}
                     >

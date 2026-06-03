@@ -150,6 +150,7 @@ const UserDetailModal = ({ isOpen, onClose, userData }) => {
                     className="w-full h-full rounded-full object-cover"
                     src={userData?.avatar?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.name || "U")}&background=f0fdf4&color=15803d&bold=true&size=128`}
                     alt={userData?.name}
+                    referrerPolicy="no-referrer"
                     onError={(e) => {
                       e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.name || "U")}&background=f0fdf4&color=15803d&bold=true&size=128`;
                     }}

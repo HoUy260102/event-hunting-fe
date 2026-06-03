@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import Modal from "../../../components/common/Modal";
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import z from "zod";
 import axiosClient from "../../../api/axiosClient";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -250,6 +251,7 @@ const showsSchema = z
     });
   });
 
+
 function UpdateShow() {
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(null);
@@ -301,6 +303,61 @@ function UpdateShow() {
   const [activeShowIndex, setActiveShowIndex] = useState(null);
   const [activeTicketTypeIndex, setActiveTicketTypeIndex] = useState(null);
   const [editingTicket, setEditingTicket] = useState(null);
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [deletedShows, setDeletedShows] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, showId: null });
+  const [restoreConfirm, setRestoreConfirm] = useState({ isOpen: false, showId: null });
+  const [cancelConfirm, setCancelConfirm] = useState({ isOpen: false, index: null });
+
+  const fetchDeletedShows = async () => {
+    try {
+      const res = await axiosClient.get(`/events/${id}/shows/deleted`);
+      setDeletedShows(res.data);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách show đã xóa:", error.message);
+    }
+  };
+
+  const handleToggleShowDeleted = async () => {
+    const nextVal = !showDeleted;
+    setShowDeleted(nextVal);
+    if (nextVal) {
+      await fetchDeletedShows();
+    } else {
+      await fetchShows();
+    }
+  };
+
+  const handleRestoreShowClick = (showId) => {
+    setRestoreConfirm({
+      isOpen: true,
+      showId: showId,
+    });
+  };
+
+  const handleConfirmRestoreShow = async () => {
+    const showId = restoreConfirm.showId;
+    setRestoreConfirm({ isOpen: false, showId: null });
+    try {
+      await axiosClient.patch(`/shows/${showId}/restore`);
+      setModal({
+        isOpen: true,
+        title: "Khôi phục suất diễn",
+        message: "Khôi phục suất diễn thành công.",
+        type: "success",
+      });
+      await fetchDeletedShows();
+      await fetchShows();
+    } catch (error) {
+      setModal({
+        isOpen: true,
+        title: "Khôi phục suất diễn",
+        message: "Khôi phục suất diễn thất bại: " + (error.response?.data?.message || error.message),
+        type: "error",
+      });
+    }
+  };
+
   const [shows, setShows] = useState([]);
   const [initialData, setInitialData] = useState([]);
 
@@ -331,37 +388,37 @@ function UpdateShow() {
     }
   }, [shows, setValue, trigger]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const showsRes = await axiosClient.get(`/events/${id}/shows`);
-        const processedShows = showsRes.data.map((show) => {
-          if (show.seatMapSvg && show.seatMapSvg.trim() !== "") {
-            const sections = extractSectionsFromSvg(show.seatMapSvg);
-            return {
-              ...show,
-              sections: sections.map((s) => ({
-                sectionId: s.id,
-                sectionName: s.label,
-              })),
-            };
-          }
-
+  const fetchShows = async () => {
+    try {
+      const showsRes = await axiosClient.get(`/events/${id}/shows`);
+      const processedShows = showsRes.data.map((show) => {
+        if (show.seatMapSvg && show.seatMapSvg.trim() !== "") {
+          const sections = extractSectionsFromSvg(show.seatMapSvg);
           return {
             ...show,
-            sections: [],
+            sections: sections.map((s) => ({
+              sectionId: s.id,
+              sectionName: s.label,
+            })),
           };
-        });
-        setInitialData(processedShows);
-        setShows(processedShows);
-        reset({ shows: processedShows });
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error.message);
-      }
-    };
+        }
 
+        return {
+          ...show,
+          sections: [],
+        };
+      });
+      setInitialData(processedShows);
+      setShows(processedShows);
+      reset({ shows: processedShows });
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error.message);
+    }
+  };
+
+  useEffect(() => {
     if (id) {
-      fetchData();
+      fetchShows();
     }
   }, [id, reset]);
 
@@ -405,6 +462,50 @@ function UpdateShow() {
   const removeShow = (showId) => {
     if (shows.length > 0) {
       setShows(shows.filter((s) => s.id !== showId));
+    }
+  };
+
+  const handleRemoveShowClick = (showId) => {
+    setDeleteConfirm({
+      isOpen: true,
+      showId: showId,
+    });
+  };
+
+  const handleConfirmDeleteShow = async () => {
+    const showId = deleteConfirm.showId;
+    setDeleteConfirm({ isOpen: false, showId: null });
+
+    const show = shows.find((s) => s.id === showId);
+    if (!show) return;
+
+    const isSaved = showId && !showId.includes("-");
+    if (isSaved) {
+      try {
+        await axiosClient.patch(`/shows/${showId}/soft-delete`);
+        setModal({
+          isOpen: true,
+          title: "Xóa suất diễn",
+          message: "Xóa suất diễn thành công.",
+          type: "success",
+        });
+        await fetchShows();
+      } catch (error) {
+        setModal({
+          isOpen: true,
+          title: "Xóa suất diễn",
+          message: "Xóa suất diễn thất bại: " + (error.response?.data?.message || error.message),
+          type: "error",
+        });
+      }
+    } else {
+      removeShow(showId);
+      setModal({
+        isOpen: true,
+        title: "Xóa suất diễn",
+        message: "Xóa suất diễn nháp thành công.",
+        type: "success",
+      });
     }
   };
 
@@ -729,7 +830,16 @@ function UpdateShow() {
   };
 
   const handleCancelShow = (index) => {
-    if (window.confirm("Bạn có chắc chắn muốn hủy mọi thay đổi không?")) {
+    setCancelConfirm({
+      isOpen: true,
+      index: index,
+    });
+  };
+
+  const handleConfirmCancelShow = () => {
+    const index = cancelConfirm.index;
+    setCancelConfirm({ isOpen: false, index: null });
+    if (index !== null && index !== undefined) {
       setShows((prev) => {
         const updated = [...prev];
         updated[index] = initialData[index];
@@ -856,17 +966,52 @@ function UpdateShow() {
           }
           onConfirm={handleConfirmStatus}
         />
+        <ConfirmModal
+          isOpen={deleteConfirm.isOpen}
+          title="Xác nhận xóa suất diễn"
+          message="Bạn có chắc chắn muốn xóa suất diễn này không?"
+          onClose={() => setDeleteConfirm({ isOpen: false, showId: null })}
+          onConfirm={handleConfirmDeleteShow}
+        />
+        <ConfirmModal
+          isOpen={restoreConfirm.isOpen}
+          title="Xác nhận khôi phục suất diễn"
+          message="Bạn có chắc chắn muốn khôi phục suất diễn này không?"
+          onClose={() => setRestoreConfirm({ isOpen: false, showId: null })}
+          onConfirm={handleConfirmRestoreShow}
+        />
+        <ConfirmModal
+          isOpen={cancelConfirm.isOpen}
+          title="Xác nhận hủy thay đổi"
+          message="Bạn có chắc chắn muốn hủy mọi thay đổi của suất diễn này không?"
+          onClose={() => setCancelConfirm({ isOpen: false, index: null })}
+          onConfirm={handleConfirmCancelShow}
+        />
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="pl-2 text-xl font-bold text-slate-800 flex items-center">
-                Thời Gian
+                {showDeleted ? "Thùng rác suất diễn" : "Thời Gian"}
               </h2>
+              <button
+                type="button"
+                onClick={handleToggleShowDeleted}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg font-bold transition-all text-sm shadow-sm ${
+                  showDeleted
+                    ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-red-500"
+                }`}
+              >
+                <span className="material-symbols-outlined text-lg">
+                  {showDeleted ? "arrow_back" : "delete"}
+                </span>
+                <span>{showDeleted ? "Quay lại danh sách" : "Thùng rác suất diễn"}</span>
+              </button>
             </div>
             {/* Danh sách các suất diễn */}
-            {shows?.map((show, index) => {
+            {(showDeleted ? deletedShows : shows)?.map((show, index) => {
               const currentShowError = errors.shows?.[index];
-              const isStatusLocked = show.status !== "DRAFT";
+              const isStatusLocked = show.status !== "DRAFT" || showDeleted;
               const cannotAddTicketType = Boolean(
                 (show?.seatMapType === "SECTION_WITH_SEATS" ||
                   show?.seatMapType === "SECTION_ONLY") &&
@@ -885,12 +1030,12 @@ function UpdateShow() {
                         expand_less
                       </span>
                       <span className="text-slate-800 font-bold text-lg mr-4">
-                        Suất diễn {shows.length > 1 ? index + 1 : ""}
+                        Suất diễn {(showDeleted ? deletedShows : shows).length > 1 ? index + 1 : ""}
                       </span>
                       <StatusBadge
                         status={show?.status}
                         options={SHOW_STATUS_MAP}
-                        onStatusChange={(newStatus) => {
+                        onStatusChange={showDeleted ? null : (newStatus) => {
                           requestChangeStatus(
                             show.id,
                             newStatus,
@@ -900,7 +1045,7 @@ function UpdateShow() {
                         }}
                       ></StatusBadge>
 
-                      {show.status === "DRAFT" && shows.filter((s) => s.id !== show.id).length > 0 && (
+                      {!showDeleted && show.status === "DRAFT" && shows.filter((s) => s.id !== show.id).length > 0 && (
                         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                           <span className="text-slate-300 text-xs select-none">|</span>
                           <select
@@ -928,15 +1073,17 @@ function UpdateShow() {
                       )}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => removeShow(show.id)}
-                      className="text-slate-400 hover:text-red-500 transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-xl">
-                        close
-                      </span>
-                    </button>
+                    {!showDeleted && show.status === "DRAFT" && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveShowClick(show.id)}
+                        className="text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-xl">
+                          close
+                        </span>
+                      </button>
+                    )}
                   </div>
 
                   {/* BỔ SUNG: Lựa chọn loại sơ đồ */}
@@ -1108,6 +1255,7 @@ function UpdateShow() {
                             })
                           }
                           type="datetime-local"
+                          disabled={showDeleted}
                           className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${
                             currentShowError?.startTime
                               ? "border-red-500 focus:border-red-600"
@@ -1136,6 +1284,7 @@ function UpdateShow() {
                               endTime: e.target.value,
                             })
                           }
+                          disabled={showDeleted}
                           className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${
                             currentShowError?.endTime
                               ? "border-red-500  focus:border-red-600"
@@ -1164,6 +1313,7 @@ function UpdateShow() {
                             })
                           }
                           type="number"
+                          disabled={showDeleted}
                           className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${
                             currentShowError?.minOrder
                               ? "border-red-500  focus:border-red-600"
@@ -1191,6 +1341,7 @@ function UpdateShow() {
                               maxOrder: e.target.value,
                             })
                           }
+                          disabled={showDeleted}
                           className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${
                             currentShowError?.maxOrder
                               ? "border-red-500  focus:border-red-600"
@@ -1246,22 +1397,24 @@ function UpdateShow() {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                openEditTicket(
-                                  show.id,
-                                  ticketType,
-                                  index,
-                                  ticketTypeIndex,
-                                )
-                              }
-                              className="p-2 text-slate-400 hover:text-emerald-500"
-                            >
-                              <span className="material-symbols-outlined text-4xl">
-                                edit
-                              </span>
-                            </button>
+                            {!showDeleted && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openEditTicket(
+                                    show.id,
+                                    ticketType,
+                                    index,
+                                    ticketTypeIndex,
+                                  )
+                                }
+                                className="p-2 text-slate-400 hover:text-emerald-500"
+                              >
+                                <span className="material-symbols-outlined text-4xl">
+                                  edit
+                                </span>
+                              </button>
+                            )}
                             {!isStatusLocked && (
                               <button
                                 type="button"
@@ -1287,109 +1440,146 @@ function UpdateShow() {
                       </p>
                     )}
 
-                    {/* Nút thêm vé riêng cho từng section */}
-                    <button
-                      type="button"
-                      disabled={cannotAddTicketType}
-                      onClick={() => handleOpenAddTicket(show.id, index)}
-                      className="w-full py-4 border-2 border-dashed border-slate-100 rounded-xl flex items-center justify-center gap-2 text-emerald-500 font-bold hover:bg-emerald-50 hover:border-emerald-200 transition-all mt-4"
-                    >
-                      <span className="material-symbols-outlined text-4xl">
-                        add_circle
-                      </span>
-                      Tạo loại vé mới
-                    </button>
-                    {cannotAddTicketType && (
-                      <div className="mt-2 flex items-center gap-1 text-[0.85rem] text-red-600">
-                        <span role="img" aria-label="warning">
-                          ⚠️
-                        </span>
-                        <span className="italic">
-                          Bạn không thể thêm vé vì mỗi khu vực trên sơ đồ đã
-                          được gán một loại vé (đã đủ số lượng section trên
-                          seatmap).
-                        </span>
+                    {!showDeleted && (
+                      <>
+                        {/* Nút thêm vé riêng cho từng section */}
+                        <button
+                          type="button"
+                          disabled={cannotAddTicketType}
+                          onClick={() => handleOpenAddTicket(show.id, index)}
+                          className="w-full py-4 border-2 border-dashed border-slate-100 rounded-xl flex items-center justify-center gap-2 text-emerald-500 font-bold hover:bg-emerald-50 hover:border-emerald-200 transition-all mt-4"
+                        >
+                          <span className="material-symbols-outlined text-4xl">
+                            add_circle
+                          </span>
+                          Tạo loại vé mới
+                        </button>
+                        {cannotAddTicketType && (
+                          <div className="mt-2 flex items-center gap-1 text-[0.85rem] text-red-600">
+                            <span role="img" aria-label="warning">
+                              ⚠️
+                            </span>
+                            <span className="italic">
+                              Bạn không thể thêm vé vì mỗi khu vực trên sơ đồ đã
+                              được gán một loại vé (đã đủ số lượng section trên
+                              seatmap).
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {showDeleted ? (
+                      <div className="flex justify-end gap-4 mt-6">
+                        <button
+                          type="button"
+                          onClick={() => handleRestoreShowClick(show.id)}
+                          className="flex items-center gap-2 px-8 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-bold text-sm shadow-lg shadow-emerald-200 transition-all duration-200 active:scale-95 animate-in fade-in zoom-in-95 duration-200"
+                        >
+                          <span className="material-symbols-outlined text-lg">
+                            restore
+                          </span>
+                          Khôi phục suất diễn
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-end gap-4 mt-6">
+                        {/* Hủy riêng show này */}
+                        <button
+                          type="button"
+                          onClick={() => handleCancelShow(index)}
+                          className="px-6 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg"
+                        >
+                          Hủy
+                        </button>
+
+                        {/* Lưu riêng show này */}
+                        <button
+                          type="button"
+                          onClick={() => saveShow(index)}
+                          disabled={isLoading}
+                          className={`
+            relative flex items-center justify-center gap-2 px-8 py-2.5 
+            bg-emerald-500 hover:bg-emerald-600 text-white 
+            rounded-lg font-bold text-sm shadow-lg shadow-emerald-200 
+            transition-all duration-200 active:scale-95
+            disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100
+          `}
+                        >
+                          {isLoading === index ? (
+                            <>
+                              <svg
+                                className="animate-spin h-4 w-4 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                ></circle>
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                              </svg>
+                              <span>Đang lưu...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="material-symbols-outlined text-[20px]">
+                                save
+                              </span>
+                              <span>Lưu suất diễn</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     )}
-                    <div className="flex justify-end gap-4 mt-6">
-                      {/* Hủy riêng show này */}
-                      <button
-                        type="button"
-                        onClick={() => handleCancelShow(index)}
-                        className="px-6 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg"
-                      >
-                        Hủy
-                      </button>
-
-                      {/* Lưu riêng show này */}
-                      <button
-                        type="button"
-                        onClick={() => saveShow(index)}
-                        disabled={isLoading}
-                        className={`
-        relative flex items-center justify-center gap-2 px-8 py-2.5 
-        bg-emerald-500 hover:bg-emerald-600 text-white 
-        rounded-lg font-bold text-sm shadow-lg shadow-emerald-200 
-        transition-all duration-200 active:scale-95
-        disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100
-      `}
-                      >
-                        {isLoading === index ? (
-                          <>
-                            <svg
-                              className="animate-spin h-4 w-4 text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                            <span>Đang lưu...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="material-symbols-outlined text-[20px]">
-                              save
-                            </span>
-                            <span>Lưu suất diễn</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
                   </div>
                 </div>
               );
             })}
+
+            {showDeleted && deletedShows.length === 0 && (
+              <div className="bg-white rounded-xl p-12 text-center border border-slate-100 shadow-sm">
+                <span className="material-symbols-outlined text-slate-300 text-6xl mb-4">
+                  delete_forever
+                </span>
+                <p className="text-slate-500 font-medium text-lg">
+                  Thùng rác trống
+                </p>
+                <p className="text-slate-400 text-sm mt-1">
+                  Không có suất diễn nào đã bị xóa.
+                </p>
+              </div>
+            )}
+
             {errors.shows?.root?.message && (
               <p className="text-red-500 text-center font-bold">
                 {errors.shows.root.message}
               </p>
             )}
+
             {/* Nút tạo suất diễn dưới cùng */}
-            <div className="w-full mt-6 border-t border-slate-200 flex items-center justify-center py-4">
-              <button
-                type="button"
-                onClick={handleAddShow}
-                className="flex items-center gap-2 text-emerald-500 cursor-pointer font-bold text-lg group"
-              >
-                <span className="material-symbols-outlined text-4xl">
-                  add_circle
-                </span>
-                <span>Tạo suất diễn</span>
-              </button>
-            </div>
+            {!showDeleted && (
+              <div className="w-full mt-6 border-t border-slate-200 flex items-center justify-center py-4">
+                <button
+                  type="button"
+                  onClick={handleAddShow}
+                  className="flex items-center gap-2 text-emerald-500 cursor-pointer font-bold text-lg group"
+                >
+                  <span className="material-symbols-outlined text-4xl">
+                    add_circle
+                  </span>
+                  <span>Tạo suất diễn</span>
+                </button>
+              </div>
+            )}
           </div>
         </form>
       </>

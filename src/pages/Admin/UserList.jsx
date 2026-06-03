@@ -529,6 +529,7 @@ function UserList() {
                                 user?.avatar?.url ||
                                 "https://lh3.googleusercontent.com/aida-public/AB6AXuBcw8KMoGbROEOgguVoH4b2SgTpWKpbP3raacQwODFSN_-DHBWY3L9v3QAQnZ_b7fOCn-WtmAiW1Ex_vLGXSs1SfdQTtg57pXVuIMD21wmaL-8vpYDCmNOtmj107fHj6UPor8y0rjwg8OGRCY0xF4xOvdY_yXhzVjU6qaPLtP6QUmblmNhdl23NWynXqWRL4zZVVb57gPdan6US-6ewZhfwdwSUoqFwGzN7i7e7xvNvVj5ApiZQRF3HSGdQM-KGvLBHkXjhugJEFXGw"
                               }
+                              referrerPolicy="no-referrer"
                             />
                           </div>
                           <div className="ml-4">

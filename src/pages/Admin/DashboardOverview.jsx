@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import TimeFilterBar from "../../components/common/TimeFilterBar";
 import axiosClient from "../../api/axiosClient";
 import { toast } from "react-toastify";
@@ -6,6 +7,7 @@ import { useHeader } from "../../hooks/useHeader";
 
 function TopEventItem({ event, idx }) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="group border border-slate-100/80 rounded-xl overflow-hidden bg-white/30 hover:bg-white/60 transition-all duration-200 shadow-sm">
@@ -34,16 +36,30 @@ function TopEventItem({ event, idx }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-6 pr-2 ml-4">
-          <div className="text-right">
+        <div className="flex items-center gap-4 pr-2 ml-4">
+          <div className="text-right shrink-0">
             <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Vé đã bán</span>
             <span className="text-sm font-bold text-slate-700">{event.ticketsSold?.toLocaleString()} vé</span>
           </div>
-          <div className="text-right">
+          <div className="text-right shrink-0">
             <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Doanh thu</span>
             <span className="text-sm font-extrabold text-indigo-600">{event.revenue?.toLocaleString("vi-VN")} đ</span>
           </div>
-          <div className="text-slate-400">
+          
+          {/* Nút Liên Kết Điều Hướng Sang Báo Cáo Chi Tiết (EventOverview) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation(); // Ngăn kích hoạt toggle expand
+              navigate(`/admin/event/${event.id}/overview`);
+            }}
+            className="flex items-center justify-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border border-indigo-100/50 hover:border-indigo-200 active:scale-95 shadow-sm shrink-0"
+          >
+            <span className="material-symbols-rounded text-[12px] font-bold">monitoring</span>
+            Báo cáo
+          </button>
+
+          <div className="text-slate-400 shrink-0">
             <span className={`material-symbols-rounded transition-transform duration-200 block text-lg ${isOpen ? "rotate-180" : ""}`}>
               expand_more
             </span>

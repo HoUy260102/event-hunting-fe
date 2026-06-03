@@ -5,9 +5,142 @@ import { formatEventDateToString } from "../../utils/format";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import { useNavigate } from "react-router-dom";
 
+const colors = ["#6366f1", "#10b981", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6", "#14b8a6", "#ef4444"];
+
+const DonutChart = ({ data }) => {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+
+  if (total === 0) {
+    return (
+      <div className="bg-white/50 backdrop-blur-xl border border-white/60 rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] w-full">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-sm">
+            <span className="material-symbols-outlined text-lg">pie_chart</span>
+          </div>
+          <div>
+            <h4 className="text-xs font-extrabold text-slate-700 uppercase tracking-widest">
+              Tỷ lệ phân bổ loại vé
+            </h4>
+            <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+              Phân tích số lượng vé đã bán ra của từng loại vé trong suất diễn
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center p-8 bg-slate-50/20 rounded-2xl border border-dashed border-slate-200">
+          <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">pie_chart</span>
+          <p className="text-xs font-black text-slate-400 uppercase tracking-wider">Chưa bán được vé nào</p>
+          <p className="text-[10px] text-slate-400 mt-1">Biểu đồ tỷ lệ sẽ tự động hiển thị khi phát sinh vé bán thành công.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const radius = 35;
+  const strokeWidth = 9;
+  const circumference = 2 * Math.PI * radius; // ~219.9
+  
+  let accumulatedPercent = 0;
+
+  return (
+    <div className="bg-white/50 backdrop-blur-xl border border-white/60 rounded-3xl p-5 md:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] w-full">
+      {/* Header */}
+      <div className="flex items-center gap-2.5 mb-5 border-b border-slate-100 pb-3.5">
+        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-sm">
+          <span className="material-symbols-outlined text-lg">pie_chart</span>
+        </div>
+        <div>
+          <h4 className="text-xs font-extrabold text-slate-700 uppercase tracking-widest">
+            Tỷ lệ phân bổ loại vé
+          </h4>
+          <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+            Phân tích số lượng vé đã bán ra của từng loại vé trong suất diễn này
+          </p>
+        </div>
+      </div>
+
+      {/* Content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        {/* Left: Donut Chart SVG */}
+        <div className="lg:col-span-3 flex justify-center py-2">
+          <div className="relative w-28 h-28 shrink-0">
+            <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 filter drop-shadow-[0_4px_8px_rgba(99,102,241,0.08)]">
+              <circle
+                cx="50"
+                cy="50"
+                r={radius}
+                fill="transparent"
+                stroke="#f1f5f9"
+                strokeWidth={strokeWidth}
+              />
+               {data.map((item, index) => {
+                 const percent = (item.value / total) * 100;
+                 const strokeLength = (percent / 100) * circumference;
+                 const strokeOffset = -((accumulatedPercent / 100) * circumference);
+                 accumulatedPercent += percent;
+ 
+                 if (item.value === 0) return null; // Bỏ qua không vẽ các phân khúc 0% để tránh chấm tròn dư thừa
+ 
+                 return (
+                   <circle
+                     key={index}
+                     cx="50"
+                     cy="50"
+                     r={radius}
+                     fill="transparent"
+                     stroke={item.color}
+                     strokeWidth={strokeWidth}
+                     strokeDasharray={`${strokeLength} ${circumference}`}
+                     strokeDashoffset={strokeOffset}
+                     className="transition-all duration-300 ease-in-out cursor-pointer hover:stroke-[11px]"
+                   />
+                 );
+               })}
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+              <span className="text-[8px] text-slate-400 font-extrabold uppercase tracking-wider">Đã bán</span>
+              <span className="text-sm font-black text-slate-800 leading-none mt-0.5">{total.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Legend in responsive grid */}
+        <div className="lg:col-span-9">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {data.map((item, index) => {
+              const percent = ((item.value / total) * 100).toFixed(1);
+              return (
+                <div key={index} className="flex items-center justify-between p-2.5 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-100/50 shadow-sm transition-all duration-300 hover:-translate-y-0.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: item.color }} />
+                    <span className="font-extrabold text-slate-700 truncate text-[11px] uppercase tracking-wider">{item.label}</span>
+                  </div>
+                  <div className="text-right shrink-0 flex items-center gap-1.5 pl-2">
+                    <span className="text-xs font-black text-slate-800">{item.value.toLocaleString()}</span>
+                    <span className="text-[9px] text-slate-400 font-extrabold bg-slate-100 px-1.5 py-0.5 rounded-md">
+                      {percent}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ShowItem = ({ show }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+
+  const chartData = (show.ticketTypes || []).map((type, idx) => ({
+    label: type.name || "N/A",
+    value: type.soldQuantity || 0,
+    color: colors[idx % colors.length]
+  }));
 
   return (
     <div className="bg-white/80 backdrop-blur-md border border-slate-100/80 rounded-3xl overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] mb-4 hover:shadow-[0_12px_35px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-300">
@@ -100,7 +233,11 @@ const ShowItem = ({ show }) => {
         }}
       >
         <div className="overflow-hidden">
-          <div className="p-6 bg-slate-50/20 border-t border-slate-100">
+          <div className="p-6 bg-slate-50/20 border-t border-slate-100 space-y-6">
+            {/* Phân bổ loại vé nằm ở phía TRÊN bảng - Đã được thiết kế lại cực kỳ ĐẸP & CHUYÊN NGHIỆP */}
+            <DonutChart data={chartData} />
+
+            {/* Bảng chi tiết loại vé nằm ở phía DƯỚI */}
             <div className="overflow-x-auto pb-2 custom-scrollbar">
               <div className="min-w-[1150px] pr-4">
                 {/* Header 24 Columns Grid thiết lập kích thước chuẩn chống cắt chữ */}

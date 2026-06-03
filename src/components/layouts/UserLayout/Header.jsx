@@ -415,6 +415,7 @@ const Header = () => {
                       alt="User Avatar"
                       className="w-full h-full object-cover"
                       src={user?.avatarUrl}
+                      referrerPolicy="no-referrer"
                     />
                   </div>
                 </div>

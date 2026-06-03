@@ -33,8 +33,8 @@ function Sidebar({ isOpen, handleIsOpen }) {
 
   // Hàm xác định trạng thái active dựa trên đường dẫn hiện tại
   const getActiveState = () => {
-    if (pathname === "/admin" || pathname === "/admin/") {
-      return { menu: "dashboard", dropdown: null };
+    if (pathname === "/admin" || pathname === "/admin/" || pathname.includes("/admin/customers")) {
+      return { menu: "dashboard", dropdown: "dashboard" };
     }
     if (
       pathname.includes("/admin/users") ||
@@ -115,6 +115,7 @@ function Sidebar({ isOpen, handleIsOpen }) {
   const categoriesRef = useRef(null);
   const permissionsRef = useRef(null);
   const eventsRef = useRef(null);
+  const dashboardRef = useRef(null);
 
   const toggleDropdown = (key) => {
     setOpenDropdown((prev) => (prev === key ? null : key));
@@ -178,17 +179,76 @@ function Sidebar({ isOpen, handleIsOpen }) {
 
         <nav className="sidebar-nav">
           <ul className="nav-list primary-nav">
-            <li className="nav-item">
+            <li
+              className={`nav-item dropdown-container ${openDropdown === "dashboard" ? "open" : ""} ${
+                !isOpen && hoveredDropdown === "dashboard" ? "active-hover" : ""
+              }`}
+              onMouseEnter={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                handleMouseEnterDropdown("dashboard", rect.top);
+              }}
+              onMouseLeave={handleMouseLeaveDropdown}
+            >
               <Link
-                to="/admin"
-                className={`nav-link ${activeMenu === "dashboard" ? "active" : ""}`}
+                to="#"
+                className={`nav-link custom-dropdown-toggle ${activeMenu === "dashboard" ? "active" : ""}`}
                 onClick={() => {
-                  setActiveMenu("dashboard");
+                  toggleDropdown("dashboard");
                 }}
               >
                 <span className="material-symbols-rounded">dashboard</span>
                 <span className="nav-label">Dashboard</span>
+                <span className="dropdown-icon material-symbols-rounded">
+                  keyboard_arrow_down
+                </span>
               </Link>
+
+              <ul
+                ref={dashboardRef}
+                className="dropdown"
+                onMouseEnter={() => handleMouseEnterDropdown("dashboard")}
+                onMouseLeave={handleMouseLeaveDropdown}
+                style={!isOpen ? {
+                  position: "fixed",
+                  left: "85px",
+                  top: `${activeHoveredTop - 12}px`,
+                } : {
+                  height:
+                    openDropdown === "dashboard"
+                      ? `${dashboardRef.current?.scrollHeight || 0}px`
+                      : 0,
+                  overflow: "hidden",
+                  transition: "height 0.3s ease",
+                }}
+              >
+                <li className="nav-item">
+                  <Link className="nav-link dropdown-title">
+                    Dashboard
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    to="/admin"
+                    className="nav-link dropdown-link"
+                    onClick={() => {
+                      setActiveMenu("dashboard");
+                    }}
+                  >
+                    Tổng quan doanh thu
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    to="/admin/customers"
+                    className="nav-link dropdown-link"
+                    onClick={() => {
+                      setActiveMenu("dashboard");
+                    }}
+                  >
+                    Khách hàng thân thiết
+                  </Link>
+                </li>
+              </ul>
             </li>
 
             {/* Quản lý tài khoản */}

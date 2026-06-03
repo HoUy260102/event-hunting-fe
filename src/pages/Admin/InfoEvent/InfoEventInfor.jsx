@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axiosClient from "../../../api/axiosClient";
 import { useParams } from "react-router-dom";
 import StatusBadge from "../../../components/common/StatusBadge";
@@ -7,6 +7,8 @@ function InfoEventInfor() {
   const { id } = useParams();
   const [eventData, setEventData] = useState(null);
   const [owner, setOwner] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -160,12 +162,69 @@ function InfoEventInfor() {
       </section>
 
       {/* SECTION: Mô tả sự kiện */}
-      <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative">
         <label className="block text-sm font-semibold mb-4 text-slate-900">Thông tin sự kiện</label>
-        <div
-          className="ck-content border border-slate-100 rounded-lg p-6 bg-slate-50 min-h-[200px]"
-          dangerouslySetInnerHTML={{ __html: eventData.descriptionHtml || "<p class='text-slate-400 italic'>Không có mô tả</p>" }}
-        />
+        <div className="relative">
+          <div
+            ref={contentRef}
+            style={{
+              maxHeight: isExpanded
+                ? `${contentRef.current?.scrollHeight}px`
+                : "200px",
+            }}
+            className="ck-content border border-slate-100 rounded-lg p-6 bg-slate-50 transition-all duration-500 ease-in-out overflow-hidden"
+            dangerouslySetInnerHTML={{ __html: eventData.descriptionHtml || "<p class='text-slate-400 italic'>Không có mô tả</p>" }}
+          />
+          {eventData.descriptionHtml && !isExpanded && (
+            <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-slate-50 to-transparent z-10 pointer-events-none"></div>
+          )}
+        </div>
+
+        {eventData.descriptionHtml && (
+          <div className="mt-4 flex justify-center relative z-20">
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="px-6 py-2 text-emerald-600 font-bold text-sm transition-all flex items-center gap-2 hover:text-emerald-700 outline-none"
+            >
+              {isExpanded ? (
+                <>
+                  Thu gọn{" "}
+                  <svg
+                    className="w-4 h-4 rotate-180 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </>
+              ) : (
+                <>
+                  Xem thêm{" "}
+                  <svg
+                    className="w-4 h-4 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </section>
 
       {/* SECTION: Người sở hữu */}

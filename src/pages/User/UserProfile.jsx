@@ -226,12 +226,13 @@ function UserProfile() {
                           }
                           alt="Avatar"
                           className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
                         />
                       </div>
 
                       <label
                         htmlFor="avatar-upload"
-                        className={`${isLoading ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : ''} absolute bottom-0 right-0 bg-[#46ec13] p-2 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center border-2 border-white dark:border-slate-900`}
+                        className={`${isLoading ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : ''} absolute bottom-0 right-0 bg-[#2DC275] p-2 rounded-full shadow-md cursor-pointer hover:scale-110 transition-transform flex items-center justify-center border-2 border-white dark:border-slate-900`}
                       >
                         <span className="material-symbols-outlined text-slate-900 text-sm">
                           photo_camera
