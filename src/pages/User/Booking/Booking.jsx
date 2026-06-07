@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import BookingStepper from "../../../components/Booking/BookingStepper";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
 import axiosClient from "../../../api/axiosClient";
 import Step1BookingSelection from "./Step1SeatSelection";
@@ -14,6 +14,7 @@ import ConfirmModal from "../../../components/modals/ConfirmModal";
 import Modal from "../../../components/common/Modal";
 import Step3Payment from "./Step3Payment";
 import { useEventSession } from "../../../hooks/useEventSession";
+import { toast, ToastContainer } from "react-toastify";
 
 const customerInfoSchema = z.object({
   fullName: z.string().min(2, "Họ tên quá ngắn"),
@@ -23,7 +24,8 @@ const customerInfoSchema = z.object({
 
 function Booking() {
   const { user } = useAuth();
-  const { showId } = useParams();
+  const { eventId, showId } = useParams();
+  const navigate = useNavigate();
   const [show, setShow] = useState();
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
@@ -102,7 +104,7 @@ function Booking() {
         bookedSeatsCode.push(value?.seatCode);
       }
     });
-    
+
     // In log chi tiết để hỗ trợ debug trạng thái loại vé & phân khu bị khóa
     console.log("--- DEBUG ĐẶT VÉ ---");
     console.log("Danh sách loại vé (ticketTypes) & trạng thái:", show?.ticketTypes?.map(t => ({ id: t.id, name: t.name, status: t.status, sectionId: t.sectionId })));
@@ -117,7 +119,18 @@ function Booking() {
   const onExpire = () => {
     const key = `booking_expiry_${showId}`;
     localStorage.removeItem(key);
-    console.log("hết giờ");
+    toast.error("Phiên đặt vé của bạn đã hết hạn. Hệ thống đang chuyển hướng bạn về trang chi tiết sự kiện.", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+    });
+    setTimeout(() => {
+      navigate(`/event/${eventId}/details`);
+    }, 3000);
   };
 
   useEffect(() => {
@@ -502,6 +515,7 @@ function Booking() {
 
   return (
     <>
+      <ToastContainer />
       <ConfirmModal
         isOpen={confirmModal?.isOpen}
         title={confirmModal?.title}

@@ -587,6 +587,10 @@ function EventComments({ eventId }) {
                     <button
                       type="button"
                       onClick={() => {
+                        if (!user) {
+                          openLogin();
+                          return;
+                        }
                         // Toggle hiển thị khung phản hồi
                         setReplyInputMap((prev) => ({
                           ...prev,

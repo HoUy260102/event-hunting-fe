@@ -189,6 +189,7 @@ const VoucherListModal = ({
                               <input
                                 type="checkbox"
                                 checked={selectedInId === voucher.id}
+                                readOnly
                                 className="
               peer
               appearance-none
@@ -302,6 +303,7 @@ const VoucherListModal = ({
                               <input
                                 type="checkbox"
                                 checked={selectedInId === voucher.id}
+                                readOnly
                                 className="
               peer
               appearance-none
