@@ -104,29 +104,29 @@ const TicketDetails = () => {
                     <p className="text-[#acabab] uppercase font-medium text-sm">
                       Thông tin khách hàng:
                     </p>
-                    <div className="grid grid-cols-2 gap-y-6 gap-x-4 pt-6">
-                      <div className="col-span-2">
+                    <div className="grid grid-cols-2 gap-y-4 gap-x-4 pt-6">
+                      <div className="col-span-2 md:col-span-1">
                         <p className="text-[10px] uppercase tracking-widest text-[#acabab] mb-1">
                           Tên khách hàng:
                         </p>
-                        <p className="font-semibold text-[#e7e5e5]">
+                        <p className="font-semibold text-[#e7e5e5] break-words">
                           {ticket?.customerName}
-                        </p>
-                      </div>
-                      <div className="col-span-2 md:col-span-1">
-                        <p className="text-[10px] uppercase tracking-widest text-[#acabab] mb-1">
-                          Email khách hàng:
-                        </p>
-                        <p className="font-semibold text-[#e7e5e5]">
-                          {ticket?.customerEmail}
                         </p>
                       </div>
                       <div className="col-span-2 md:col-span-1">
                         <p className="text-[10px] uppercase tracking-widest text-[#acabab] mb-1">
                           Số điện thoại:
                         </p>
-                        <p className="font-semibold text-[#e7e5e5]">
-                          {ticket?.customerPhone}{" "}
+                        <p className="font-semibold text-[#e7e5e5] break-words">
+                          {ticket?.customerPhone}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-[10px] uppercase tracking-widest text-[#acabab] mb-1">
+                          Email khách hàng:
+                        </p>
+                        <p className="font-semibold text-[#e7e5e5] break-all">
+                          {ticket?.customerEmail}
                         </p>
                       </div>
                     </div>

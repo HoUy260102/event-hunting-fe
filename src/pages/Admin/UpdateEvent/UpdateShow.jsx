@@ -1115,7 +1115,7 @@ function UpdateShow() {
                             name={`seatMapType-${show.id}`}
                             className="mt-1 w-4 h-4 text-emerald-600"
                             checked={show.seatMapType === type.id}
-                            disabled={true}
+                            disabled={isStatusLocked}
                             onChange={() =>
                               updateShow(show.id, { seatMapType: type.id })
                             }

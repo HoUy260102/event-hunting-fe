@@ -190,46 +190,46 @@ function TicketTypeModal({
     ticketTiers: [],
   });
 
-  useEffect(() => {
-    if (!isOpen) return;
-    if (!formData.name) return;
-    const currentTicketTypeErrors =
-      globalErrors?.shows?.[showIndex]?.ticketTypes?.[ticketTypeIndex];
-    if (!currentTicketTypeErrors) return;
-    if (currentTicketTypeErrors) {
-      const newServerErrors = {};
-      Object.keys(currentTicketTypeErrors).forEach((key) => {
-        if (currentTicketTypeErrors[key]?.message) {
-          newServerErrors[key] = currentTicketTypeErrors[key].message;
-        }
-      });
-      const tiersError = currentTicketTypeErrors.ticketTiers;
+  // useEffect(() => {
+  //   if (!isOpen) return;
+  //   if (!formData.name) return;
+  //   const currentTicketTypeErrors =
+  //     globalErrors?.shows?.[showIndex]?.ticketTypes?.[ticketTypeIndex];
+  //   if (!currentTicketTypeErrors) return;
+  //   if (currentTicketTypeErrors) {
+  //     const newServerErrors = {};
+  //     Object.keys(currentTicketTypeErrors).forEach((key) => {
+  //       if (currentTicketTypeErrors[key]?.message) {
+  //         newServerErrors[key] = currentTicketTypeErrors[key].message;
+  //       }
+  //     });
+  //     const tiersError = currentTicketTypeErrors.ticketTiers;
 
-      if (tiersError) {
-        if (Array.isArray(tiersError)) {
-          tiersError.forEach((tierError, tierIdx) => {
-            if (tierError) {
-              Object.keys(tierError).forEach((field) => {
-                if (tierError[field]?.message) {
-                  newServerErrors[`ticketTiers.${tierIdx}.${field}`] =
-                    tierError[field].message;
-                }
-              });
-            }
-          });
-        } else if (tiersError.message) {
-          newServerErrors["ticketTiers"] = tiersError.message;
-        }
-      }
-      setErrors((prev) => {
-        const cleanedPrev = { ...prev };
-        return {
-          ...cleanedPrev,
-          ...newServerErrors,
-        };
-      });
-    }
-  }, [isOpen, globalErrors, showIndex, ticketTypeIndex, formData.name]);
+  //     if (tiersError) {
+  //       if (Array.isArray(tiersError)) {
+  //         tiersError.forEach((tierError, tierIdx) => {
+  //           if (tierError) {
+  //             Object.keys(tierError).forEach((field) => {
+  //               if (tierError[field]?.message) {
+  //                 newServerErrors[`ticketTiers.${tierIdx}.${field}`] =
+  //                   tierError[field].message;
+  //               }
+  //             });
+  //           }
+  //         });
+  //       } else if (tiersError.message) {
+  //         newServerErrors["ticketTiers"] = tiersError.message;
+  //       }
+  //     }
+  //     setErrors((prev) => {
+  //       const cleanedPrev = { ...prev };
+  //       return {
+  //         ...cleanedPrev,
+  //         ...newServerErrors,
+  //       };
+  //     });
+  //   }
+  // }, [isOpen, globalErrors, showIndex, ticketTypeIndex, formData.name]);
 
   useEffect(() => {
     if (!isOpen) return;

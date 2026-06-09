@@ -236,7 +236,7 @@ function EventList() {
         },
       });
     }
-    if (can("EVENT:VIEW")) {
+    if (can("EVENT:VIEW") && (event?.userId === user?.id || user?.role === "ADMIN")) {
       actions.push({
         label: "Xem tổng quan",
         icon: <VisibilityIcon fontSize="small" />,
@@ -335,7 +335,7 @@ function EventList() {
         },
       });
     }
-    if (can("EVENT:REJECT") && event?.status === "REJECTED") {
+    if (event?.status === "REJECTED") {
       actions.push({
         label: "Xem lý do bị từ chối",
         icon: <InfoOutlinedIcon fontSize="small" />,
@@ -347,7 +347,7 @@ function EventList() {
         },
       });
     }
-    if (!event.deletedAt && (event?.status === "DRAFT" || event?.status === "REJECTED")) {
+    if (!event.deletedAt && (event?.status === "DRAFT" || event?.status === "REJECTED") && (event?.userId === user?.id || event?.createdBy === user?.id)) {
       actions.push({
         label: "Gửi yêu cầu duyệt",
         icon: <SendIcon fontSize="small" />,

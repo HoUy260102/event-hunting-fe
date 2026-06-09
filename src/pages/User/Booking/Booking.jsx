@@ -379,10 +379,17 @@ function Booking() {
       totalAmount: orderItems.reduce((sum, item) => sum + item.totalPrice, 0),
     };
     console.log("Payload gửi về Backend:", finalPayload);
+    console.log("JSON gửi về Backend:", JSON.stringify(finalPayload, null, 2));
     try {
+      const queueToken = getSession(showId)?.token;
       const reservationRes = await axiosClient.post(
         `/reservations`,
         finalPayload,
+        {
+          headers: {
+            "X-Queue-Token": queueToken,
+          },
+        }
       );
       setReservation(reservationRes?.data);
       setCurrentStep((prev) => prev + 1);
