@@ -3,6 +3,9 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 import Modal from "../../components/common/Modal";
+import axiosClient from "../../api/axiosClient";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./VerifyWaitingSignUpPage.css";
 import backgroundImageUrl from "../../images/bgeventhunting.png";
 import emailSendingImgUrl from "../../images/emailsending.jpg";
@@ -18,10 +21,21 @@ const VerifyWaitingSignUpPage = () => {
   });
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(60);
   const email =
     location.state?.email ||
     new URLSearchParams(location.search).get("email") ||
     "người dùng";
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   useEffect(() => {
     const socket = new SockJS("http://localhost:8080/api/v1/ws");
@@ -70,24 +84,27 @@ const VerifyWaitingSignUpPage = () => {
   }, [email, navigate]);
 
   const handleResend = async () => {
+    if (countdown > 0 || loading) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/auth/resend-verify?email=${email}`,
-        {
-          method: "POST",
-        },
-      );
-      const result = await response.json();
-      if (response.ok) {
-        alert("Đã gửi lại email xác thực mới!");
-      } else {
-        throw new Error(result.message);
-      }
+      const response = await axiosClient.post("/auth/resend-verify", null, {
+        params: { email },
+      });
+      toast.success(response?.message || "Đã gửi lại email xác thực mới! Vui lòng kiểm tra hộp thư.", {
+        position: "top-right",
+        autoClose: 3500,
+        theme: "colored",
+      });
+      setCountdown(60);
     } catch (error) {
-      alert("Lỗi:" + error.message);
+      toast.error(error?.message || "Không thể gửi lại email xác thực. Vui lòng thử lại sau!", {
+        position: "top-right",
+        autoClose: 4000,
+        theme: "colored",
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -135,9 +152,13 @@ const VerifyWaitingSignUpPage = () => {
             <button
               className="verify-button"
               onClick={handleResend}
-              disabled={loading}
+              disabled={loading || countdown > 0}
             >
-              {loading ? "Đang gửi..." : "Gửi lại email xác thực"}
+              {loading
+                ? "Đang gửi..."
+                : countdown > 0
+                ? `Gửi lại sau (${countdown}s)`
+                : "Gửi lại email xác thực"}
             </button>
             <Link to="/login" className="resend-link">
               Quay lại đăng nhập
@@ -145,6 +166,7 @@ const VerifyWaitingSignUpPage = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 };

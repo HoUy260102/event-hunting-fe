@@ -23,6 +23,7 @@ const voucherSchema = z
     scope: z.enum(["SYSTEM", "ORGANIZER"]),
     ticketTypeIds: z.array(z.string()).optional(),
     status: z.enum(["DRAFT", "ACTIVE", "INACTIVE"]),
+    version: z.number().optional(),
 
     showId: z.string().optional(),
     maxDiscountValue: z.preprocess((val) => {
@@ -197,6 +198,7 @@ const UpdateVoucher = () => {
           showId: data.showId,
           ticketTypeIds: data.ticketTypeIds || [],
           status: data.status,
+          version: data.version,
         };
         console.log("data:", formData);
         reset(formData);
@@ -269,7 +271,12 @@ const UpdateVoucher = () => {
 
     try {
       const res = await axiosClient.put(`/vouchers/${id}`, finalData);
-      setInitiateData(res?.data);
+      const updatedData = res?.data;
+      setInitiateData(updatedData);
+      // Gán lại version mới từ server vào form để tránh lost update khi sửa tiếp
+      if (updatedData?.version !== undefined) {
+        reset((prev) => ({ ...prev, version: updatedData.version }));
+      }
       setModal({
         isOpen: true,
         title: "Cập nhật voucher",
@@ -487,13 +494,11 @@ const UpdateVoucher = () => {
                 <input
                   {...register("quantity")}
                   readOnly={isUnlimited}
-                  className={`w-full h-11 px-4 rounded-xl transition-all duration-200 outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-[#a1aebf] hover:border-slate-300 dark:hover:border-[#36532f] ${
-                    isUnlimited
-                      ? "bg-slate-100/80 dark:bg-[#142210]/80 cursor-not-allowed text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2a4225]"
-                      : "bg-slate-50/50 dark:bg-[#142210]/50 border border-slate-200 dark:border-[#2a4225] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 text-slate-800 dark:text-white"
-                  } ${
-                    errors.quantity ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""
-                  }`}
+                  className={`w-full h-11 px-4 rounded-xl transition-all duration-200 outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-[#a1aebf] hover:border-slate-300 dark:hover:border-[#36532f] ${isUnlimited
+                    ? "bg-slate-100/80 dark:bg-[#142210]/80 cursor-not-allowed text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2a4225]"
+                    : "bg-slate-50/50 dark:bg-[#142210]/50 border border-slate-200 dark:border-[#2a4225] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 text-slate-800 dark:text-white"
+                    } ${errors.quantity ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""
+                    }`}
                   placeholder={isUnlimited ? "Không giới hạn số lượng" : "Nhập số lượng..."}
                   type="number"
                 />
@@ -551,11 +556,10 @@ const UpdateVoucher = () => {
               <input
                 {...register("minOrderValue")}
                 readOnly={isFieldsLocked}
-                className={`w-full h-11 px-4 rounded-xl border outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-[#a1aebf] hover:border-slate-300 dark:hover:border-[#36532f] transition-all duration-200 ${
-                  isFieldsLocked
-                    ? "bg-slate-100/85 dark:bg-[#142210]/85 cursor-not-allowed text-slate-400 dark:text-slate-500 border-slate-200 dark:border-[#2a4225]"
-                    : "bg-slate-50/50 dark:bg-[#142210]/50 border-slate-200 dark:border-[#2a4225] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 text-slate-800 dark:text-white"
-                } ${errors.minOrderValue ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
+                className={`w-full h-11 px-4 rounded-xl border outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-[#a1aebf] hover:border-slate-300 dark:hover:border-[#36532f] transition-all duration-200 ${isFieldsLocked
+                  ? "bg-slate-100/85 dark:bg-[#142210]/85 cursor-not-allowed text-slate-400 dark:text-slate-500 border-slate-200 dark:border-[#2a4225]"
+                  : "bg-slate-50/50 dark:bg-[#142210]/50 border-slate-200 dark:border-[#2a4225] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 text-slate-800 dark:text-white"
+                  } ${errors.minOrderValue ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
                 placeholder="Ví dụ: 50000"
                 type="number"
               />
@@ -578,9 +582,8 @@ const UpdateVoucher = () => {
                     type="button"
                     disabled={isFieldsLocked}
                     onClick={() => !isFieldsLocked && setDiscountType("VALUE")}
-                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${
-                      isFieldsLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-                    } ${discountType === "VALUE"
+                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${isFieldsLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                      } ${discountType === "VALUE"
                         ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-sm"
                         : "text-slate-500 dark:text-[#a1aebf] hover:text-slate-700 dark:hover:text-white"
                       }`}
@@ -591,9 +594,8 @@ const UpdateVoucher = () => {
                     type="button"
                     disabled={isFieldsLocked}
                     onClick={() => !isFieldsLocked && setDiscountType("PERCENT")}
-                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${
-                      isFieldsLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-                    } ${discountType === "PERCENT"
+                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${isFieldsLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                      } ${discountType === "PERCENT"
                         ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-sm"
                         : "text-slate-500 dark:text-[#a1aebf] hover:text-slate-700 dark:hover:text-white"
                       }`}
@@ -610,11 +612,10 @@ const UpdateVoucher = () => {
                 <input
                   {...register("discountValue")}
                   readOnly={isFieldsLocked}
-                  className={`w-full h-11 px-4 rounded-xl border outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-[#a1aebf] hover:border-slate-300 dark:hover:border-[#36532f] transition-all duration-200 ${
-                    isFieldsLocked
-                      ? "bg-slate-100/85 dark:bg-[#142210]/85 cursor-not-allowed text-slate-400 dark:text-slate-500 border-slate-200 dark:border-[#2a4225]"
-                      : "bg-slate-50/50 dark:bg-[#142210]/50 border-slate-200 dark:border-[#2a4225] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 text-slate-800 dark:text-white"
-                  } ${errors.discountValue ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
+                  className={`w-full h-11 px-4 rounded-xl border outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-[#a1aebf] hover:border-slate-300 dark:hover:border-[#36532f] transition-all duration-200 ${isFieldsLocked
+                    ? "bg-slate-100/85 dark:bg-[#142210]/85 cursor-not-allowed text-slate-400 dark:text-slate-500 border-slate-200 dark:border-[#2a4225]"
+                    : "bg-slate-50/50 dark:bg-[#142210]/50 border-slate-200 dark:border-[#2a4225] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 text-slate-800 dark:text-white"
+                    } ${errors.discountValue ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
                   placeholder={discountType === "VALUE" ? "Ví dụ: 20000" : "Ví dụ: 10"}
                   type="number"
                 />
@@ -655,11 +656,10 @@ const UpdateVoucher = () => {
                     <input
                       {...register("maxDiscountValue")}
                       readOnly={isFieldsLocked}
-                      className={`w-full h-11 px-4 rounded-xl border outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-[#a1aebf] hover:border-slate-300 dark:hover:border-[#36532f] transition-all duration-200 ${
-                        isFieldsLocked
-                          ? "bg-slate-100/85 dark:bg-[#142210]/85 cursor-not-allowed text-slate-400 dark:text-slate-500 border-slate-200 dark:border-[#2a4225]"
-                          : "bg-slate-50/50 dark:bg-[#142210]/50 border-slate-200 dark:border-[#2a4225] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 text-slate-800 dark:text-white"
-                      } ${errors.maxDiscountValue ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
+                      className={`w-full h-11 px-4 rounded-xl border outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-[#a1aebf] hover:border-slate-300 dark:hover:border-[#36532f] transition-all duration-200 ${isFieldsLocked
+                        ? "bg-slate-100/85 dark:bg-[#142210]/85 cursor-not-allowed text-slate-400 dark:text-slate-500 border-slate-200 dark:border-[#2a4225]"
+                        : "bg-slate-50/50 dark:bg-[#142210]/50 border-slate-200 dark:border-[#2a4225] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/20 text-slate-800 dark:text-white"
+                        } ${errors.maxDiscountValue ? "border-red-500 focus:border-red-500 focus:ring-red-100" : ""}`}
                       placeholder="Ví dụ: 50000"
                       type="number"
                     />
@@ -765,8 +765,8 @@ const UpdateVoucher = () => {
               type="submit"
               disabled={isSubmitting}
               className={`px-8 h-12 text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${isSubmitting
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20"
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20"
                 }`}
             >
               {isSubmitting ? (

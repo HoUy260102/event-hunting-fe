@@ -33,6 +33,7 @@ const ticketTierSchema = z
         "Định dạng thời gian không hợp lệ",
       ),
     description: z.string().max(1000, "Mô tả tối đa 1000 ký tự").optional(),
+    version: z.number().optional(),
   })
   .refine(
     (data) => {
@@ -57,6 +58,7 @@ const ticketTypeSchema = z.object({
   }),
   totalQuantity: z.coerce.number().min(1, "Số lượng tối thiểu là 1"),
   sectionId: z.string().optional().nullable(),
+  version: z.number().optional(),
   ticketTiers: z
     .array(ticketTierSchema)
     .min(1, "Phải có ít nhất một đợt mở bán (Tier)")
@@ -124,6 +126,7 @@ const showSchema = z
     ),
     seatMapType: z.string().min(1, { message: "Vui lòng chọn sơ đồ ghế" }),
     seatMapSvg: z.string().nullable().optional(),
+    version: z.number().optional(),
     ticketTypes: z.array(ticketTypeSchema).min(1, {
       message: "Phải có ít nhất 1 loại vé cho suất diễn này",
     }),
@@ -996,11 +999,10 @@ function UpdateShow() {
               <button
                 type="button"
                 onClick={handleToggleShowDeleted}
-                className={`flex items-center gap-2 px-4 py-2 border rounded-lg font-bold transition-all text-sm shadow-sm ${
-                  showDeleted
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg font-bold transition-all text-sm shadow-sm ${showDeleted
                     ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
                     : "border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-red-500"
-                }`}
+                  }`}
               >
                 <span className="material-symbols-outlined text-lg">
                   {showDeleted ? "arrow_back" : "delete"}
@@ -1020,9 +1022,8 @@ function UpdateShow() {
               return (
                 <div
                   key={show.id}
-                  className={`bg-white rounded-xl p-6 mb-8 relative shadow-sm border-1 animate-in fade-in duration-300 ${
-                    currentShowError ? "border-red-500" : "border-transparent"
-                  }`}
+                  className={`bg-white rounded-xl p-6 mb-8 relative shadow-sm border-1 animate-in fade-in duration-300 ${currentShowError ? "border-red-500" : "border-transparent"
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2 cursor-pointer group">
@@ -1088,11 +1089,10 @@ function UpdateShow() {
 
                   {/* BỔ SUNG: Lựa chọn loại sơ đồ */}
                   <div
-                    className={`mb-8 p-4  rounded-xl border-2 transition-all ${
-                      currentShowError?.seatMapType
+                    className={`mb-8 p-4  rounded-xl border-2 transition-all ${currentShowError?.seatMapType
                         ? " border-red-300"
                         : " border-slate-100"
-                    }`}
+                      }`}
                   >
                     <label className="block text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
                       <span className="material-symbols-outlined text-emerald-600">
@@ -1104,11 +1104,10 @@ function UpdateShow() {
                       {seatMapType.map((type) => (
                         <label
                           key={type.id}
-                          className={`flex-1 flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                            show.seatMapType === type.id
+                          className={`flex-1 flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${show.seatMapType === type.id
                               ? "border-emerald-500 bg-emerald-50"
                               : "border-white bg-white hover:border-slate-200"
-                          }`}
+                            }`}
                         >
                           <input
                             type="radio"
@@ -1144,102 +1143,101 @@ function UpdateShow() {
                   {/* Hiển thị Upload SVG khi chọn SECTION_WITH_SEATS */}
                   {(show.seatMapType === "SECTION_WITH_SEATS" ||
                     show.seatMapType === "SECTION_ONLY") && (
-                    <div
-                      className={`mb-8 bg-slate-50/50 p-4 rounded-xl border-2 border-dashed transition-all ${
-                        currentShowError?.seatMapSvg
-                          ? "border-red-400"
-                          : "border-slate-200"
-                      }`}
-                    >
-                      <div className="flex flex-col md:flex-row gap-8">
-                        {/* Cột bên trái: Upload Input */}
-                        <div className="flex-1 space-y-4">
-                          <label className="block text-sm font-bold text-slate-800">
-                            Tải lên sơ đồ SVG
-                          </label>
-                          <div className="relative h-32 w-full border-2 border-dashed border-emerald-200 rounded-lg bg-white flex flex-col items-center justify-center hover:bg-emerald-50 transition-colors cursor-pointer group">
-                            <input
-                              type="file"
-                              accept=".svg"
-                              disabled={isStatusLocked}
-                              onChange={(e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                  handleSvgUpload(show.id, file);
-                                  e.target.value = "";
-                                }
-                              }}
-                              className="absolute inset-0 opacity-0 cursor-pointer"
-                            />
-                            <span className="material-symbols-outlined text-emerald-500 text-3xl mb-2 group-hover:scale-110 transition-transform">
-                              {show.seatMapSvg ? "cloud_done" : "upload_file"}
-                            </span>
-                            <p className="text-xs text-slate-500">
-                              {show.seatMapSvg
-                                ? "Click để thay đổi sơ đồ khác"
-                                : "Chọn file sơ đồ .svg"}
+                      <div
+                        className={`mb-8 bg-slate-50/50 p-4 rounded-xl border-2 border-dashed transition-all ${currentShowError?.seatMapSvg
+                            ? "border-red-400"
+                            : "border-slate-200"
+                          }`}
+                      >
+                        <div className="flex flex-col md:flex-row gap-8">
+                          {/* Cột bên trái: Upload Input */}
+                          <div className="flex-1 space-y-4">
+                            <label className="block text-sm font-bold text-slate-800">
+                              Tải lên sơ đồ SVG
+                            </label>
+                            <div className="relative h-32 w-full border-2 border-dashed border-emerald-200 rounded-lg bg-white flex flex-col items-center justify-center hover:bg-emerald-50 transition-colors cursor-pointer group">
+                              <input
+                                type="file"
+                                accept=".svg"
+                                disabled={isStatusLocked}
+                                onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    handleSvgUpload(show.id, file);
+                                    e.target.value = "";
+                                  }
+                                }}
+                                className="absolute inset-0 opacity-0 cursor-pointer"
+                              />
+                              <span className="material-symbols-outlined text-emerald-500 text-3xl mb-2 group-hover:scale-110 transition-transform">
+                                {show.seatMapSvg ? "cloud_done" : "upload_file"}
+                              </span>
+                              <p className="text-xs text-slate-500">
+                                {show.seatMapSvg
+                                  ? "Click để thay đổi sơ đồ khác"
+                                  : "Chọn file sơ đồ .svg"}
+                              </p>
+                            </div>
+                            <p className="text-[11px] text-slate-400 italic">
+                              * Lưu ý: File SVG nên được group theo các Section để
+                              hệ thống nhận diện đúng ID.
                             </p>
                           </div>
-                          <p className="text-[11px] text-slate-400 italic">
-                            * Lưu ý: File SVG nên được group theo các Section để
-                            hệ thống nhận diện đúng ID.
-                          </p>
-                        </div>
-                        {/* Cột bên phải: Preview SVG */}
-                        <div className="flex-1">
-                          <label className="block text-sm font-bold text-slate-800 mb-4">
-                            Xem trước sơ đồ
-                          </label>
-                          <div className="min-h-[12rem] w-full bg-white border border-slate-200 rounded-lg flex items-center justify-center overflow-hidden relative">
-                            {show.seatMapSvg ? (
-                              <div
-                                className="p-8 w-full flex items-center justify-center preview-svg-container"
-                                dangerouslySetInnerHTML={{
-                                  __html: show.seatMapSvg,
-                                }}
-                              />
-                            ) : (
-                              <div className="text-center">
-                                <span className="material-symbols-outlined text-slate-300 text-5xl">
-                                  image
-                                </span>
-                                <p className="text-xs text-slate-400 mt-2">
-                                  Chưa có sơ đồ để hiển thị
-                                </p>
-                              </div>
-                            )}
+                          {/* Cột bên phải: Preview SVG */}
+                          <div className="flex-1">
+                            <label className="block text-sm font-bold text-slate-800 mb-4">
+                              Xem trước sơ đồ
+                            </label>
+                            <div className="min-h-[12rem] w-full bg-white border border-slate-200 rounded-lg flex items-center justify-center overflow-hidden relative">
+                              {show.seatMapSvg ? (
+                                <div
+                                  className="p-8 w-full flex items-center justify-center preview-svg-container"
+                                  dangerouslySetInnerHTML={{
+                                    __html: show.seatMapSvg,
+                                  }}
+                                />
+                              ) : (
+                                <div className="text-center">
+                                  <span className="material-symbols-outlined text-slate-300 text-5xl">
+                                    image
+                                  </span>
+                                  <p className="text-xs text-slate-400 mt-2">
+                                    Chưa có sơ đồ để hiển thị
+                                  </p>
+                                </div>
+                              )}
 
-                            {show.seatMapSvg && !isStatusLocked && (
-                              <button
-                                onClick={() =>
-                                  updateShow(show.id, {
-                                    seatMapSvg: "",
-                                    sections: [],
-                                    ticketTypes: show.ticketTypes.map(
-                                      (ticketType) => ({
-                                        ...ticketType,
-                                        sectionId: "",
-                                      }),
-                                    ),
-                                  })
-                                }
-                                className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-md flex items-center justify-center transition-transform hover:scale-110"
-                              >
-                                <span className="material-symbols-outlined text-sm">
-                                  close
-                                </span>
-                              </button>
-                            )}
+                              {show.seatMapSvg && !isStatusLocked && (
+                                <button
+                                  onClick={() =>
+                                    updateShow(show.id, {
+                                      seatMapSvg: "",
+                                      sections: [],
+                                      ticketTypes: show.ticketTypes.map(
+                                        (ticketType) => ({
+                                          ...ticketType,
+                                          sectionId: "",
+                                        }),
+                                      ),
+                                    })
+                                  }
+                                  className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-md flex items-center justify-center transition-transform hover:scale-110"
+                                >
+                                  <span className="material-symbols-outlined text-sm">
+                                    close
+                                  </span>
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
+                        {currentShowError?.seatMapSvg?.message && (
+                          <p className="text-red-500 text-sm">
+                            {currentShowError.seatMapSvg.message}
+                          </p>
+                        )}
                       </div>
-                      {currentShowError?.seatMapSvg?.message && (
-                        <p className="text-red-500 text-sm">
-                          {currentShowError.seatMapSvg.message}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                    )}
                   {/* Grid Input Thời gian */}
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div className="space-y-2">
@@ -1256,11 +1254,10 @@ function UpdateShow() {
                           }
                           type="datetime-local"
                           disabled={showDeleted}
-                          className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${
-                            currentShowError?.startTime
+                          className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${currentShowError?.startTime
                               ? "border-red-500 focus:border-red-600"
                               : "border-slate-200  focus:border-emerald-500"
-                          }`}
+                            }`}
                           placeholder="Chọn ngày & giờ bắt đầu"
                         />
                         {currentShowError?.startTime && (
@@ -1285,11 +1282,10 @@ function UpdateShow() {
                             })
                           }
                           disabled={showDeleted}
-                          className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${
-                            currentShowError?.endTime
+                          className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${currentShowError?.endTime
                               ? "border-red-500  focus:border-red-600"
                               : "border-slate-200  focus:border-emerald-500"
-                          }`}
+                            }`}
                           placeholder="Chọn ngày & giờ kết thúc"
                         />
                         {currentShowError?.endTime && (
@@ -1314,11 +1310,10 @@ function UpdateShow() {
                           }
                           type="number"
                           disabled={showDeleted}
-                          className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${
-                            currentShowError?.minOrder
+                          className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${currentShowError?.minOrder
                               ? "border-red-500  focus:border-red-600"
                               : "border-slate-200 focus:border-emerald-500"
-                          }`}
+                            }`}
                         />
                         {currentShowError?.minOrder && (
                           <p className="text-red-500 text-sm mt-1">
@@ -1342,11 +1337,10 @@ function UpdateShow() {
                             })
                           }
                           disabled={showDeleted}
-                          className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${
-                            currentShowError?.maxOrder
+                          className={`w-full bg-slate-50 border rounded-lg py-3 px-4 text-sm outline-none transition-all ${currentShowError?.maxOrder
                               ? "border-red-500  focus:border-red-600"
                               : "border-slate-200  focus:border-emerald-500"
-                          }`}
+                            }`}
                         />
                         {currentShowError?.maxOrder && (
                           <p className="text-red-500 text-sm mt-1">
@@ -1375,11 +1369,10 @@ function UpdateShow() {
                       return (
                         <div
                           key={ticketType.id}
-                          className={`flex items-center justify-between p-4 bg-white border rounded-xl shadow-sm transition-all group ${
-                            hasTicketError
+                          className={`flex items-center justify-between p-4 bg-white border rounded-xl shadow-sm transition-all group ${hasTicketError
                               ? "border-red-500 bg-red-50"
                               : "border-slate-100 hover:border-emerald-200"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">

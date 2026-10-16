@@ -3,6 +3,7 @@ import "./App.css";
 import LoginPage from "./pages/Login/LoginPage";
 import AdminLoginPage from "./pages/Login/AdminLoginPage";
 import SignUpPage from "./pages/SignUp/SignUpPage";
+import ForgotPasswordPage from "./pages/ForgotPassword/ForgotPasswordPage";
 import VerifyWaitingSignUpPage from "./pages/VerifyWaitingSignUp/VerifyWaitingSignUpPage";
 import Dashboard from "./pages/Admin/Dashboard";
 import DashboardOverview from "./pages/Admin/DashboardOverview";
@@ -57,6 +58,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/signup/verify" element={<VerifyWaitingSignUpPage />} />
         <Route path="/forbidden" element={<Forbidden403 />} />
         <Route path="/notfound" element={<NotFound404 />} />

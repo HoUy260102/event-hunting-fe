@@ -31,6 +31,7 @@ const eventSchema = z.object({
   mediaIds: z.array(z.string()).default([]),
   organizerName: z.string().min(1, "Vui lòng nhập tên ban tổ chức"),
   organizerInfo: z.string().min(10, "Thông tin ban tổ chức quá ngắn").max(500),
+  version: z.coerce.number().optional(),
 });
 
 function UpdateEventInfor() {
@@ -101,6 +102,7 @@ function UpdateEventInfor() {
           organizerLogoId: eventRes.data?.organizerLogo?.id || "",
           provinceId: eventRes.data?.province?.id || "",
           categoryId: eventRes.data?.category?.id || "",
+          version: eventRes.data?.version,
         };
         setProvinces(provinceRes.data);
         setCategories(categoryRes.data);
@@ -170,8 +172,12 @@ function UpdateEventInfor() {
   const watchLocation = watch("location", "");
   const watchAddress = watch("address", "");
   const onSubmit = async (data) => {
+    console.log("[Submit] data.version gửi lên:", data.version, "(type:", typeof data.version, ")");
     try {
       const eventRes = await axiosClient.put(`/events/${id}`, data);
+      console.log("[Response] eventRes:", eventRes);
+      console.log("[Response] eventRes.data:", eventRes.data);
+      console.log("[Response] version nhận về:", eventRes.data?.version);
       const formattedData = {
         ...eventRes.data,
         posterId: eventRes.data?.poster?.id || "",
@@ -179,9 +185,16 @@ function UpdateEventInfor() {
         organizerLogoId: eventRes.data?.organizerLogo?.id || "",
         provinceId: eventRes.data?.province?.id || "",
         categoryId: eventRes.data?.category?.id || "",
+        version: eventRes.data?.version,
       };
+      console.log("[Reset] formattedData.version:", formattedData.version);
       setInitialData(formattedData);
       reset(formattedData);
+      // Đảm bảo version được set ngay vào form state sau khi save
+      if (eventRes.data?.version !== undefined) {
+        setValue("version", eventRes.data.version, { shouldValidate: false });
+      }
+      console.log("[After setValue] version in form:", eventRes.data.version);
       setModal({
         isOpen: true,
         title: "Cập nhật sự kiện",
@@ -353,6 +366,7 @@ function UpdateEventInfor() {
         onConfirm={handleConfirmStatus}
       />
       <div className="max-w-7xl mx-auto space-y-8">
+        <input type="hidden" {...register("version")} />
         <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
           {/* Tên sự kiện */}
           <div>
@@ -471,11 +485,10 @@ function UpdateEventInfor() {
               <input
                 {...register("name")}
                 className={`w-full border rounded-lg px-4 py-3 outline-none transition-all pr-16 text-sm
-                ${
-                  errors.name
+                ${errors.name
                     ? "border-red-500 focus:ring-red-200 focus:border-red-500"
                     : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
-                } 
+                  } 
                 focus:ring-2`}
                 maxLength="100"
                 placeholder="Tên sự kiện"
@@ -506,10 +519,9 @@ function UpdateEventInfor() {
                   <input
                     {...register("location")}
                     className={`w-full border rounded-lg px-4 py-3 focus:ring-2 outline-none transition-all pr-16 text-sm
-                      ${
-                        errors.location
-                          ? "border-red-500 focus:ring-red-200 focus:border-red-500"
-                          : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                      ${errors.location
+                        ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                        : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
                       } `}
                     maxLength="80"
                     placeholder="Tên địa điểm"
@@ -534,10 +546,9 @@ function UpdateEventInfor() {
                   <input
                     {...register("address")}
                     className={`w-full border rounded-lg px-4 py-3 focus:ring-2 outline-none transition-all pr-16 text-sm
-                      ${
-                        errors.address
-                          ? "border-red-500 focus:ring-red-200 focus:border-red-500"
-                          : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                      ${errors.address
+                        ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                        : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
                       } `}
                     maxLength="255"
                     placeholder="Nhập địa chỉ"
@@ -562,10 +573,9 @@ function UpdateEventInfor() {
                   <select
                     {...register("provinceId")}
                     className={`w-full bg-white border  rounded-lg px-4 py-3 focus:ring-2 outline-none appearance-none cursor-pointer text-sm text-slate-700
-                      ${
-                        errors.provinceId
-                          ? "border-red-500 focus:ring-red-200 focus:border-red-500"
-                          : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                      ${errors.provinceId
+                        ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                        : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
                       } 
                       `}
                   >
@@ -601,10 +611,9 @@ function UpdateEventInfor() {
             <select
               {...register("categoryId")}
               className={`w-full bg-transparent border rounded-lg px-4 py-3 focus:ring-2 outline-none appearance-none cursor-pointer text-sm text-slate-700
-                ${
-                  errors.categoryId
-                    ? "border-red-500 focus:ring-red-200 focus:border-red-500"
-                    : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                ${errors.categoryId
+                  ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                  : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
                 } 
                 `}
               onChange={(e) => console.log("Thể loại đã chọn:", e.target.value)}
@@ -674,11 +683,10 @@ function UpdateEventInfor() {
                 <input
                   {...register("userId")}
                   className={`w-full border rounded-lg px-4 py-3 outline-none transition-all pr-16 text-sm
-                ${
-                  errors.userId
-                    ? "border-red-500 focus:ring-red-200 focus:border-red-500"
-                    : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
-                } 
+                ${errors.userId
+                      ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                      : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                    } 
                 focus:ring-2`}
                   maxLength="100"
                   placeholder="Nhập id của người sở hữu sự kiện"
@@ -764,10 +772,9 @@ function UpdateEventInfor() {
                   <input
                     {...register("organizerName")}
                     className={`w-full bg-white border rounded-lg px-4 py-3 focus:ring-2 outline-none transition-all pr-16 text-sm text-slate-700
-                      ${
-                        errors.organizerName
-                          ? "border-red-500 focus:ring-red-200 focus:border-red-500"
-                          : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                      ${errors.organizerName
+                        ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                        : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
                       }`}
                     maxLength="80"
                     placeholder="Ví dụ: Công ty Giải trí ABC"
@@ -794,10 +801,9 @@ function UpdateEventInfor() {
                   <textarea
                     {...register("organizerInfo")}
                     className={`w-full bg-white border rounded-lg px-4 py-3 focus:ring-2 outline-none transition-all text-sm text-slate-700 min-h-[110px] resize-none
-                      ${
-                        errors.organizerLogoId
-                          ? "border-red-500 focus:ring-red-200 focus:border-red-500"
-                          : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
+                      ${errors.organizerLogoId
+                        ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                        : "border-slate-200 bg-transparent focus:ring-emerald-500 focus:border-emerald-500"
                       }`}
                     maxLength="500"
                     placeholder="Giới thiệu ngắn gọn về ban tổ chức sự kiện..."

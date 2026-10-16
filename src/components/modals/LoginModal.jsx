@@ -223,8 +223,8 @@ function LoginModal({ isOpen, onClose }) {
             <div className="text-center mt-4 space-y-2">
               <Link
                 to="/forgot-password"
-                size="sm"
-                className="block text-blue-500 text-sm hover:underline"
+                onClick={onClose}
+                className="block text-emerald-600 text-sm hover:underline font-medium"
               >
                 Quên mật khẩu?
               </Link>
@@ -232,7 +232,8 @@ function LoginModal({ isOpen, onClose }) {
                 Bạn chưa có tài khoản?{" "}
                 <Link
                   to="/signup"
-                  className="text-blue-500 font-bold hover:underline"
+                  onClick={onClose}
+                  className="text-emerald-600 font-bold hover:underline"
                 >
                   Đăng ký
                 </Link>

@@ -87,10 +87,12 @@ axiosClient.interceptors.response.use(
           }
         );
         const newAccessToken = res.data?.data?.accessToken;
-        if (!newAccessToken) {
-          throw new Error("Không nhận được token mới từ máy chủ.");
+        const newRefreshToken = res.data?.data?.refreshToken;
+        if (!newAccessToken || !newRefreshToken) {
+          throw new Error("Không nhận được cặp token mới từ máy chủ.");
         }
         localStorage.setItem("accessToken", newAccessToken);
+        localStorage.setItem("refreshToken", newRefreshToken);
         axiosClient.defaults.headers.common["Authorization"] =
           `Bearer ${newAccessToken}`;
         processQueue(null, newAccessToken);
@@ -113,9 +115,11 @@ axiosClient.interceptors.response.use(
       return Promise.reject(errorResponse);
     }
 
-    if (error.response?.status === 401) {
+    const isInvalidAuthToken =
+      errorData?.code === "TOKEN_INVALID" || errorData?.code === "TOKEN_EXPIRED";
+    if (error.response?.status === 401 || isInvalidAuthToken) {
       if (window.location.pathname !== "/login") {
-        // Clear auth data but keep deviceId
+        // Xóa phiên đăng nhập nhưng giữ deviceId để phiên mới dùng đúng thiết bị.
         const deviceId = localStorage.getItem("deviceId");
         localStorage.clear();
         if (deviceId) localStorage.setItem("deviceId", deviceId);

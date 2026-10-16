@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./SignUpPage.css";
 import { toast, ToastContainer } from "react-toastify";
+import axiosClient from "../../api/axiosClient";
 import eventIllustration from "../../images/happy-tiny-business-people-dancing-having-fun-drinking-wine-corporate-party-team-building-activity-corporate-event-idea-concept-pinkish-coral-bluevector-isolated-illustration.png";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
@@ -103,23 +104,15 @@ function SignUpPage() {
   const handleSendVerifyMail = async () => {
     setIsSending(true);
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/auth/resend-verify?email=${userEmail}`,
-        {
-          method: "POST",
-        },
-      );
-
-      if (response.ok) {
-        toast.success("Mã mới đã gửi! Đang chuyển hướng...");
-        setTimeout(() => {
-          navigate(`/signup/verify?email=${userEmail}`);
-        }, 1500);
-      } else {
-        toast.error("Gửi mail thất bại, thử lại sau.");
-      }
+      const response = await axiosClient.post("/auth/resend-verify", null, {
+        params: { email: userEmail },
+      });
+      toast.success(response?.message || "Mã mới đã gửi! Đang chuyển hướng...");
+      setTimeout(() => {
+        navigate(`/signup/verify?email=${userEmail}`);
+      }, 1500);
     } catch (error) {
-      toast.error("Lỗi kết nối server.:", error.message);
+      toast.error(error?.message || "Gửi mail thất bại, thử lại sau.");
     } finally {
       setIsSending(false);
     }

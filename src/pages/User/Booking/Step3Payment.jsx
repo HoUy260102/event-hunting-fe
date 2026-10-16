@@ -12,6 +12,7 @@ import Modal from "../../../components/common/Modal";
 
 function Step3Payment({ reservationInfo, showId }) {
   const navigate = useNavigate();
+  const [paymentContext, setPaymentContext] = useState(null);
   const [reservation, setReservation] = useState(reservationInfo);
   const [isOpenVoucher, setIsOpenVoucher] = useState(false);
   const [selectedVoucherId, setSelectedVoucherId] = useState(null);
@@ -36,6 +37,10 @@ function Step3Payment({ reservationInfo, showId }) {
     message: "",
     type: "success",
   });
+
+  const generateIdempotencyKey = () => {
+    return crypto.randomUUID();
+  };
 
   const closeNotiModal = () =>
     setNotiModal((prev) => ({ ...prev, isOpen: false }));
@@ -67,22 +72,56 @@ function Step3Payment({ reservationInfo, showId }) {
   };
 
   const handleCreatePaymentUrl = async () => {
-    if (paymentMethod === "vnpay") {
-      try {
-        const payload = {
-          ...reservation,
-          ...(selectedVoucherId ? { voucherId: selectedVoucherId } : {}),
-        };
-        const res = await axiosClient.post(
-          `/payments/create_payment_url`,
-          payload,
-        );
-        const paymentUrl = res?.data;
-        console.log(paymentUrl);
-        window.open(paymentUrl, "_blank", "noopener,noreferrer");
-      } catch (error) {
-        console.log(error.message);
+    if (paymentMethod !== "vnpay") return;
+
+    try {
+      const currentPaymentContext = {
+        reservationId: reservation?.id,
+        voucherId: selectedVoucherId ?? null,
+      };
+
+      let idempotencyKey = paymentContext?.idempotencyKey;
+
+      const isSamePaymentAttempt =
+        paymentContext &&
+        paymentContext.reservationId === currentPaymentContext.reservationId &&
+        paymentContext.voucherId === currentPaymentContext.voucherId;
+
+      // Nếu chưa có hoặc reservation/voucher thay đổi => tạo key mới
+      if (!isSamePaymentAttempt) {
+        idempotencyKey = generateIdempotencyKey();
+
+        setPaymentContext({
+          ...currentPaymentContext,
+          idempotencyKey,
+        });
       }
+
+      const payload = {
+        ...reservation,
+        ...(selectedVoucherId ? { voucherId: selectedVoucherId } : {}),
+      };
+
+      const res = await axiosClient.post(
+        "/payments/create_payment_url",
+        payload,
+        {
+          headers: {
+            "Idempotency-Key": idempotencyKey,
+          },
+        },
+      );
+
+      const paymentUrl = res?.data;
+
+      if (paymentUrl) {
+        window.open(paymentUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      console.log("Create payment URL error:", error);
+      toastError(
+        error?.response?.data?.message || "Không thể tạo URL thanh toán",
+      );
     }
   };
 
@@ -146,6 +185,7 @@ function Step3Payment({ reservationInfo, showId }) {
       );
       setSelectedVoucherId(voucherId);
       setReservation(res?.data);
+      setPaymentContext(null);
     } catch (error) {
       console.log(error.message);
       setNotiModal({
@@ -237,10 +277,11 @@ function Step3Payment({ reservationInfo, showId }) {
                   {paymentOptions.map((option) => (
                     <label
                       key={option.id}
-                      className={`relative flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${paymentMethod === option.id
-                        ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600"
-                        : "border-slate-100 hover:border-slate-200 bg-white"
-                        }`}
+                      className={`relative flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                        paymentMethod === option.id
+                          ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600"
+                          : "border-slate-100 hover:border-slate-200 bg-white"
+                      }`}
                     >
                       <input
                         type="radio"
@@ -269,10 +310,11 @@ function Step3Payment({ reservationInfo, showId }) {
                       </div>
 
                       <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === option.id
-                          ? "border-blue-600"
-                          : "border-slate-300"
-                          }`}
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                          paymentMethod === option.id
+                            ? "border-blue-600"
+                            : "border-slate-300"
+                        }`}
                       >
                         {paymentMethod === option.id && (
                           <div className="w-3 h-3 bg-blue-600 rounded-full animate-scaleIn" />
