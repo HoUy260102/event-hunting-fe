@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
@@ -80,6 +80,13 @@ const getLast3MonthsRange = () => {
   };
 };
 
+const TIME_TABS = [
+  { id: "week", label: "Trong tuần", getRange: getWeekRange },
+  { id: "month", label: "Trong tháng", getRange: getMonthRange },
+  { id: "next3months", label: "Trong 3 tháng tới", getRange: getNext3MonthsRange },
+  { id: "3months", label: "Trong 3 tháng qua", getRange: getLast3MonthsRange },
+];
+
 function Home() {
   useEffect(() => {
     document.title = "Trang chủ - Săn vé sự kiện | Event Hunting";
@@ -99,7 +106,8 @@ function Home() {
 
   const [timeTab, setTimeTab] = useState("week"); // "week" | "month" | "next3months" | "3months"
   const [timeEvents, setTimeEvents] = useState([]);
-  const [timeLoading, setTimeLoading] = useState(false);
+  const [timeLoading, setTimeLoading] = useState(true);
+  const userClickedTimeTabRef = useRef(false);
 
   const [bannerEvents, setBannerEvents] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -139,37 +147,82 @@ function Home() {
   }, [user]);
 
   useEffect(() => {
-    const fetchTimeEvents = async () => {
+    let isMounted = true;
+    userClickedTimeTabRef.current = false;
+
+    const initTimeEvents = async () => {
       try {
         setTimeLoading(true);
-        let range;
-        if (timeTab === "week") {
-          range = getWeekRange();
-        } else if (timeTab === "month") {
-          range = getMonthRange();
-        } else if (timeTab === "next3months") {
-          range = getNext3MonthsRange();
-        } else {
-          range = getLast3MonthsRange();
-        }
+        // Gọi đồng thời các mốc thời gian để tìm nhanh tab nào có sự kiện
+        const results = await Promise.all(
+          TIME_TABS.map(async (tab) => {
+            const range = tab.getRange();
+            const res = await axiosClient.get("/events/public/search", {
+              params: {
+                startTime: range.startTime,
+                endTime: range.endTime,
+                statuses: ["PUBLISHED"],
+                size: 8,
+              },
+            });
+            return {
+              id: tab.id,
+              events: res?.data?.content || [],
+            };
+          })
+        );
 
-        const response = await axiosClient.get("/events/public/search", {
-          params: {
-            startTime: range.startTime,
-            endTime: range.endTime,
-            statuses: ["PUBLISHED"],
-            size: 8,
-          },
-        });
-        setTimeEvents(response?.data?.content || []);
+        if (!isMounted || userClickedTimeTabRef.current) return;
+
+        // Ưu tiên chọn tab đầu tiên có sự kiện (Trong tuần -> Trong tháng -> Trong 3 tháng tới -> Trong 3 tháng qua)
+        const firstTabWithEvents = results.find((item) => item.events.length > 0);
+        if (firstTabWithEvents) {
+          setTimeTab(firstTabWithEvents.id);
+          setTimeEvents(firstTabWithEvents.events);
+        } else {
+          // Nếu không mốc nào có sự kiện, mặc định là tab đầu tiên "Trong tuần"
+          setTimeTab(TIME_TABS[0].id);
+          setTimeEvents(results[0]?.events || []);
+        }
       } catch (error) {
         console.error("Fetch time events error:", error);
       } finally {
-        setTimeLoading(false);
+        if (isMounted && !userClickedTimeTabRef.current) {
+          setTimeLoading(false);
+        }
       }
     };
-    fetchTimeEvents();
-  }, [timeTab, user]);
+
+    initTimeEvents();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
+  const handleTimeTabChange = async (tabId) => {
+    userClickedTimeTabRef.current = true;
+    if (tabId === timeTab && timeEvents.length > 0) return;
+    setTimeTab(tabId);
+    setTimeLoading(true);
+    try {
+      const currentTab = TIME_TABS.find((t) => t.id === tabId);
+      const range = currentTab ? currentTab.getRange() : getWeekRange();
+      const response = await axiosClient.get("/events/public/search", {
+        params: {
+          startTime: range.startTime,
+          endTime: range.endTime,
+          statuses: ["PUBLISHED"],
+          size: 8,
+        },
+      });
+      setTimeEvents(response?.data?.content || []);
+    } catch (error) {
+      console.error("Fetch time events error:", error);
+    } finally {
+      setTimeLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchBannerEvents = async () => {
@@ -378,15 +431,10 @@ function Home() {
       <main className="px-2 py-10 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-3">
           <div className="flex items-center gap-6">
-            {[
-              { id: "week", label: "Trong tuần" },
-              { id: "month", label: "Trong tháng" },
-              { id: "next3months", label: "Trong 3 tháng tới" },
-              { id: "3months", label: "Trong 3 tháng qua" },
-            ].map((tab) => (
+            {TIME_TABS.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setTimeTab(tab.id)}
+                onClick={() => handleTimeTabChange(tab.id)}
                 className={`text-sm md:text-base font-semibold pb-2 relative transition-all ${timeTab === tab.id ? "text-white" : "text-gray-400 hover:text-white"
                   }`}
               >
@@ -399,16 +447,8 @@ function Home() {
           </div>
           <button
             onClick={() => {
-              let range;
-              if (timeTab === "week") {
-                range = getWeekRange();
-              } else if (timeTab === "month") {
-                range = getMonthRange();
-              } else if (timeTab === "next3months") {
-                range = getNext3MonthsRange();
-              } else {
-                range = getLast3MonthsRange();
-              }
+              const currentTab = TIME_TABS.find((t) => t.id === timeTab);
+              const range = currentTab ? currentTab.getRange() : getWeekRange();
               navigate(`/search?startTime=${range.startTime}&endTime=${range.endTime}&statuses=PUBLISHED`);
             }}
             className="text-gray-400 hover:text-white text-xs md:text-sm font-medium transition-colors"
