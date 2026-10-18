@@ -8,15 +8,54 @@ const SeatMapOverview = ({
   soldOutSectionIds,
 }) => {
   console.log(soldOutSectionIds);
-  const handleSvgClick = (e) => {
-    const sectionElement = e.target.closest('g[id^="section-"]');
-    if (sectionElement) {
-      const sectionId = sectionElement.id;
-      onSectionClick(sectionId);
-    }
-  };
   const containerRef = useRef(null);
   const panZoomRef = useRef(null);
+  const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
+  const lastTouchHandledRef = useRef(0);
+
+  const processSectionSelection = (sectionElement) => {
+    if (!sectionElement) return;
+    const sectionId = sectionElement.id;
+    if (soldOutSectionIds && soldOutSectionIds.includes(sectionId)) return;
+    onSectionClick(sectionId);
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        time: Date.now(),
+      };
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.changedTouches.length === 1 && e.touches.length === 0) {
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartRef.current.x;
+      const dy = touch.clientY - touchStartRef.current.y;
+      const dt = Date.now() - touchStartRef.current.time;
+      const dist = Math.hypot(dx, dy);
+
+      // Nếu di chuyển < 10px và chạm nhanh < 400ms => Đây là TAP chọn khu vực
+      if (dist < 10 && dt < 400) {
+        lastTouchHandledRef.current = Date.now();
+        const target =
+          document.elementFromPoint(touch.clientX, touch.clientY) || e.target;
+        if (!target) return;
+        const sectionElement = target.closest('g[id^="section-"]');
+        processSectionSelection(sectionElement);
+      }
+    }
+  };
+
+  const handleSvgClick = (e) => {
+    if (Date.now() - lastTouchHandledRef.current < 500) return;
+    const sectionElement = e.target.closest('g[id^="section-"]');
+    processSectionSelection(sectionElement);
+  };
+
   useEffect(() => {
     if (!containerRef.current) return;
     const svg = containerRef.current.querySelector("svg");
@@ -29,7 +68,14 @@ const SeatMapOverview = ({
       minZoom: 0.5,
       maxZoom: 6,
     });
+
+    return () => {
+      try {
+        panZoomRef.current?.destroy();
+      } catch (err) {}
+    };
   }, [svgContent]);
+
   const handleZoomIn = () => panZoomRef.current?.zoomIn();
   const handleZoomOut = () => panZoomRef.current?.zoomOut();
   const handleReset = () => {
@@ -68,6 +114,8 @@ const SeatMapOverview = ({
         <div
           ref={containerRef}
           onClick={handleSvgClick}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
           className="w-full h-full flex items-center justify-center svg-container"
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />

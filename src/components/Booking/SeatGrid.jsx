@@ -8,6 +8,46 @@ const SeatGrid = ({
 }) => {
   const containerRef = useRef(null);
   const panZoomRef = useRef(null);
+  const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
+  const lastTouchHandledRef = useRef(0);
+
+  const processSeatSelection = (seatElement) => {
+    if (!seatElement) return;
+    const seatId = seatElement.id;
+    if (bookedSeats.includes(seatId)) return;
+    onSeatClick(seatId);
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        time: Date.now(),
+      };
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.changedTouches.length === 1 && e.touches.length === 0) {
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartRef.current.x;
+      const dy = touch.clientY - touchStartRef.current.y;
+      const dt = Date.now() - touchStartRef.current.time;
+      const dist = Math.hypot(dx, dy);
+
+      // Nếu di chuyển < 10px và chạm nhanh < 400ms => Đây là TAP chọn ghế trên màn cảm ứng
+      if (dist < 10 && dt < 400) {
+        lastTouchHandledRef.current = Date.now();
+        const target =
+          document.elementFromPoint(touch.clientX, touch.clientY) || e.target;
+        if (!target) return;
+        const seatElement = target.closest('g[id^="seat-"]');
+        processSeatSelection(seatElement);
+      }
+    }
+  };
+
   useEffect(() => {
     if (!containerRef.current) return;
     const svg = containerRef.current.querySelector("svg");
@@ -21,6 +61,12 @@ const SeatGrid = ({
       minZoom: 0.5,
       maxZoom: 6,
     });
+
+    return () => {
+      try {
+        panZoomRef.current?.destroy();
+      } catch (err) {}
+    };
   }, [svgContent]);
   const handleZoomIn = () => panZoomRef.current?.zoomIn();
   const handleZoomOut = () => panZoomRef.current?.zoomOut();
@@ -90,11 +136,9 @@ const SeatGrid = ({
   }, [selectedSeats, bookedSeats]);
 
   const handleSvgClick = (e) => {
+    if (Date.now() - lastTouchHandledRef.current < 500) return;
     const seatElement = e.target.closest('g[id^="seat-"]');
-    if (!seatElement) return;
-    const seatId = seatElement.id;
-    if (bookedSeats.includes(seatId)) return;
-    onSeatClick(seatId);
+    processSeatSelection(seatElement);
   };
   return (
     <div className="bg-white h-full rounded-xl shadow-sm border border-gray-200 p-6">
@@ -144,6 +188,8 @@ const SeatGrid = ({
         <div
           ref={containerRef}
           onClick={handleSvgClick}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
           className="seat-svg-container flex justify-center items-center w-full"
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
@@ -190,7 +236,8 @@ const SeatGrid = ({
           transition: fill 0.2s;
         }
 
-        .seat-svg-container g[id^="seat-"] path[id^="text"] {
+        .seat-svg-container g[id^="seat-"] path[id^="text"],
+        .seat-svg-container g[id^="seat-"] text {
           display: block;
           pointer-events: none;
         }
