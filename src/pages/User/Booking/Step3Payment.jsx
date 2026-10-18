@@ -126,7 +126,8 @@ function Step3Payment({ reservationInfo, showId }) {
   };
 
   useEffect(() => {
-    const socket = new SockJS("http://localhost:8080/api/v1/ws");
+    const wsUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1"}/ws`;
+    const socket = new SockJS(wsUrl);
     const stompClient = Stomp.over(socket);
     stompClient.debug = null;
     stompClient.connect(
@@ -277,11 +278,10 @@ function Step3Payment({ reservationInfo, showId }) {
                   {paymentOptions.map((option) => (
                     <label
                       key={option.id}
-                      className={`relative flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                        paymentMethod === option.id
-                          ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600"
-                          : "border-slate-100 hover:border-slate-200 bg-white"
-                      }`}
+                      className={`relative flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${paymentMethod === option.id
+                        ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600"
+                        : "border-slate-100 hover:border-slate-200 bg-white"
+                        }`}
                     >
                       <input
                         type="radio"
@@ -310,11 +310,10 @@ function Step3Payment({ reservationInfo, showId }) {
                       </div>
 
                       <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          paymentMethod === option.id
-                            ? "border-blue-600"
-                            : "border-slate-300"
-                        }`}
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === option.id
+                          ? "border-blue-600"
+                          : "border-slate-300"
+                          }`}
                       >
                         {paymentMethod === option.id && (
                           <div className="w-3 h-3 bg-blue-600 rounded-full animate-scaleIn" />

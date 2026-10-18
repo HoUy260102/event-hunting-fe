@@ -38,7 +38,8 @@ const VerifyWaitingSignUpPage = () => {
   }, [countdown]);
 
   useEffect(() => {
-    const socket = new SockJS("http://localhost:8080/api/v1/ws");
+    const wsUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1"}/ws`;
+    const socket = new SockJS(wsUrl);
     const stompClient = Stomp.over(socket);
 
     stompClient.debug = null;
@@ -138,7 +139,7 @@ const VerifyWaitingSignUpPage = () => {
               style={{
                 width: "280px",
                 height: "auto",
-                minWidth: "35px", 
+                minWidth: "35px",
                 display: "block",
                 objectFit: "contain",
               }}
@@ -157,8 +158,8 @@ const VerifyWaitingSignUpPage = () => {
               {loading
                 ? "Đang gửi..."
                 : countdown > 0
-                ? `Gửi lại sau (${countdown}s)`
-                : "Gửi lại email xác thực"}
+                  ? `Gửi lại sau (${countdown}s)`
+                  : "Gửi lại email xác thực"}
             </button>
             <Link to="/login" className="resend-link">
               Quay lại đăng nhập

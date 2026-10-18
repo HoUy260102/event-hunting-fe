@@ -47,7 +47,8 @@ export function useGoogleLogin({ onSuccess, onError, onClose } = {}) {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.origin !== "http://localhost:8080") return;
+      const backendOrigin = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1").replace(/\/api\/v1\/?$/, "");
+      if (event.origin !== backendOrigin && event.origin !== "http://localhost:8080") return;
 
       const { type, payload } = event.data || {};
 
@@ -69,7 +70,7 @@ export function useGoogleLogin({ onSuccess, onError, onClose } = {}) {
           return;
         }
       }
-      
+
       if (type === "LOGIN_FAILURE") {
         setLoading(false);
         setError(payload?.error || "Đăng nhập thất bại");

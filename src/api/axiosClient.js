@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1";
+
 const axiosClient = axios.create({
-  baseURL: "http://localhost:8080/api/v1",
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -57,9 +59,9 @@ axiosClient.interceptors.response.use(
     };
     if (
       error.response?.status === 401 &&
-      (errorData?.code === "TOKEN_EXPIRED" || 
-       errorData?.message?.includes("hết hạn") || 
-       errorData?.message?.includes("expired")) &&
+      (errorData?.code === "TOKEN_EXPIRED" ||
+        errorData?.message?.includes("hết hạn") ||
+        errorData?.message?.includes("expired")) &&
       !originalRequest._retry
     ) {
       if (isRefreshing) {
@@ -78,7 +80,7 @@ axiosClient.interceptors.response.use(
       const deviceId = localStorage.getItem("deviceId");
       try {
         const res = await axios.post(
-          "http://localhost:8080/api/v1/auth/refresh-token",
+          `${BASE_URL}/auth/refresh-token`,
           { refreshToken },
           {
             headers: {

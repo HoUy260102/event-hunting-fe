@@ -72,9 +72,9 @@ function WaitingRoom() {
 
   const progress = initialPosition
     ? Math.max(
-        0,
-        Math.min(100, (1 - queueInfo?.peopleAhead / initialPosition) * 100),
-      )
+      0,
+      Math.min(100, (1 - queueInfo?.peopleAhead / initialPosition) * 100),
+    )
     : 0;
 
   const toastSuccess = (message) => {
@@ -91,7 +91,8 @@ function WaitingRoom() {
   };
 
   useEffect(() => {
-    const socket = new SockJS("http://localhost:8080/api/v1/ws");
+    const wsUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1"}/ws`;
+    const socket = new SockJS(wsUrl);
     const stompClient = Stomp.over(socket);
 
     stompClient.debug = null;

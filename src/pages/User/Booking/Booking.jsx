@@ -456,7 +456,8 @@ function Booking() {
   }, [user?.id]);
 
   useEffect(() => {
-    const socket = new SockJS("http://localhost:8080/api/v1/ws");
+    const wsUrl = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1"}/ws`;
+    const socket = new SockJS(wsUrl);
     const stompClient = Stomp.over(socket);
 
     stompClient.debug = null;
