@@ -1,4 +1,4 @@
-import "./tableSkeleton.css"; 
+import "./TableSkeleton.css"; 
 
 function TableSkeleton({ rows = 5, columns = 7 }) {
   return (
