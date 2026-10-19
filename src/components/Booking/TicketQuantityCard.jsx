@@ -82,7 +82,12 @@ const TicketQuantityCard = ({ ticketType, onUpdateCart, quan = 0 }) => {
               onClick={() => {
                 onUpdateCart(ticketType, quantity);
               }}
-              className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 hover:shadow-[0_6px_18px_rgba(16,185,129,0.2)] text-white font-black py-3.5 px-6 rounded-2xl text-xs transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest shadow-md shadow-emerald-100"
+              className="w-full bg-emerald-600 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 hover:shadow-[0_6px_18px_rgba(16,185,129,0.2)] text-white font-black py-3.5 px-6 rounded-2xl text-xs transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-widest shadow-md shadow-emerald-100 appearance-none [-webkit-appearance:none]"
+              style={{
+                WebkitAppearance: "none",
+                appearance: "none",
+                backgroundColor: "#059669",
+              }}
             >
               <span>Chọn vé</span>
               <span className="material-symbols-outlined text-sm font-bold">
