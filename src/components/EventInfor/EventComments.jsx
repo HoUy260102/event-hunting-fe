@@ -68,6 +68,17 @@ function EventComments({ eventId }) {
     parentId: null,
   });
 
+  // State quản lý chỉnh sửa bình luận
+  const [editingCommentState, setEditingCommentState] = useState({
+    commentId: null,
+    isReply: false,
+    parentId: null,
+    content: "",
+    images: [], // [{ id, url }]
+    isUploading: false,
+    isSubmitting: false,
+  });
+
   // State quản lý xem emoji picker nào đang mở ('main' hoặc parentId của reply)
   const [activeEmojiPicker, setActiveEmojiPicker] = useState(null);
 
@@ -351,6 +362,259 @@ function EventComments({ eventId }) {
     }
   };
 
+  // 8. Các hàm xử lý CHỈNH SỬA BÌNH LUẬN
+  const handleStartEdit = (comment, isReply = false, parentId = null) => {
+    setActiveEmojiPicker(null);
+    setEditingCommentState({
+      commentId: comment.id,
+      isReply,
+      parentId,
+      content: comment.content || "",
+      images: (comment.images || []).map((img) => ({ id: img.id, url: img.url })),
+      isUploading: false,
+      isSubmitting: false,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setActiveEmojiPicker(null);
+    setEditingCommentState({
+      commentId: null,
+      isReply: false,
+      parentId: null,
+      content: "",
+      images: [],
+      isUploading: false,
+      isSubmitting: false,
+    });
+  };
+
+  const handleRemoveEditImage = (index) => {
+    setEditingCommentState((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleEditImageUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const currentCount = editingCommentState.images.length;
+    if (currentCount + files.length > 4) {
+      toast.warning("Bạn chỉ được đính kèm tối đa 4 hình ảnh cho mỗi bình luận.");
+      return;
+    }
+
+    setEditingCommentState((prev) => ({ ...prev, isUploading: true }));
+
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "IMAGE");
+      formData.append("folder", "COMMENT_IMAGE");
+
+      try {
+        const response = await axiosClient.post("/files/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        const fileData = response.data;
+        setEditingCommentState((prev) => ({
+          ...prev,
+          images: [...prev.images, { id: fileData.id, url: fileData.url }],
+        }));
+      } catch (error) {
+        console.error("Lỗi upload hình ảnh khi chỉnh sửa:", error);
+        toast.error("Tải hình ảnh lên thất bại!");
+      }
+    }
+
+    setEditingCommentState((prev) => ({ ...prev, isUploading: false }));
+    e.target.value = "";
+  };
+
+  const handleSaveEdit = async () => {
+    const { commentId, isReply, parentId, content, images, isSubmitting } = editingCommentState;
+    if (isSubmitting) return;
+
+    if (!content.trim() && !images.length) {
+      toast.warning("Bình luận phải có ít nhất nội dung chữ hoặc hình ảnh.");
+      return;
+    }
+
+    try {
+      setEditingCommentState((prev) => ({ ...prev, isSubmitting: true }));
+      const fileIds = images.map((img) => img.id);
+
+      const res = await axiosClient.put(`/comments/${commentId}`, {
+        content: content.trim(),
+        fileIds,
+      });
+      const updatedComment = res.data;
+
+      // Cập nhật state UI
+      if (isReply && parentId) {
+        setRepliesMap((prev) => {
+          const list = prev[parentId] || [];
+          return {
+            ...prev,
+            [parentId]: list.map((item) => (item.id === commentId ? { ...item, ...updatedComment } : item)),
+          };
+        });
+      } else {
+        setComments((prev) =>
+          prev.map((item) => (item.id === commentId ? { ...item, ...updatedComment } : item))
+        );
+      }
+
+      toast.success("Chỉnh sửa bình luận thành công!");
+      handleCancelEdit();
+    } catch (error) {
+      console.error("Lỗi chỉnh sửa bình luận:", error);
+      toast.error(error.response?.data?.message || error?.message || "Không thể chỉnh sửa bình luận.");
+      setEditingCommentState((prev) => ({ ...prev, isSubmitting: false }));
+    }
+  };
+
+  // Khung giao diện chỉnh sửa bình luận
+  const renderEditBox = () => (
+    <div className="bg-[#1c1c1f] border border-[#2DC275]/40 rounded-2xl p-3 w-full max-w-xl shadow-lg animate-fadeIn">
+      <textarea
+        value={editingCommentState.content}
+        onChange={(e) =>
+          setEditingCommentState((prev) => ({ ...prev, content: e.target.value }))
+        }
+        rows={2}
+        className="w-full bg-transparent text-sm text-gray-200 placeholder-gray-500 focus:outline-none resize-none leading-relaxed"
+        placeholder="Nhập nội dung chỉnh sửa..."
+        autoFocus
+      />
+
+      {/* Hiển thị danh sách ảnh (ảnh cũ còn giữ + ảnh mới) kèm nút gỡ bỏ */}
+      {editingCommentState.images.length > 0 && (
+        <div className="flex flex-wrap gap-2 my-2.5 pt-2 border-t border-white/5">
+          {editingCommentState.images.map((img, idx) => (
+            <div
+              key={img.id || idx}
+              className="relative group/img w-16 h-16 rounded-lg overflow-hidden border border-white/10 bg-black/40"
+            >
+              <img src={img.url} alt="Đính kèm" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => handleRemoveEditImage(idx)}
+                className="absolute top-1 right-1 w-5 h-5 bg-red-600/90 text-white rounded-full flex items-center justify-center hover:bg-red-500 transition-colors shadow-md"
+                title="Gỡ ảnh này"
+              >
+                <span className="material-symbols-outlined text-[13px]">close</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Thanh công cụ khi edit: Thêm ảnh, Biểu tượng cảm xúc, Hủy, Lưu */}
+      <div className="flex items-center justify-between pt-2 border-t border-white/5 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <label
+            className={`cursor-pointer flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${editingCommentState.images.length >= 4 || editingCommentState.isUploading
+              ? "opacity-40 cursor-not-allowed text-gray-500 bg-white/5"
+              : "text-gray-300 hover:text-white bg-white/5 hover:bg-white/10"
+              }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">add_photo_alternate</span>
+            <span>Thêm ảnh ({editingCommentState.images.length}/4)</span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={editingCommentState.images.length >= 4 || editingCommentState.isUploading}
+              onChange={handleEditImageUpload}
+              className="hidden"
+            />
+          </label>
+
+          {/* Nút chèn biểu tượng cảm xúc (Emoji Picker) */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setActiveEmojiPicker(activeEmojiPicker === 'edit' ? null : 'edit')}
+              className="p-1.5 hover:bg-white/5 rounded-lg text-gray-400 hover:text-[#2DC275] transition-colors flex items-center justify-center"
+              title="Chèn biểu tượng cảm xúc"
+            >
+              <span className="material-symbols-outlined text-[18px]">sentiment_satisfied</span>
+            </button>
+
+            {activeEmojiPicker === 'edit' && (
+              <div className="absolute top-9 left-0 z-50 shadow-2xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                {/* Backdrop to close picker on click outside */}
+                <div
+                  className="fixed inset-0 z-[-1]"
+                  onClick={() => setActiveEmojiPicker(null)}
+                />
+                <EmojiPicker
+                  theme="dark"
+                  width={300}
+                  height={350}
+                  skinTonesDisabled
+                  searchPlaceholder="Tìm biểu tượng..."
+                  onEmojiClick={(emojiData) => {
+                    setEditingCommentState((prev) => ({
+                      ...prev,
+                      content: (prev.content || "") + emojiData.emoji,
+                    }));
+                    setActiveEmojiPicker(null);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
+          {editingCommentState.isUploading && (
+            <span className="text-[11px] text-[#2DC275] flex items-center gap-1">
+              <span className="w-3 h-3 border-2 border-[#2DC275] border-t-transparent rounded-full animate-spin"></span>
+              Đang tải ảnh...
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCancelEdit}
+            disabled={editingCommentState.isSubmitting}
+            className="px-3 py-1 text-xs text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors font-medium"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            onClick={handleSaveEdit}
+            disabled={
+              editingCommentState.isSubmitting ||
+              editingCommentState.isUploading ||
+              (!editingCommentState.content.trim() && !editingCommentState.images.length)
+            }
+            className={`px-3.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${editingCommentState.isSubmitting ||
+              editingCommentState.isUploading ||
+              (!editingCommentState.content.trim() && !editingCommentState.images.length)
+              ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+              : "bg-[#2DC275] text-black hover:bg-[#28b069]"
+              }`}
+          >
+            {editingCommentState.isSubmitting ? (
+              <>
+                <span className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                Đang lưu...
+              </>
+            ) : (
+              "Lưu"
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   // RENDER HÌNH ẢNH ĐÍNH KÈM TRONG BÌNH LUẬN
   const renderCommentImages = (images) => {
     if (!images || !images.length) return null;
@@ -490,9 +754,9 @@ function EventComments({ eventId }) {
                     {activeEmojiPicker === 'main' && (
                       <div className="absolute top-10 left-0 z-50 shadow-2xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
                         {/* Backdrop to close picker on click outside */}
-                        <div 
-                          className="fixed inset-0 z-[-1]" 
-                          onClick={() => setActiveEmojiPicker(null)} 
+                        <div
+                          className="fixed inset-0 z-[-1]"
+                          onClick={() => setActiveEmojiPicker(null)}
                         />
                         <EmojiPicker
                           theme="dark"
@@ -559,26 +823,35 @@ function EventComments({ eventId }) {
                 />
 
                 <div className="flex-1 min-w-0">
-                  {/* Bong bóng bình luận */}
-                  <div className="bg-[#252528] rounded-2xl px-4 py-3 w-fit max-w-full">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="font-extrabold text-sm text-white">
-                        {comment.user?.name}
-                      </span>
-                      <span className="text-[10px] text-gray-500">
-                        {formatRelativeTime(comment.createdAt)}
-                      </span>
+                  {/* Bong bóng bình luận / Khung chỉnh sửa */}
+                  {editingCommentState.commentId === comment.id ? (
+                    renderEditBox()
+                  ) : (
+                    <div className="bg-[#252528] rounded-2xl px-4 py-3 w-fit max-w-full">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="font-extrabold text-sm text-white">
+                          {comment.user?.name}
+                        </span>
+                        <span className="text-[10px] text-gray-500">
+                          {formatRelativeTime(comment.createdAt)}
+                        </span>
+                        {comment.updatedAt && comment.updatedAt !== comment.createdAt && (
+                          <span className="text-[10px] text-gray-500 italic">
+                            (đã chỉnh sửa)
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
+                        {comment.content}
+                      </p>
+
+                      {/* Hiển thị đính kèm ảnh */}
+                      {renderCommentImages(comment.images)}
                     </div>
+                  )}
 
-                    <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
-                      {comment.content}
-                    </p>
-
-                    {/* Hiển thị đính kèm ảnh */}
-                    {renderCommentImages(comment.images)}
-                  </div>
-
-                  {/* Actions Row: Likes count + Reactions Button + Reply Button + Delete Button */}
+                  {/* Actions Row: Likes count + Reactions Button + Reply Button + Edit/Delete Button */}
                   <div className="flex items-center gap-4 mt-1.5 ml-2 flex-wrap">
                     {/* Thả cảm xúc */}
                     <ReactionButton comment={comment} isReply={false} />
@@ -614,15 +887,24 @@ function EventComments({ eventId }) {
                       </div>
                     )}
 
-                    {/* Nút xóa (chỉ tác giả của comment) */}
-                    {user && user.id === comment.user?.id && (
-                      <button
-                        type="button"
-                        onClick={() => triggerDeleteComment(comment.id, false)}
-                        className="text-xs text-red-500 hover:text-red-400 font-bold opacity-0 group-hover/comment:opacity-100 transition-opacity ml-2"
-                      >
-                        Xóa
-                      </button>
+                    {/* Nút sửa và xóa (chỉ tác giả của comment) */}
+                    {user && String(user.id || user.userId) === String(comment.user?.id) && editingCommentState.commentId !== comment.id && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(comment, false)}
+                          className="text-xs text-blue-400 hover:text-blue-300 font-bold transition-colors ml-2"
+                        >
+                          Chỉnh sửa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => triggerDeleteComment(comment.id, false)}
+                          className="text-xs text-red-500 hover:text-red-400 font-bold transition-colors ml-1"
+                        >
+                          Xóa
+                        </button>
+                      </>
                     )}
                   </div>
 
@@ -649,21 +931,30 @@ function EventComments({ eventId }) {
                           className="w-8 h-8 rounded-full object-cover border border-white/10 shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          {/* Bong bóng reply */}
-                          <div className="bg-[#2D2D32] rounded-xl px-3 py-2 w-fit max-w-full">
-                            <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              <span className="font-bold text-xs text-white">
-                                {reply.user?.name}
-                              </span>
-                              <span className="text-[9px] text-gray-500">
-                                {formatRelativeTime(reply.createdAt)}
-                              </span>
+                          {/* Bong bóng reply / Khung chỉnh sửa */}
+                          {editingCommentState.commentId === reply.id ? (
+                            renderEditBox()
+                          ) : (
+                            <div className="bg-[#2D2D32] rounded-xl px-3 py-2 w-fit max-w-full">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className="font-bold text-xs text-white">
+                                  {reply.user?.name}
+                                </span>
+                                <span className="text-[9px] text-gray-500">
+                                  {formatRelativeTime(reply.createdAt)}
+                                </span>
+                                {reply.updatedAt && reply.updatedAt !== reply.createdAt && (
+                                  <span className="text-[9px] text-gray-500 italic">
+                                    (đã chỉnh sửa)
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-300 whitespace-pre-wrap">
+                                {reply.content}
+                              </p>
+                              {renderCommentImages(reply.images)}
                             </div>
-                            <p className="text-xs text-gray-300 whitespace-pre-wrap">
-                              {reply.content}
-                            </p>
-                            {renderCommentImages(reply.images)}
-                          </div>
+                          )}
 
                           {/* Actions Row của Reply */}
                           <div className="flex items-center gap-3 mt-1 ml-2 flex-wrap">
@@ -676,14 +967,23 @@ function EventComments({ eventId }) {
                               </div>
                             )}
 
-                            {user && user.id === reply.user?.id && (
-                              <button
-                                type="button"
-                                onClick={() => triggerDeleteComment(reply.id, true, comment.id)}
-                                className="text-[10px] text-red-500 hover:text-red-400 font-bold opacity-0 group-hover/reply:opacity-100 transition-opacity"
-                              >
-                                Xóa
-                              </button>
+                            {user && String(user.id || user.userId) === String(reply.user?.id) && editingCommentState.commentId !== reply.id && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEdit(reply, true, comment.id)}
+                                  className="text-[10px] text-blue-400 hover:text-blue-300 font-bold transition-colors ml-1"
+                                >
+                                  Chỉnh sửa
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => triggerDeleteComment(reply.id, true, comment.id)}
+                                  className="text-[10px] text-red-500 hover:text-red-400 font-bold transition-colors ml-1"
+                                >
+                                  Xóa
+                                </button>
+                              </>
                             )}
                           </div>
                         </div>
@@ -770,9 +1070,9 @@ function EventComments({ eventId }) {
                                 {activeEmojiPicker === comment.id && (
                                   <div className="absolute top-8 left-0 z-50 shadow-2xl rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
                                     {/* Backdrop to close picker on click outside */}
-                                    <div 
-                                      className="fixed inset-0 z-[-1]" 
-                                      onClick={() => setActiveEmojiPicker(null)} 
+                                    <div
+                                      className="fixed inset-0 z-[-1]"
+                                      onClick={() => setActiveEmojiPicker(null)}
                                     />
                                     <EmojiPicker
                                       theme="dark"
