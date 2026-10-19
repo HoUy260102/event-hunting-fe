@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 import ProfileSidebar from "./ProfileSidebar";
+import { useAuth } from "../../hooks/useAuth";
 
 const schema = z
   .object({
@@ -32,6 +33,7 @@ const ChangePassword = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const {
     register,
@@ -102,11 +104,30 @@ const ChangePassword = () => {
           </p>
         </div>
 
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-full bg-[#131313] rounded-[2rem] shadow-sm border border-slate-800 p-6 lg:p-10"
-        >
+        {/* Form / Google Account Notice */}
+        {user?.provider === "GOOGLE" ? (
+          <div className="w-full bg-[#131313] rounded-[2rem] border border-amber-500/30 p-8 text-center flex flex-col items-center justify-center gap-4">
+            <span className="material-symbols-outlined text-5xl text-amber-400">
+              lock_person
+            </span>
+            <h4 className="text-xl font-bold text-white">
+              Tài khoản liên kết Google
+            </h4>
+            <p className="text-slate-400 max-w-md text-sm leading-relaxed">
+              Tài khoản của bạn được đăng nhập trực tiếp thông qua Google và không sử dụng mật khẩu trên hệ thống. Vì vậy, bạn không thể thực hiện chức năng đổi mật khẩu.
+            </p>
+            <button
+              onClick={() => navigate("/user/profile")}
+              className="mt-2 px-6 py-2.5 rounded-xl bg-green-500 text-black font-semibold hover:bg-green-400 transition-colors"
+            >
+              Về trang thông tin cá nhân
+            </button>
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="w-full bg-[#131313] rounded-[2rem] shadow-sm border border-slate-800 p-6 lg:p-10"
+          >
           <div className="flex flex-col gap-6">
             {/* Current Password */}
             <div className="flex flex-col gap-2">
@@ -225,6 +246,7 @@ const ChangePassword = () => {
             </div>
           </div>
         </form>
+        )}
       </div>
       <ToastContainer />
     </div>

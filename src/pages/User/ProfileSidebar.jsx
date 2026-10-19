@@ -11,7 +11,9 @@ const ProfileSidebar = () => {
       icon: "settings",
       subItems: [
         { label: "Thông tin tài khoản", path: "/user/profile" },
-        { label: "Đổi mật khẩu", path: "/user/change-password" },
+        ...(user?.provider === "GOOGLE"
+          ? []
+          : [{ label: "Đổi mật khẩu", path: "/user/change-password" }]),
       ],
     },
     {
