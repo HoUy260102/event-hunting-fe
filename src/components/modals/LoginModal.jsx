@@ -149,7 +149,11 @@ function LoginModal({ isOpen, onClose }) {
               <input
                 type="email"
                 id="email"
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400 outline-none"
+                className={`w-full p-2 border rounded-md outline-none transition-colors ${
+                  errors.email
+                    ? "border-red-500 bg-red-50 focus:ring-2 focus:ring-red-200"
+                    : "border-gray-300 focus:ring-2 focus:ring-blue-400"
+                }`}
                 placeholder="Email"
                 {...register("email")}
               />
@@ -173,7 +177,11 @@ function LoginModal({ isOpen, onClose }) {
               <input
                 type="password"
                 id="password"
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400 outline-none"
+                className={`w-full p-2 border rounded-md outline-none transition-colors ${
+                  errors.password
+                    ? "border-red-500 bg-red-50 focus:ring-2 focus:ring-red-200"
+                    : "border-gray-300 focus:ring-2 focus:ring-blue-400"
+                }`}
                 placeholder="Password"
                 {...register("password")}
               />

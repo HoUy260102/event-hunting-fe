@@ -164,6 +164,7 @@ function SignUpPage() {
                     type="email"
                     id="email"
                     placeholder="Nhập địa chỉ email..."
+                    className={errors.email ? "input-error" : ""}
                     {...register("email")}
                   />
                   <div
@@ -188,6 +189,7 @@ function SignUpPage() {
                     type="password"
                     id="password"
                     placeholder="Tối thiểu 6 ký tự..."
+                    className={errors.password ? "input-error" : ""}
                     {...register("password")}
                   />
                   <div
@@ -212,6 +214,7 @@ function SignUpPage() {
                     type="password"
                     id="confirmPassword"
                     placeholder="Nhập lại mật khẩu xác nhận..."
+                    className={errors.confirmPassword ? "input-error" : ""}
                     {...register("confirmPassword")}
                   />
                   <div
@@ -235,6 +238,7 @@ function SignUpPage() {
                     type="text"
                     id="name"
                     placeholder="Nhập tên..."
+                    className={errors.name ? "input-error" : ""}
                     {...register("name")}
                   />
                   <div
@@ -259,6 +263,7 @@ function SignUpPage() {
                     type="text"
                     id="phone"
                     placeholder="Nhập số điện thoại..."
+                    className={errors.phone ? "input-error" : ""}
                     {...register("phone")}
                   />
                   <div
@@ -283,6 +288,7 @@ function SignUpPage() {
                     type="text"
                     id="address"
                     placeholder="Nhập địa chỉ..."
+                    className={errors.address ? "input-error" : ""}
                     {...register("address")}
                   />
                   <div
@@ -307,6 +313,7 @@ function SignUpPage() {
                     type="date"
                     id="dob"
                     max={new Date().toISOString().split("T")[0]}
+                    className={errors.dob ? "input-error" : ""}
                     {...register("dob")}
                   />
                   <div

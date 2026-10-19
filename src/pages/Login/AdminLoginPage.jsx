@@ -123,6 +123,7 @@ function AdminLoginPage() {
                   type="email"
                   id="email"
                   placeholder="Nhập email..."
+                  className={errors.email ? "input-error" : ""}
                   {...register("email")}
                 />
                 <div className="error-container" style={{ minHeight: "18px" }}>
@@ -140,6 +141,7 @@ function AdminLoginPage() {
                   type="password"
                   id="password"
                   placeholder="Nhập mật khẩu..."
+                  className={errors.password ? "input-error" : ""}
                   {...register("password")}
                 />
                 <div className="error-container" style={{ minHeight: "18px" }}>

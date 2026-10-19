@@ -111,6 +111,17 @@ body {
   font-size: 1rem;
   box-sizing: border-box;
   outline: none;
+  transition: all 0.2s ease;
+}
+
+.form-group input.input-error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.form-group input.input-error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3.5px rgba(239, 68, 68, 0.12);
 }
 
 .login-button {
@@ -133,9 +144,10 @@ body {
   background-color: #059669;
 }
 
-input:focus {
+.form-group input:not(.input-error):focus {
   outline: none;
-  box-shadow: 0 0 8px 2px rgba(90, 55, 160, 0.25);
+  box-shadow: 0 0 8px 2px rgba(16, 185, 129, 0.25);
+  border-color: #10b981;
 }
 
 .forgot-password-link {
