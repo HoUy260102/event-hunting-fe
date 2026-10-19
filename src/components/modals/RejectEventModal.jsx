@@ -77,13 +77,19 @@ const RejectEventModal = ({ isOpen, onClose, onConfirm }) => {
         <div className="flex justify-between gap-3 w-full mt-6">
           <button
             onClick={handleClose}
-            className="flex-1 px-5 py-3 text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 active:scale-[0.98] transition-all duration-200"
+            className="flex-1 px-5 py-3 text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 active:scale-[0.98] transition-all duration-200 appearance-none [-webkit-appearance:none]"
+            style={{ WebkitAppearance: "none", appearance: "none" }}
           >
             Hủy
           </button>
           <button
             onClick={handleConfirm}
-            className="flex-1 px-5 py-3 text-sm font-bold text-white bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 rounded-xl active:scale-[0.98] shadow-lg shadow-red-500/20 transition-all duration-200"
+            className="flex-1 px-5 py-3 text-sm font-bold text-white bg-red-600 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 rounded-xl active:scale-[0.98] shadow-lg shadow-red-500/20 transition-all duration-200 appearance-none [-webkit-appearance:none]"
+            style={{
+              WebkitAppearance: "none",
+              appearance: "none",
+              backgroundColor: "#e11d48",
+            }}
           >
             Từ chối
           </button>

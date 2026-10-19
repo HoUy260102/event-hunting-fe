@@ -33,9 +33,9 @@ const ConfirmModal = ({
       lowerTitle.includes("xóa") ||
       lowerTitle.includes("hủy")
     ) {
-      return "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 shadow-red-500/20 hover:shadow-red-500/30";
+      return "bg-red-600 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 shadow-red-500/20 hover:shadow-red-500/30";
     }
-    return "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/20 hover:shadow-emerald-500/30";
+    return "bg-emerald-600 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/20 hover:shadow-emerald-500/30";
   };
 
   const getIcon = () => {
@@ -102,7 +102,8 @@ const ConfirmModal = ({
         <div className="flex justify-between gap-3 w-full mt-6">
           <button
             onClick={onClose}
-            className="flex-1 px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 active:scale-[0.98] transition-all duration-200"
+            className="flex-1 px-5 py-3 text-sm font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 active:scale-[0.98] transition-all duration-200 appearance-none [-webkit-appearance:none]"
+            style={{ WebkitAppearance: "none", appearance: "none" }}
           >
             Hủy
           </button>
@@ -110,7 +111,17 @@ const ConfirmModal = ({
             onClick={() => {
               onConfirm();
             }}
-            className={`flex-1 px-5 py-3 text-sm font-bold text-white rounded-xl active:scale-[0.98] shadow-lg transition-all duration-200 ${getConfirmButtonClass()}`}
+            className={`flex-1 px-5 py-3 text-sm font-bold text-white rounded-xl active:scale-[0.98] shadow-lg transition-all duration-200 appearance-none [-webkit-appearance:none] ${getConfirmButtonClass()}`}
+            style={{
+              WebkitAppearance: "none",
+              appearance: "none",
+              backgroundColor:
+                isLogoutAction(title) ||
+                (title || "").toLowerCase().includes("xóa") ||
+                (title || "").toLowerCase().includes("hủy")
+                  ? "#e11d48"
+                  : "#059669",
+            }}
           >
             Xác nhận
           </button>

@@ -68,11 +68,11 @@ const Modal = ({ isOpen, title, message, onClose, type = "success" }) => {
   const getButtonClass = (type) => {
     switch (type) {
       case "success":
-        return "bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/20 hover:shadow-emerald-500/30";
+        return "bg-emerald-600 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/20 hover:shadow-emerald-500/30";
       case "error":
-        return "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 shadow-red-500/20 hover:shadow-red-500/30";
+        return "bg-red-600 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 shadow-red-500/20 hover:shadow-red-500/30";
       case "warning":
-        return "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-amber-500/20 hover:shadow-amber-500/30";
+        return "bg-amber-600 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-amber-500/20 hover:shadow-amber-500/30";
       default:
         return "bg-gray-800 hover:bg-gray-900";
     }
@@ -117,7 +117,17 @@ const Modal = ({ isOpen, title, message, onClose, type = "success" }) => {
         <div className="mt-6 w-full">
           <button
             onClick={onClose}
-            className={`w-full px-5 py-3 text-sm font-bold text-white rounded-xl active:scale-[0.98] shadow-lg transition-all duration-200 ${getButtonClass(type)}`}
+            className={`w-full px-5 py-3 text-sm font-bold text-white rounded-xl active:scale-[0.98] shadow-lg transition-all duration-200 appearance-none [-webkit-appearance:none] ${getButtonClass(type)}`}
+            style={{
+              WebkitAppearance: "none",
+              appearance: "none",
+              backgroundColor:
+                type === "error"
+                  ? "#e11d48"
+                  : type === "warning"
+                  ? "#d97706"
+                  : "#059669",
+            }}
           >
             Đóng
           </button>
