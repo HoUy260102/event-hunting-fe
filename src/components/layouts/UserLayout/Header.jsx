@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import axiosClient from "../../../api/axiosClient";
@@ -48,6 +48,7 @@ const getCityImage = (name = "") => {
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const { user, openLogin, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +59,35 @@ const Header = () => {
     message: "",
     onConfirm: null,
   });
+
+  // Handle outside click/tap to close menu on both mobile and desktop
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
+  const handleMouseEnter = (e) => {
+    if (e.pointerType === "touch") return;
+    if (window.matchMedia && !window.matchMedia("(hover: hover)").matches) return;
+    setIsMenuOpen(true);
+  };
+
+  const handleMouseLeave = (e) => {
+    if (e.pointerType === "touch") return;
+    if (window.matchMedia && !window.matchMedia("(hover: hover)").matches) return;
+    setIsMenuOpen(false);
+  };
 
   const [searchHistory, setSearchHistory] = useState([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -101,6 +131,7 @@ const Header = () => {
     const params = new URLSearchParams(location.search);
     const keywordFromUrl = params.get("keyword") || "";
     setKeyword(keywordFromUrl);
+    setIsMenuOpen(false);
   }, [location]);
 
   useEffect(() => {
@@ -380,23 +411,14 @@ const Header = () => {
           </div>
 
           <div className="flex items-center gap-3 md:gap-6 shrink-0">
-            <button className="flex items-center justify-center gap-2 w-10 h-10 lg:w-auto lg:h-auto lg:px-5 lg:py-2.5 bg-white/15 hover:bg-white border border-white/20 hover:border-transparent text-white hover:text-[rgb(45,194,117)] rounded-xl font-bold text-sm transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98]">
-              <span className="material-symbols-outlined text-xl">
-                add_circle
-              </span>
-              <span className="hidden lg:inline">Tạo sự kiện</span>
-            </button>
-
             <Link
               to="/my-tickets"
-              className="flex items-center justify-center gap-2 w-10 h-10 lg:w-auto lg:h-auto lg:px-4 lg:py-2.5 rounded-xl bg-white/0 hover:bg-white/10 text-white hover:text-white transition-all duration-300 font-bold text-sm group"
+              className="flex items-center justify-center gap-2 w-10 h-10 lg:w-auto lg:h-auto lg:px-5 lg:py-2.5 bg-white/15 hover:bg-white border border-white/20 hover:border-transparent text-white hover:text-[rgb(45,194,117)] rounded-xl font-bold text-sm transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.98]"
             >
-              <span className="material-symbols-outlined text-2xl group-hover:scale-110 group-hover:rotate-[15deg] transition-all text-white">
+              <span className="material-symbols-outlined text-xl">
                 confirmation_number
               </span>
-              <span className="hidden lg:inline text-sm font-bold border-b border-transparent group-hover:border-white">
-                Vé của tôi
-              </span>
+              <span className="hidden lg:inline">Vé của tôi</span>
             </Link>
 
             {/* Divider */}
@@ -405,34 +427,47 @@ const Header = () => {
             {/* Profile*/}
             {user ? (
               <div
-                onMouseEnter={() => setIsMenuOpen(true)}
-                onMouseLeave={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 cursor-pointer group relative"
+                ref={menuRef}
+                onPointerEnter={handleMouseEnter}
+                onPointerLeave={handleMouseLeave}
+                className="relative"
               >
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-full border-2 border-white/50 overflow-hidden bg-white/20">
-                    <img
-                      alt="User Avatar"
-                      className="w-full h-full object-cover"
-                      src={user?.avatarUrl}
-                      referrerPolicy="no-referrer"
-                    />
+                <div
+                  onClick={() => setIsMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-3 cursor-pointer group select-none"
+                >
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full border-2 border-white/50 overflow-hidden bg-white/20">
+                      <img
+                        alt="User Avatar"
+                        className="w-full h-full object-cover"
+                        src={user?.avatarUrl}
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
                   </div>
+                  <div className="hidden lg:flex flex-col text-sm">
+                    <span>{user?.email}</span>
+                    <span>{user?.name}</span>
+                  </div>
+                  <span
+                    className={`material-symbols-outlined text-white transition-transform ${isMenuOpen ? "rotate-180" : "group-hover:translate-y-0.5"
+                      }`}
+                  >
+                    expand_more
+                  </span>
                 </div>
-                <div className="hidden lg:flex flex-col text-sm">
-                  <span>{user?.email}</span>
-                  <span>{user?.name}</span>
-                </div>
-                <span className="material-symbols-outlined text-white transition-transform group-hover:translate-y-0.5">
-                  expand_more
-                </span>
+
                 <div
                   className={`
               absolute right-0 top-full pt-2 w-64 transition-all duration-200 z-50
-              ${isMenuOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}
+              ${isMenuOpen ? "opacity-100 visible translate-y-0 pointer-events-auto" : "opacity-0 invisible -translate-y-2 pointer-events-none"}
             `}
                 >
-                  <div className="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-2">
+                  <div
+                    onClick={() => setIsMenuOpen(false)}
+                    className="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-2"
+                  >
                     {/* Các Option */}
                     <Link
                       to="/my-tickets"
