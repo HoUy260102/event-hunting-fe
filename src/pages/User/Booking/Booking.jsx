@@ -15,6 +15,7 @@ import Modal from "../../../components/common/Modal";
 import Step3Payment from "./Step3Payment";
 import { useEventSession } from "../../../hooks/useEventSession";
 import { toast, ToastContainer } from "react-toastify";
+import BookingSkeleton from "../../../components/common/BookingSkeleton";
 
 const customerInfoSchema = z.object({
   fullName: z.string().min(2, "Họ tên quá ngắn"),
@@ -27,6 +28,7 @@ function Booking() {
   const { eventId, showId } = useParams();
   const navigate = useNavigate();
   const [show, setShow] = useState();
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
   const [activeTicketType, setActiveTicketType] = useState(null);
@@ -134,20 +136,32 @@ function Booking() {
   };
 
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         const result = await axiosClient.get(`/shows/${showId}/booking`);
+        if (!isMounted) return;
         const showRes = result?.data;
         setShow(showRes);
       } catch (error) {
+        if (!isMounted) return;
         if (error.status === 404) {
           window.location.href = "/notfound";
           return;
         }
         console.log("Lấy dữ liệu show thất bại:", error.message);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [showId]);
 
   useEffect(() => {
@@ -520,6 +534,10 @@ function Booking() {
       }
     };
   }, [showId]);
+
+  if (isLoading || !show) {
+    return <BookingSkeleton />;
+  }
 
   return (
     <>

@@ -11,6 +11,7 @@ import Stomp from "stompjs";
 import { useAuth } from "../../../hooks/useAuth";
 import { useEventSession } from "../../../hooks/useEventSession";
 import { toast, ToastContainer } from "react-toastify";
+import WaitingRoomSkeleton from "../../../components/common/WaitingRoomSkeleton";
 
 function WaitingRoom() {
   const { eventId } = useParams();
@@ -19,31 +20,46 @@ function WaitingRoom() {
   const [queueInfo, setQueueInfo] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [initialPosition, setInitialPosition] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { requireAuth } = useAuth();
   const { updateSession } = useEventSession();
 
   useEffect(() => {
-    try {
-      const fetchData = async () => {
+    let isMounted = true;
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
         const showRes = await axiosClient.get(`/shows/${showId}/detail`);
+        if (!isMounted) return;
         setShow(showRes?.data);
         setLastUpdate(new Date());
+
         const queueRes = await axiosClient.post(`/shows/${showId}/queue/join`);
+        if (!isMounted) return;
         if (queueRes?.data?.status === "BUYING") {
           requireAuth(`/event/${eventId}/show/${showId}/booking`);
           return;
         }
         setQueueInfo(queueRes?.data);
         setInitialPosition(queueRes?.data.position);
-      };
-      fetchData();
-    } catch (error) {
-      if (error.status === 404) {
-        window.location.href = "/notfound";
-        return;
+      } catch (error) {
+        if (!isMounted) return;
+        if (error.status === 404) {
+          window.location.href = "/notfound";
+          return;
+        }
+        console.log("Lỗi khi lấy dữ liệu show:", error.message);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-      console.log("Lỗi khi lấy dữ liệu show:", error.message);
-    }
+    };
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [showId]);
 
   useEffect(() => {
@@ -130,6 +146,10 @@ function WaitingRoom() {
       }
     };
   }, [showId]);
+
+  if (isLoading || !show || !queueInfo) {
+    return <WaitingRoomSkeleton />;
+  }
 
   return (
     <>
