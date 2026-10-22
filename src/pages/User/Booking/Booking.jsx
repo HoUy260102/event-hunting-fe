@@ -13,7 +13,6 @@ import Stomp from "stompjs";
 import ConfirmModal from "../../../components/modals/ConfirmModal";
 import Modal from "../../../components/common/Modal";
 import Step3Payment from "./Step3Payment";
-import { useEventSession } from "../../../hooks/useEventSession";
 import { toast, ToastContainer } from "react-toastify";
 import BookingSkeleton from "../../../components/common/BookingSkeleton";
 
@@ -43,36 +42,40 @@ function Booking() {
     type: "success",
   });
   const [reservation, setReservation] = useState(null);
+  const [expiryTime, setExpiryTime] = useState(null);
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: "",
     message: "",
     onConfirm: null,
   });
-  const { getSession, syncSession } = useEventSession();
   const closeNotiModal = () =>
     setNotiModal((prev) => ({ ...prev, isOpen: false }));
 
   useEffect(() => {
     let isMounted = true;
 
-    const init = async () => {
+    const checkAccess = async () => {
       try {
-        await syncSession(showId);
-        if (isMounted) {
-          console.log("Đã nạp xong token cho show:", showId);
+        const res = await axiosClient.get(`/shows/${showId}/validate-access`);
+        const expiresIn = res?.data?.expiresIn;
+        if (isMounted && expiresIn) {
+          setExpiryTime(Date.now() + expiresIn * 1000);
         }
       } catch (error) {
-        if (isMounted) console.log("Lỗi:", error.message);
+        if (isMounted) {
+          toast.error("Bạn chưa có quyền đặt vé hoặc phiên đã hết hạn. Vui lòng xếp hàng lại!");
+          navigate(`/event/${eventId}/show/${showId}/waiting-room`);
+        }
       }
     };
 
-    init();
+    checkAccess();
 
     return () => {
       isMounted = false;
     };
-  }, [showId, syncSession]);
+  }, [showId, eventId, navigate]);
 
   const ticketTypeMap = useMemo(() => {
     const map = new Map();
@@ -395,15 +398,9 @@ function Booking() {
     console.log("Payload gửi về Backend:", finalPayload);
     console.log("JSON gửi về Backend:", JSON.stringify(finalPayload, null, 2));
     try {
-      const queueToken = getSession(showId)?.token;
       const reservationRes = await axiosClient.post(
         `/reservations`,
-        finalPayload,
-        {
-          headers: {
-            "X-Queue-Token": queueToken,
-          },
-        }
+        finalPayload
       );
       setReservation(reservationRes?.data);
       setCurrentStep((prev) => prev + 1);
@@ -443,6 +440,7 @@ function Booking() {
           if (isSubmittingPayment) return;
           if (reservation === null) return;
           await handleCancelReservation(reservation?.id);
+          setReservation(null);
           setCurrentStep((prev) => prev - 1);
           setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         },
@@ -564,7 +562,7 @@ function Booking() {
         <BookingStepper
           currentStep={currentStep}
           onExpire={onExpire}
-          expiryTime={getSession(showId)?.expiresAt || 0}
+          expiryTime={expiryTime}
           onBack={onBack}
         ></BookingStepper>
         {currentStep === 1 && (

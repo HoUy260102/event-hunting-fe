@@ -9,7 +9,6 @@ import { formatDateTime, formatDateVN } from "../../../utils/format";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 import { useAuth } from "../../../hooks/useAuth";
-import { useEventSession } from "../../../hooks/useEventSession";
 import { toast, ToastContainer } from "react-toastify";
 import WaitingRoomSkeleton from "../../../components/common/WaitingRoomSkeleton";
 
@@ -22,7 +21,6 @@ function WaitingRoom() {
   const [initialPosition, setInitialPosition] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { requireAuth } = useAuth();
-  const { updateSession } = useEventSession();
 
   useEffect(() => {
     let isMounted = true;
@@ -67,7 +65,6 @@ function WaitingRoom() {
       try {
         const res = await axiosClient.get(`/shows/${showId}/queue/status`);
         if (res?.data?.status === "BUYING") {
-          updateSession(showId, res?.data?.token, res?.data?.expiresIn);
           toastSuccess(
             "Đang chuyển vào trang mua vé vui lòng chờ trong giây lát!",
           );
@@ -123,7 +120,6 @@ function WaitingRoom() {
           if (message.body) {
             const data = JSON.parse(message.body);
             if (data?.status === "BUYING") {
-              updateSession(showId, data?.token, data?.expiresIn);
               toastSuccess(
                 "Đang chuyển vào trang mua vé vui lòng chờ trong giây lát!",
               );
