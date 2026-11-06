@@ -3,6 +3,7 @@ import { useFormContext, Controller } from "react-hook-form";
 import TextEditor from "../../../components/common/TextEditor";
 import axiosClient from "../../../api/axiosClient";
 import { extractFileIdsFromContent } from "../../../utils/editorContent";
+import { uploadDirect } from "../../../utils/fileUpload";
 import { useAuth } from "../../../hooks/useAuth";
 function StepAddEventInf({ provinces, categories }) {
   const { user: currentUser } = useAuth();
@@ -29,10 +30,8 @@ function StepAddEventInf({ provinces, categories }) {
   const handleImageChange = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type", "IMAGE");
-    let fileFolder = "";
+
+    let fileFolder = "EVENT_BANNER";
     switch (type) {
       case "banner":
         fileFolder = "EVENT_BANNER";
@@ -44,14 +43,9 @@ function StepAddEventInf({ provinces, categories }) {
         fileFolder = "ORGANIZER_LOGO";
         break;
     }
-    formData.append("folder", fileFolder);
+
     try {
-      const response = await axiosClient.post("/files/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      const fileData = response.data;
+      const fileData = await uploadDirect(file, "IMAGE", fileFolder);
       setImages((prev) => ({
         ...prev,
         [type]: fileData?.url,
@@ -59,8 +53,8 @@ function StepAddEventInf({ provinces, categories }) {
       setValue(type + "Id", fileData?.id, { shouldValidate: true });
       setValue(type, fileData?.url, { shouldValidate: true });
     } catch (error) {
-      console.error("Lỗi upload rồi ơi:", error);
-      alert("Lỗi:", error.message);
+      console.error("Lỗi upload:", error);
+      alert(error.response?.data?.message || error.message || "Lỗi tải ảnh");
     } finally {
       e.target.value = "";
     }

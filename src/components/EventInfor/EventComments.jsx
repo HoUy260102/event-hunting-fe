@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import axiosClient from "../../api/axiosClient";
+import { uploadDirect } from "../../utils/fileUpload";
 import { useAuth } from "../../hooks/useAuth";
 import { toast, ToastContainer } from "react-toastify";
 import EmojiPicker from "emoji-picker-react";
@@ -157,18 +158,8 @@ function EventComments({ eventId }) {
     else setReplyUploadingMap((prev) => ({ ...prev, [parentId]: true }));
 
     for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "IMAGE");
-      formData.append("folder", "COMMENT_IMAGE");
-
       try {
-        const response = await axiosClient.post("/files/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        const fileData = response.data;
+        const fileData = await uploadDirect(file, "IMAGE", "COMMENT_IMAGE");
         if (isParent) {
           setUploadedImages((prev) => [...prev, { id: fileData.id, url: fileData.url }]);
         } else {
@@ -179,7 +170,7 @@ function EventComments({ eventId }) {
         }
       } catch (error) {
         console.error("Lỗi upload hình ảnh:", error);
-        toast.error("Tải hình ảnh lên thất bại!");
+        toast.error(error.message || "Tải hình ảnh lên thất bại!");
       }
     }
 
@@ -409,23 +400,15 @@ function EventComments({ eventId }) {
     setEditingCommentState((prev) => ({ ...prev, isUploading: true }));
 
     for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "IMAGE");
-      formData.append("folder", "COMMENT_IMAGE");
-
       try {
-        const response = await axiosClient.post("/files/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        const fileData = response.data;
+        const fileData = await uploadDirect(file, "IMAGE", "COMMENT_IMAGE");
         setEditingCommentState((prev) => ({
           ...prev,
           images: [...prev.images, { id: fileData.id, url: fileData.url }],
         }));
       } catch (error) {
         console.error("Lỗi upload hình ảnh khi chỉnh sửa:", error);
-        toast.error("Tải hình ảnh lên thất bại!");
+        toast.error(error.message || "Tải hình ảnh lên thất bại!");
       }
     }
 

@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
+import { uploadDirect } from "../../utils/fileUpload";
 import Modal from "../../components/common/Modal";
 import { useAuth } from "../../hooks/useAuth";
 import ProfileSidebar from "./ProfileSidebar";
@@ -145,26 +146,14 @@ function UserProfile() {
     if (isLoading) return;
     const file = e.target.files[0];
     if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "IMAGE");
-      formData.append("folder", "USER_AVATAR");
-
       try {
         setIsLoading(true);
-        const response = await axiosClient.post("/files/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        const fileData = response.data;
-        console.log(fileData);
-        console.log("Upload thành công, ID file là:", fileData.id);
+        const fileData = await uploadDirect(file, "IMAGE", "USER_AVATAR");
         setPreviewImage(fileData?.url);
         setValue("fileId", fileData.id, { shouldValidate: true });
       } catch (error) {
-        console.error("Lỗi upload rồi ơi:", error);
-        alert("Lỗi:", error.message);
+        console.error("Lỗi upload:", error);
+        alert(error.response?.data?.message || error.message || "Lỗi tải ảnh");
       } finally {
         setIsLoading(false);
         e.target.value = "";

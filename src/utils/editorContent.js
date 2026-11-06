@@ -5,12 +5,15 @@ export function extractFileIdsFromContent(html) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
 
-    const images = doc.querySelectorAll("img");
+    // Quét cả thẻ <img>, <video>, và <source>
+    const mediaElements = doc.querySelectorAll("img, video, source");
 
-    const fileIds = Array.from(images)
-      .map((img) => {
+    const fileIds = Array.from(mediaElements)
+      .map((el) => {
         try {
-          const url = new URL(img.src);
+          const src = el.src || el.getAttribute("src");
+          if (!src) return null;
+          const url = new URL(src, window.location.origin);
           return url.searchParams.get("fileId");
         } catch {
           return null;

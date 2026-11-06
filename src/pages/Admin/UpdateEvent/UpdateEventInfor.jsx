@@ -3,6 +3,7 @@ import { Controller, useForm } from "react-hook-form";
 import TextEditor from "../../../components/common/TextEditor";
 import axiosClient from "../../../api/axiosClient";
 import { extractFileIdsFromContent } from "../../../utils/editorContent";
+import { uploadDirect } from "../../../utils/fileUpload";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "../../../components/common/Modal";
 import z from "zod";
@@ -125,10 +126,8 @@ function UpdateEventInfor() {
   const handleImageChange = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type", "IMAGE");
-    let fileFolder = "";
+
+    let fileFolder = "EVENT_BANNER";
     switch (type) {
       case "banner":
         fileFolder = "EVENT_BANNER";
@@ -140,28 +139,17 @@ function UpdateEventInfor() {
         fileFolder = "ORGANIZER_LOGO";
         break;
     }
-    formData.append("folder", fileFolder);
+
     try {
-      const response = await axiosClient.post("/files/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      const fileData = response.data;
-      console.log(fileData);
-      console.log("Upload thành công, ID file là:", fileData.id);
+      const fileData = await uploadDirect(file, "IMAGE", fileFolder);
       setImages((prev) => ({
         ...prev,
         [type]: fileData?.url,
       }));
       setValue(type + "Id", fileData?.id, { shouldValidate: true });
-      setImages((prev) => ({
-        ...prev,
-        [type]: fileData?.url,
-      }));
     } catch (error) {
-      console.error("Lỗi upload rồi ơi:", error);
-      alert("Lỗi:", error.message);
+      console.error("Lỗi upload:", error);
+      alert(error.response?.data?.message || error.message || "Lỗi tải ảnh");
     } finally {
       e.target.value = "";
     }

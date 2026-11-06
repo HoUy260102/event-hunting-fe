@@ -47,6 +47,7 @@ import Home from "./pages/User/Home";
 import GeneralError from "./pages/GeneralError";
 import ReservationList from "./pages/Admin/ReservationList";
 import UpdateProfile from "./pages/Admin/UpdateProfile";
+import TestChunkUpload from "./pages/TestChunkUpload";
 
 function App() {
   const { isLoginModalOpen, closeLogin } = useAuth();
@@ -55,6 +56,7 @@ function App() {
     <>
       <LoginModal isOpen={isLoginModalOpen} onClose={closeLogin} />
       <Routes>
+        <Route path="/test-chunk-upload" element={<TestChunkUpload />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
