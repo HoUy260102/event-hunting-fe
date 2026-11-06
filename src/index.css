@@ -62,3 +62,20 @@ button {
     background-color: #ffffff;
   }
 }
+
+/* Đồng bộ kích thước Media trong nội dung CKEditor (Cả ảnh lẫn video đều bung 100% chiều ngang) */
+.ck-content .event-video-wrapper,
+.ck-content figure.image {
+  width: 100% !important;
+  margin: 1.5rem 0 !important;
+  clear: both;
+}
+
+.ck-content video,
+.ck-content img {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  border-radius: 8px;
+}

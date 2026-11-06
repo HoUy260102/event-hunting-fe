@@ -91,10 +91,10 @@ function CustomVideoUploadPlugin(editor) {
 
           const finalUrl = `${fileData.url}?fileId=${fileData.id}`;
 
-          // Chèn thẻ video HTML5 vào vị trí con trỏ trong Editor (có contenteditable="false" để cho phép click nút play/pause)
+          // Chèn thẻ video HTML5 vào vị trí con trỏ trong Editor (100% chiều ngang bằng với ảnh)
           const videoHtml = `
-            <div class="event-video-wrapper" contenteditable="false" style="margin: 16px 0; text-align: center; user-select: none;">
-              <video controls preload="metadata" src="${finalUrl}" style="max-width: 100%; max-height: 450px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: inline-block;">
+            <div class="event-video-wrapper" contenteditable="false" style="width: 100%; margin: 16px 0; clear: both; user-select: none;">
+              <video controls preload="metadata" src="${finalUrl}" style="width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                 <source src="${finalUrl}" type="video/mp4" />
                 Trình duyệt của bạn không hỗ trợ phát thẻ video.
               </video>
@@ -276,13 +276,15 @@ const TextEditor = ({ value, onChange, placeholder }) => {
         .custom-ckeditor .event-video-wrapper {
           position: relative;
           display: block;
-          margin: 1.5rem auto;
-          text-align: center;
+          width: 100% !important;
+          margin: 1.5rem 0 !important;
+          clear: both;
           user-select: none;
         }
         .custom-ckeditor video {
-          max-width: 100%;
-          height: auto;
+          width: 100% !important;
+          height: auto !important;
+          display: block !important;
           border-radius: 8px;
           outline: none;
           pointer-events: auto !important;
