@@ -17,6 +17,7 @@ body {
   overflow: hidden;
   border-radius: 30px;
   margin-top: -1rem !important;
+  background: #ffffff;
 }
 
 .signup-container .left-panel {
@@ -80,7 +81,11 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 50px;
+  padding: 28px 35px 20px 35px;
+  height: 100%;
+  align-self: stretch;
+  height: 100%;
+  align-self: stretch;
 }
 
 .signup-container .login-form {

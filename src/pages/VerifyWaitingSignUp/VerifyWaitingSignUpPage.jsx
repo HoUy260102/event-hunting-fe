@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./VerifyWaitingSignUpPage.css";
 import backgroundImageUrl from "../../images/bgeventhunting.png";
 import emailSendingImgUrl from "../../images/emailsending.jpg";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 const VerifyWaitingSignUpPage = () => {
   const location = useLocation();
@@ -22,6 +23,8 @@ const VerifyWaitingSignUpPage = () => {
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const turnstileRef = useRef(null);
   const email =
     location.state?.email ||
     new URLSearchParams(location.search).get("email") ||
@@ -89,7 +92,7 @@ const VerifyWaitingSignUpPage = () => {
     setLoading(true);
     try {
       const response = await axiosClient.post("/auth/resend-verify", null, {
-        params: { email },
+        params: { email, captchaToken },
       });
       toast.success(response?.message || "Đã gửi lại email xác thực mới! Vui lòng kiểm tra hộp thư.", {
         position: "top-right",
@@ -98,6 +101,8 @@ const VerifyWaitingSignUpPage = () => {
       });
       setCountdown(60);
     } catch (error) {
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       toast.error(error?.message || "Không thể gửi lại email xác thực. Vui lòng thử lại sau!", {
         position: "top-right",
         autoClose: 4000,
@@ -150,6 +155,16 @@ const VerifyWaitingSignUpPage = () => {
             <p className="verify-text">
               Chúng tôi đã gửi link xác thực đến <b>{email}</b>. <br />
             </p>
+            <div className="flex justify-center my-3" style={{ minHeight: "65px" }}>
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                onSuccess={setCaptchaToken}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => turnstileRef.current?.reset()}
+                options={{ theme: "light" }}
+              />
+            </div>
             <button
               className="verify-button"
               onClick={handleResend}

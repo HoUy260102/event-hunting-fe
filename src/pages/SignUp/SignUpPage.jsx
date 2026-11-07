@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./SignUpPage.css";
 import { toast, ToastContainer } from "react-toastify";
+import { Turnstile } from "@marsidev/react-turnstile";
 import axiosClient from "../../api/axiosClient";
 import eventIllustration from "../../images/happy-tiny-business-people-dancing-having-fun-drinking-wine-corporate-party-team-building-activity-corporate-event-idea-concept-pinkish-coral-bluevector-isolated-illustration.png";
 import * as z from "zod";
@@ -48,6 +49,8 @@ function SignUpPage() {
   const [showVerifyLink, setShowVerifyLink] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const turnstileRef = useRef(null);
   const navigate = useNavigate();
   const {
     register,
@@ -62,6 +65,7 @@ function SignUpPage() {
     const formattedData = {
       ...data,
       dob: data.dob === "" ? null : data.dob,
+      captchaToken: captchaToken,
     };
     try {
       const apiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1";
@@ -90,6 +94,8 @@ function SignUpPage() {
         navigate(`/signup/verify?email=${data.email}`);
       }, 2000);
     } catch (err) {
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       if (err.details?.code === "USER_NOT_VERIFIED") {
         setShowVerifyLink(true);
         setUserEmail(data.email);
@@ -137,7 +143,7 @@ function SignUpPage() {
         style={{ backgroundImage: `url(${backgroundImageUrl})` }}
         className="flex min-h-screen items-center justify-center"
       >
-        <div className="signup-container shadow-2xl max-h-[90vh]">
+        <div className="signup-container shadow-2xl max-h-[90vh] bg-white">
           <div className="left-panel">
             <div className="text-content text-center">
               <h1>Event Hunting</h1>
@@ -151,12 +157,12 @@ function SignUpPage() {
             </div>
           </div>
 
-          <div className="right-panel h-full">
+          <div className="right-panel h-full bg-white">
             <form
-              className="login-form h-full"
+              className="login-form h-full flex flex-col justify-between"
               onSubmit={handleSubmit(onSubmit)}
             >
-              <div className="w-full max-h-[60vh] overflow-y-auto no-scrollbar p-3">
+              <div className="w-full flex-1 max-h-[50vh] overflow-y-auto no-scrollbar px-3 py-1">
                 {/* EMAIL */}
                 <div className="form-group">
                   <label htmlFor="email">EMAIL:</label>
@@ -332,47 +338,60 @@ function SignUpPage() {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="signup-button"
-                style={{ marginTop: "10px" }}
-              >
-                Đăng ký →
-              </button>
+              <div className="w-full mt-auto pt-2">
+                <div className="flex justify-center my-2" style={{ minHeight: "65px" }}>
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                    onSuccess={setCaptchaToken}
+                    onExpire={() => setCaptchaToken(null)}
+                    onError={() => turnstileRef.current?.reset()}
+                    options={{ theme: "light" }}
+                  />
+                </div>
 
-              <p
-                className="forgot-password-link"
-                style={{ textAlign: "center", marginTop: "15px" }}
-              >
-                Bạn đã có tài khoản?{" "}
-                <Link to="/login" style={{ fontWeight: "bold" }}>
-                  Đăng nhập
-                </Link>
-              </p>
-              {showVerifyLink && (
-                <p
-                  style={{
-                    textAlign: "center",
-                    marginTop: "10px",
-                    fontSize: "14px",
-                  }}
+                <button
+                  type="submit"
+                  className="signup-button"
+                  style={{ marginTop: "6px" }}
                 >
-                  Tài khoản chưa xác thực.{" "}
-                  <span
-                    onClick={!isSending ? handleSendVerifyMail : null}
+                  Đăng ký →
+                </button>
+
+                <p
+                  className="forgot-password-link"
+                  style={{ textAlign: "center", marginTop: "8px" }}
+                >
+                  Bạn đã có tài khoản?{" "}
+                  <Link to="/login" style={{ fontWeight: "bold" }}>
+                    Đăng nhập
+                  </Link>
+                </p>
+                {showVerifyLink && (
+                  <p
                     style={{
-                      color: "red",
-                      textDecoration: "underline",
-                      cursor: isSending ? "not-allowed" : "pointer",
-                      fontWeight: "bold",
+                      textAlign: "center",
+                      marginTop: "8px",
+                      fontSize: "14px",
                     }}
                   >
-                    {isSending
-                      ? "Đang gửi mail..."
-                      : "Nhấn vào đây để nhận mã và xác thực"}
-                  </span>
-                </p>
-              )}
+                    Tài khoản chưa xác thực.{" "}
+                    <span
+                      onClick={!isSending ? handleSendVerifyMail : null}
+                      style={{
+                        color: "red",
+                        textDecoration: "underline",
+                        cursor: isSending ? "not-allowed" : "pointer",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {isSending
+                        ? "Đang gửi mail..."
+                        : "Nhấn vào đây để nhận mã và xác thực"}
+                    </span>
+                  </p>
+                )}
+              </div>
             </form>
           </div>
           <ToastContainer />

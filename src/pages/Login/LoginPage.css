@@ -18,6 +18,7 @@ body {
   overflow: hidden;
   border-radius: 30px;
   margin-top: -1rem !important;
+  background: #ffffff;
 }
 
 .login-container .left-panel {

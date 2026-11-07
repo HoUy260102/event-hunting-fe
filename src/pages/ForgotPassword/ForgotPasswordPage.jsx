@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axiosClient from "../../api/axiosClient";
 import backgroundImageUrl from "../../images/bgeventhunting.png";
 import "./ForgotPasswordPage.css";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ const ForgotPasswordPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const turnstileRef = useRef(null);
 
   // Errors state
   const [errors, setErrors] = useState({});
@@ -71,6 +74,7 @@ const ForgotPasswordPage = () => {
       const response = await axiosClient.post("/auth/forgot-password/send-otp", {
         email: email.trim(),
         resetToken: resetToken || undefined,
+        captchaToken: captchaToken,
       });
 
       const tokenFromBackend = response?.data?.resetToken;
@@ -87,6 +91,8 @@ const ForgotPasswordPage = () => {
         theme: "colored",
       });
     } catch (error) {
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       toast.error(error?.message || "Gửi mã thất bại. Vui lòng kiểm tra lại email!");
     } finally {
       setIsSendingCode(false);
@@ -301,6 +307,17 @@ const ForgotPasswordPage = () => {
             <p className="helper-text">
               Nhấn “Gửi mã”, sau đó vui lòng kiểm tra hộp thư đến và làm theo hướng dẫn.
             </p>
+
+            <div className="flex justify-center my-3" style={{ minHeight: "65px" }}>
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                onSuccess={setCaptchaToken}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => turnstileRef.current?.reset()}
+                options={{ theme: "light" }}
+              />
+            </div>
 
             {/* Tiếp tục Button */}
             <button

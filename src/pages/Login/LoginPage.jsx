@@ -8,9 +8,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import axiosClient from "../../api/axiosClient";
 import backgroundImageUrl from "../../images/bgeventhunting.png";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useGoogleLogin } from "../../hooks/useGoogleLogin";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ").nonempty("Email là bắt buộc"),
@@ -31,6 +32,8 @@ function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const turnstileRef = useRef(null);
   const toastSuccess = (message) => {
     toast.success(message, {
       position: "top-right",
@@ -79,6 +82,7 @@ function LoginPage() {
       const apiRes = await axiosClient.post("/auth/login", {
         username: data.email,
         password: data.password,
+        captchaToken: captchaToken,
       });
 
       const userData = apiRes?.data?.user;
@@ -98,6 +102,8 @@ function LoginPage() {
         toastError("Vui lòng sử dụng trang đăng nhập dành cho Quản trị viên/Nhà tổ chức!");
       }
     } catch (error) {
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       if (error.code === "USER_NOT_VERIFIED") {
         handleSendVerifyMail(data?.email);
         return;
@@ -176,6 +182,17 @@ function LoginPage() {
                     </span>
                   )}
                 </div>
+              </div>
+
+              <div className="flex justify-center my-3" style={{ minHeight: "65px" }}>
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                  onSuccess={setCaptchaToken}
+                  onExpire={() => setCaptchaToken(null)}
+                  onError={() => turnstileRef.current?.reset()}
+                  options={{ theme: "light" }}
+                />
               </div>
 
               <button
