@@ -60,20 +60,26 @@ function LoginPage() {
     });
   };
 
-  const handleSendVerifyMail = async (userEmail) => {
-    try {
-      const apiRes = await axiosClient.post("/auth/resend-verify", null, {
-        params: { email: userEmail },
+  const handleRedirectToVerify = (userEmail) => {
+    toast.warn(
+      "Tài khoản chưa được kích hoạt. Đang chuyển hướng đến trang xác thực...",
+      {
+        position: "top-right",
+        autoClose: 2500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      }
+    );
+
+    setTimeout(() => {
+      navigate(`/signup/verify?email=${encodeURIComponent(userEmail)}&from=login`, {
+        state: { email: userEmail, from: "login" },
       });
-
-      toast.success(apiRes.message || "Mã mới đã gửi! Đang chuyển hướng...");
-
-      setTimeout(() => {
-        navigate(`/signup/verify?email=${userEmail}`);
-      }, 1500);
-    } catch (error) {
-      toast.error(error.message || "Gửi mail thất bại, thử lại sau.");
-    }
+    }, 1500);
   };
 
   const onSubmit = async (data) => {
@@ -105,7 +111,7 @@ function LoginPage() {
       turnstileRef.current?.reset();
       setCaptchaToken(null);
       if (error.code === "USER_NOT_VERIFIED") {
-        handleSendVerifyMail(data?.email);
+        handleRedirectToVerify(data?.email);
         return;
       }
       toastError(error.message || "Đăng nhập thất bại!");

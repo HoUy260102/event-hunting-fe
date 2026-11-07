@@ -21,8 +21,13 @@ const VerifyWaitingSignUpPage = () => {
     type: "success",
   });
   const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
+  const fromSource =
+    location.state?.from ||
+    new URLSearchParams(location.search).get("from");
+  const isNewSignUp = !fromSource;
+
   const [loading, setLoading] = useState(false);
-  const [countdown, setCountdown] = useState(60);
+  const [countdown, setCountdown] = useState(isNewSignUp ? 60 : 0);
   const [captchaToken, setCaptchaToken] = useState(null);
   const turnstileRef = useRef(null);
   const email =
@@ -89,6 +94,13 @@ const VerifyWaitingSignUpPage = () => {
 
   const handleResend = async () => {
     if (countdown > 0 || loading) return;
+    if (!captchaToken) {
+      toast.warn("Vui lòng xác minh Captcha trước khi gửi email xác thực!", {
+        position: "top-right",
+        theme: "colored",
+      });
+      return;
+    }
     setLoading(true);
     try {
       const response = await axiosClient.post("/auth/resend-verify", null, {
@@ -142,7 +154,7 @@ const VerifyWaitingSignUpPage = () => {
             <img
               src={emailSendingImgUrl}
               style={{
-                width: "280px",
+                width: "140px",
                 height: "auto",
                 minWidth: "35px",
                 display: "block",
@@ -151,9 +163,23 @@ const VerifyWaitingSignUpPage = () => {
               className="verify-icon"
               alt="email-icon"
             />
-            <h2 className="verify-title">Kiểm tra hộp thư của bạn</h2>
+            <h2 className="verify-title">
+              {isNewSignUp
+                ? "Kiểm tra hộp thư của bạn"
+                : "Tài khoản chưa được kích hoạt"}
+            </h2>
             <p className="verify-text">
-              Chúng tôi đã gửi link xác thực đến <b>{email}</b>. <br />
+              {isNewSignUp ? (
+                <>
+                  Chúng tôi đã gửi link xác thực đến <b>{email}</b>. <br />
+                  Vui lòng kiểm tra hộp thư để kích hoạt tài khoản.
+                </>
+              ) : (
+                <>
+                  Tài khoản <b>{email}</b> chưa được kích hoạt. <br />
+                  Bạn có thể kiểm tra email xác thực đã nhận trước đó, hoặc xác minh Captcha và bấm nút bên dưới để nhận email xác thực mới.
+                </>
+              )}
             </p>
             <div className="flex justify-center my-3" style={{ minHeight: "65px" }}>
               <Turnstile
@@ -174,7 +200,9 @@ const VerifyWaitingSignUpPage = () => {
                 ? "Đang gửi..."
                 : countdown > 0
                   ? `Gửi lại sau (${countdown}s)`
-                  : "Gửi lại email xác thực"}
+                  : isNewSignUp
+                    ? "Gửi lại email xác thực"
+                    : "Gửi email xác thực mới"}
             </button>
             <Link to="/login" className="resend-link">
               Quay lại đăng nhập

@@ -47,7 +47,6 @@ const signupSchema = z
 
 function SignUpPage() {
   const [showVerifyLink, setShowVerifyLink] = useState(false);
-  const [isSending, setIsSending] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [captchaToken, setCaptchaToken] = useState(null);
   const turnstileRef = useRef(null);
@@ -108,21 +107,13 @@ function SignUpPage() {
     }
   };
 
-  const handleSendVerifyMail = async () => {
-    setIsSending(true);
-    try {
-      const response = await axiosClient.post("/auth/resend-verify", null, {
-        params: { email: userEmail },
-      });
-      toast.success(response?.message || "Mã mới đã gửi! Đang chuyển hướng...");
-      setTimeout(() => {
-        navigate(`/signup/verify?email=${userEmail}`);
-      }, 1500);
-    } catch (error) {
-      toast.error(error?.message || "Gửi mail thất bại, thử lại sau.");
-    } finally {
-      setIsSending(false);
-    }
+  const handleGoToVerify = () => {
+    navigate(
+      `/signup/verify?email=${encodeURIComponent(userEmail)}&from=signup_exists`,
+      {
+        state: { email: userEmail, from: "signup_exists" },
+      }
+    );
   };
 
   return (
@@ -377,17 +368,15 @@ function SignUpPage() {
                   >
                     Tài khoản chưa xác thực.{" "}
                     <span
-                      onClick={!isSending ? handleSendVerifyMail : null}
+                      onClick={handleGoToVerify}
                       style={{
-                        color: "red",
+                        color: "#009688",
                         textDecoration: "underline",
-                        cursor: isSending ? "not-allowed" : "pointer",
+                        cursor: "pointer",
                         fontWeight: "bold",
                       }}
                     >
-                      {isSending
-                        ? "Đang gửi mail..."
-                        : "Nhấn vào đây để nhận mã và xác thực"}
+                      Nhấn vào đây để đến trang xác thực
                     </span>
                   </p>
                 )}
