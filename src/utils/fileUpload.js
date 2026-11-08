@@ -142,7 +142,7 @@ export async function uploadDirect(file, type = "IMAGE", folder, onProgress = nu
   } else {
     // CHIA CHUNKS CHO FILE LỚN (> 6MB)
     const totalSize = file.size;
-    const uniqueUploadId = "chunk_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
+    const uniqueUploadId = crypto.randomUUID();
     let start = 0;
 
     while (start < totalSize) {

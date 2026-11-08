@@ -79,7 +79,7 @@ export default function TestChunkUpload() {
       setTotalChunks(totalCount);
 
       // Unique ID duy nhất cho toàn bộ quá trình upload của file này
-      const uniqueUploadId = "chunk_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
+      const uniqueUploadId = crypto.randomUUID();
       const uploadUrl = `https://api.cloudinary.com/v1_1/${signData.cloud_name}/auto/upload`;
 
       addLog(`📦 BƯỚC 2: Bắt đầu truyền ${totalCount} chunks trực tiếp lên Cloudinary...`, "info");
