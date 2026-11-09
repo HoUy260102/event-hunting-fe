@@ -38,6 +38,11 @@ function MyCustomUploadAdapterPlugin(editor) {
     return {
       upload: () => {
         return loader.file.then(async (file) => {
+          window.dispatchEvent(
+            new CustomEvent("ckeditor-upload-status", {
+              detail: { isUploading: true },
+            })
+          );
           try {
             const fileData = await uploadDirect(file, "IMAGE", "EVENT_DESCRIPTION");
             const finalUrl = `${fileData.url}?fileId=${fileData.id}`;
@@ -47,6 +52,12 @@ function MyCustomUploadAdapterPlugin(editor) {
           } catch (error) {
             console.error("Lỗi upload ảnh CKEditor:", error);
             throw error.message || "Không thể upload ảnh";
+          } finally {
+            window.dispatchEvent(
+              new CustomEvent("ckeditor-upload-status", {
+                detail: { isUploading: false },
+              })
+            );
           }
         });
       },
@@ -73,6 +84,11 @@ function CustomVideoUploadPlugin(editor) {
         const file = e.target.files[0];
         if (!file) return;
 
+        window.dispatchEvent(
+          new CustomEvent("ckeditor-upload-status", {
+            detail: { isUploading: true },
+          })
+        );
         window.dispatchEvent(
           new CustomEvent("ckeditor-video-upload-progress", {
             detail: { status: "uploading", progress: 1 },
@@ -119,6 +135,12 @@ function CustomVideoUploadPlugin(editor) {
               detail: { status: "error", progress: 0 },
             })
           );
+        } finally {
+          window.dispatchEvent(
+            new CustomEvent("ckeditor-upload-status", {
+              detail: { isUploading: false },
+            })
+          );
         }
       };
 
@@ -129,8 +151,9 @@ function CustomVideoUploadPlugin(editor) {
   });
 }
 
-const TextEditor = ({ value, onChange, placeholder }) => {
+const TextEditor = ({ value, onChange, placeholder, onUploadingChange }) => {
   const [videoUploadState, setVideoUploadState] = useState(null);
+  const [isEditorUploading, setIsEditorUploading] = useState(false);
 
   useEffect(() => {
     const handleProgress = (e) => {
@@ -142,11 +165,28 @@ const TextEditor = ({ value, onChange, placeholder }) => {
       }
     };
 
+    let activeUploads = 0;
+    const handleUploadStatus = (e) => {
+      if (e.detail?.isUploading) {
+        activeUploads++;
+        setIsEditorUploading(true);
+        onUploadingChange?.(true);
+      } else {
+        activeUploads = Math.max(0, activeUploads - 1);
+        if (activeUploads === 0) {
+          setIsEditorUploading(false);
+          onUploadingChange?.(false);
+        }
+      }
+    };
+
     window.addEventListener("ckeditor-video-upload-progress", handleProgress);
+    window.addEventListener("ckeditor-upload-status", handleUploadStatus);
     return () => {
       window.removeEventListener("ckeditor-video-upload-progress", handleProgress);
+      window.removeEventListener("ckeditor-upload-status", handleUploadStatus);
     };
-  }, []);
+  }, [onUploadingChange]);
 
   return (
     <div className="custom-ckeditor relative">
@@ -163,6 +203,17 @@ const TextEditor = ({ value, onChange, placeholder }) => {
               style={{ width: `${videoUploadState}%` }}
             />
           </div>
+        </div>
+      )}
+
+      {/* Banner hiển thị khi đang upload Hình ảnh */}
+      {isEditorUploading && videoUploadState === null && (
+        <div className="mb-2 p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-xs text-amber-700 animate-fadeIn">
+          <svg className="animate-spin h-3.5 w-3.5 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="font-medium">Đang tải hình ảnh lên Cloudinary, vui lòng đợi hoàn tất trước khi lưu sự kiện...</span>
         </div>
       )}
 

@@ -54,6 +54,9 @@ function UpdateEventInfor() {
     banner: "",
     organizerLogo: "",
   });
+  const [isImageUploading, setIsImageUploading] = useState(false);
+  const [isEditorUploading, setIsEditorUploading] = useState(false);
+  const isAnyUploading = isImageUploading || isEditorUploading;
   const {
     register,
     handleSubmit,
@@ -104,6 +107,7 @@ function UpdateEventInfor() {
           provinceId: eventRes.data?.province?.id || "",
           categoryId: eventRes.data?.category?.id || "",
           version: eventRes.data?.version,
+          mediaIds: extractFileIdsFromContent(eventRes.data?.descriptionHtml || ""),
         };
         setProvinces(provinceRes.data);
         setCategories(categoryRes.data);
@@ -141,6 +145,7 @@ function UpdateEventInfor() {
     }
 
     try {
+      setIsImageUploading(true);
       const fileData = await uploadDirect(file, "IMAGE", fileFolder);
       setImages((prev) => ({
         ...prev,
@@ -151,6 +156,7 @@ function UpdateEventInfor() {
       console.error("Lỗi upload:", error);
       alert(error.response?.data?.message || error.message || "Lỗi tải ảnh");
     } finally {
+      setIsImageUploading(false);
       e.target.value = "";
     }
   };
@@ -160,9 +166,17 @@ function UpdateEventInfor() {
   const watchLocation = watch("location", "");
   const watchAddress = watch("address", "");
   const onSubmit = async (data) => {
-    console.log("[Submit] data.version gửi lên:", data.version, "(type:", typeof data.version, ")");
+    if (isAnyUploading) {
+      alert("Vui lòng đợi các hình ảnh hoặc video tải lên hoàn tất trước khi lưu!");
+      return;
+    }
+    const payload = {
+      ...data,
+      mediaIds: extractFileIdsFromContent(data.descriptionHtml || ""),
+    };
+    console.log("[Submit] payload.version gửi lên:", payload.version, "(type:", typeof payload.version, ")");
     try {
-      const eventRes = await axiosClient.put(`/events/${id}`, data);
+      const eventRes = await axiosClient.put(`/events/${id}`, payload);
       console.log("[Response] eventRes:", eventRes);
       console.log("[Response] eventRes.data:", eventRes.data);
       console.log("[Response] version nhận về:", eventRes.data?.version);
@@ -174,6 +188,7 @@ function UpdateEventInfor() {
         provinceId: eventRes.data?.province?.id || "",
         categoryId: eventRes.data?.category?.id || "",
         version: eventRes.data?.version,
+        mediaIds: extractFileIdsFromContent(eventRes.data?.descriptionHtml || ""),
       };
       console.log("[Reset] formattedData.version:", formattedData.version);
       setInitialData(formattedData);
@@ -639,6 +654,7 @@ function UpdateEventInfor() {
             render={({ field }) => (
               <TextEditor
                 value={field.value || ""}
+                onUploadingChange={setIsEditorUploading}
                 onChange={(data) => {
                   field.onChange(data.html);
                   const mediaIds = extractFileIdsFromContent(data.html);
@@ -826,8 +842,8 @@ function UpdateEventInfor() {
             {/* Nút Lưu Chính */}
             <button
               type="submit"
-              disabled={isSubmitting}
-              onClick={handleSubmit(onSubmit)} // Nhớ tạo hàm onSubmit nhé
+              disabled={isSubmitting || isAnyUploading}
+              onClick={handleSubmit(onSubmit)}
               className={`
         relative flex items-center justify-center gap-2 px-8 py-2.5 
         bg-emerald-500 hover:bg-emerald-600 text-white 
@@ -859,6 +875,30 @@ function UpdateEventInfor() {
                     ></path>
                   </svg>
                   <span>Đang lưu...</span>
+                </>
+              ) : isAnyUploading ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>Đang tải tệp lên...</span>
                 </>
               ) : (
                 <>

@@ -9,6 +9,7 @@ import StepAddShow from "./StepAddShow";
 import Modal from "../../../components/common/Modal";
 import { useHeader } from "../../../hooks/useHeader";
 import { useAuth } from "../../../hooks/useAuth";
+import { extractFileIdsFromContent } from "../../../utils/editorContent";
 const ticketTierSchema = z
   .object({
     id: z.string(),
@@ -300,7 +301,7 @@ const schemas = [
 const fullSchema = schemas.reduce((acc, curr) => acc.merge(curr), z.object({}));
 
 function AddEvent() {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const { setTitle } = useHeader();
   const [modal, setModal] = useState({
     isOpen: false,
@@ -337,6 +338,26 @@ function AddEvent() {
     { id: 4, title: "Thông tin thanh toán" },
   ];
   const [currentStep, setCurrentStep] = useState(1);
+  const [isEditorUploading, setIsEditorUploading] = useState(false);
+
+  useEffect(() => {
+    let activeUploads = 0;
+    const handleUploadStatus = (e) => {
+      if (e.detail?.isUploading) {
+        activeUploads++;
+        setIsEditorUploading(true);
+      } else {
+        activeUploads = Math.max(0, activeUploads - 1);
+        if (activeUploads === 0) {
+          setIsEditorUploading(false);
+        }
+      }
+    };
+    window.addEventListener("ckeditor-upload-status", handleUploadStatus);
+    return () => {
+      window.removeEventListener("ckeditor-upload-status", handleUploadStatus);
+    };
+  }, []);
   const stepFields = [
     [
       "posterId",
@@ -414,10 +435,14 @@ function AddEvent() {
   };
 
   const onSubmit = async (data) => {
-    console.log("Dữ liệu form sẵn sàng gửi API:", data);
+    const payload = {
+      ...data,
+      mediaIds: extractFileIdsFromContent(data.descriptionHtml || ""),
+    };
+    console.log("Dữ liệu form sẵn sàng gửi API:", payload);
     try {
-      console.log("Dữ liệu submit:", data);
-      await axiosClient.post("/events", data);
+      console.log("Dữ liệu submit:", payload);
+      await axiosClient.post("/events", payload);
       setModal({
         isOpen: true,
         title: "Thêm sự kiện",
@@ -483,27 +508,24 @@ function AddEvent() {
                     onClick={() => {
                       handleStep(step.id);
                     }}
-                    className={`cursor-pointer flex items-center gap-2 md:gap-3 h-full px-4 md:px-6 shrink-0 transition-all ${
-                      step.id === currentStep
-                        ? "border-b-[3px] border-emerald-500"
-                        : "opacity-60"
-                    }`}
+                    className={`cursor-pointer flex items-center gap-2 md:gap-3 h-full px-4 md:px-6 shrink-0 transition-all ${step.id === currentStep
+                      ? "border-b-[3px] border-emerald-500"
+                      : "opacity-60"
+                      }`}
                   >
                     <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
-                        step.id === currentStep
-                          ? "bg-emerald-500 text-white"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${step.id === currentStep
+                        ? "bg-emerald-500 text-white"
+                        : "bg-slate-100 text-slate-600"
+                        }`}
                     >
                       {step.id}
                     </div>
                     <span
-                      className={`text-sm whitespace-nowrap ${
-                        step.id === currentStep
-                          ? "font-medium text-slate-900"
-                          : "text-slate-500"
-                      }`}
+                      className={`text-sm whitespace-nowrap ${step.id === currentStep
+                        ? "font-medium text-slate-900"
+                        : "text-slate-500"
+                        }`}
                     >
                       {step.title}
                     </span>
@@ -515,20 +537,48 @@ function AddEvent() {
               <div className="flex gap-2 md:gap-4 items-center self-center shrink-0">
                 <button
                   type="submit"
-                  className="px-3 md:px-6 py-2 text-slate-600 font-medium hover:text-emerald-500 transition-colors text-sm md:text-base"
+                  disabled={isEditorUploading}
+                  className="px-3 md:px-6 py-2 text-slate-600 font-medium hover:text-emerald-500 transition-colors text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Lưu
                 </button>
 
                 <button
                   type="button"
-                  disabled={currentStep >= steps.length}
+                  disabled={currentStep >= steps.length || isEditorUploading}
                   onClick={() => {
+                    if (isEditorUploading) return;
                     handleNext();
                   }}
-                  className="px-4 md:px-6 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-semibold transition-colors text-sm md:text-base whitespace-nowrap"
+                  className="flex items-center gap-2 px-4 md:px-6 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 font-semibold transition-colors text-sm md:text-base whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Tiếp tục
+                  {isEditorUploading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Đang tải tệp...</span>
+                    </>
+                  ) : (
+                    "Tiếp tục"
+                  )}
                 </button>
               </div>
             </div>
