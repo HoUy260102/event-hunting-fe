@@ -5,9 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import axiosClient from "../../api/axiosClient";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useGoogleLogin } from "../../hooks/useGoogleLogin";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ").nonempty("Email là bắt buộc"),
@@ -31,6 +32,15 @@ function LoginModal({ isOpen, onClose }) {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const turnstileRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCaptchaToken(null);
+      turnstileRef.current?.reset();
+    }
+  }, [isOpen]);
   const toastSuccess = (message) => {
     toast.success(message, {
       position: "top-right",
@@ -79,6 +89,7 @@ function LoginModal({ isOpen, onClose }) {
       const apiRes = await axiosClient.post("/auth/login", {
         username: data.email,
         password: data.password,
+        captchaToken: captchaToken,
       });
 
       const userData = apiRes?.data?.user;
@@ -96,6 +107,8 @@ function LoginModal({ isOpen, onClose }) {
         toastError("Vui lòng sử dụng trang đăng nhập dành cho Quản trị viên/Nhà tổ chức!");
       }
     } catch (error) {
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       if (error.code === "USER_NOT_VERIFIED") {
         handleSendVerifyMail(data?.email);
         return;
@@ -192,6 +205,17 @@ function LoginModal({ isOpen, onClose }) {
                   </span>
                 )}
               </div>
+            </div>
+
+            <div className="flex justify-center my-3" style={{ minHeight: "65px" }}>
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                onSuccess={setCaptchaToken}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => turnstileRef.current?.reset()}
+                options={{ theme: "light" }}
+              />
             </div>
 
             <button
