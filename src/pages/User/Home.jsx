@@ -290,8 +290,8 @@ function Home() {
                 />
 
                 {/* Content Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/65 to-black/30 sm:bg-gradient-to-r sm:from-black/90 sm:via-black/50 sm:to-transparent flex flex-col justify-center px-4 sm:px-8 md:px-16 pt-8 sm:pt-6 pb-10 sm:pb-6 z-20">
-                  <div className="max-w-xl space-y-1 sm:space-y-2">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/65 to-black/30 sm:bg-gradient-to-r sm:from-black/90 sm:via-black/50 sm:to-transparent flex flex-col justify-center px-4 sm:pl-20 sm:pr-10 md:pl-24 md:pr-16 pt-8 sm:pt-6 pb-10 sm:pb-6 z-20">
+                  <div className="max-w-xl sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl space-y-1 sm:space-y-2">
                     <div>
                       <span className="inline-block px-2 py-0.5 sm:px-3 sm:py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[9px] sm:text-xs font-bold uppercase tracking-wider">
                         Sự kiện trong tháng này
@@ -299,7 +299,7 @@ function Home() {
                     </div>
 
                     <h1
-                      className="text-xs sm:text-base md:text-xl lg:text-3xl font-bold text-white leading-snug drop-shadow-md"
+                      className="text-xs sm:text-lg md:text-2xl lg:text-3xl font-bold text-white leading-snug drop-shadow-md"
                       style={{
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
@@ -312,7 +312,7 @@ function Home() {
                     </h1>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6 text-gray-300 text-[10px] sm:text-xs md:text-sm">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         <span className="material-symbols-outlined text-[13px] sm:text-[18px] text-green-400 shrink-0">
                           calendar_today
                         </span>
@@ -322,7 +322,7 @@ function Home() {
                         <span className="material-symbols-outlined text-[13px] sm:text-[18px] text-green-400 shrink-0">
                           location_on
                         </span>
-                        <span className="truncate">{event.location}</span>
+                        <span className="truncate sm:whitespace-normal">{event.location}</span>
                       </div>
                     </div>
 
