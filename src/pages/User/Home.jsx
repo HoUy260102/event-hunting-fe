@@ -252,6 +252,16 @@ function Home() {
     return () => clearInterval(timer);
   }, [bannerEvents, currentSlide]);
 
+  const handleSavedChange = (eventId, newSavedStatus) => {
+    const updateList = (list) =>
+      list.map((ev) => (ev.id === eventId ? { ...ev, isSaved: newSavedStatus } : ev));
+
+    setRecommendations((prev) => updateList(prev));
+    setTimeEvents((prev) => updateList(prev));
+    setCat1((prev) => updateList(prev));
+    setCat2((prev) => updateList(prev));
+  };
+
   return (
     <>
       {/* Hero Banner Section (Auto-playing slideshow of events this month) */}
@@ -420,6 +430,7 @@ function Home() {
                   event={item}
                   user={user}
                   openLogin={openLogin}
+                  onSavedChange={handleSavedChange}
                 />
               ))}
             </div>
@@ -477,6 +488,7 @@ function Home() {
                 event={item}
                 user={user}
                 openLogin={openLogin}
+                onSavedChange={handleSavedChange}
               />
             ))}
           </div>
@@ -513,6 +525,7 @@ function Home() {
                   key={item?.id}
                   user={user}
                   openLogin={openLogin}
+                  onSavedChange={handleSavedChange}
                 ></EventCard>
               ))}
             </div>
@@ -552,6 +565,7 @@ function Home() {
                   event={item}
                   user={user}
                   openLogin={openLogin}
+                  onSavedChange={handleSavedChange}
                 ></EventCard>
               ))}
             </div>

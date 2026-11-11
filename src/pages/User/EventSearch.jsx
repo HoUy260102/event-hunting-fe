@@ -75,7 +75,7 @@ function EventSearch() {
     const queryPayload = {
       ...currentParams,
       categoryIds: categories.length > 0 ? categories : undefined,
-      size: currentParams.size || 8,
+      size: currentParams.size || 4,
       nextId: hasNext ? nextId : undefined,
     };
     try {

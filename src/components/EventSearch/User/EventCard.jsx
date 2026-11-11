@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { formatDateVN } from "../../../utils/format";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../../../api/axiosClient";
@@ -7,6 +7,10 @@ const EventCard = ({ event, user, openLogin, onSavedChange }) => {
   const navigate = useNavigate();
   const [isSaved, setIsSaved] = useState(event?.isSaved || false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setIsSaved(Boolean(event?.isSaved));
+  }, [event?.isSaved]);
   const handleFavoriteClick = async (e) => {
     e.stopPropagation();
     if (!user) {
