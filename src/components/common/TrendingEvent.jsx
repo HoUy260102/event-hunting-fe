@@ -210,7 +210,7 @@ function TrendingEvent({ events }) {
       <div className="relative">
         <button
           ref={setPrevEl}
-          className="absolute -left-4 top-[102px] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#00000080] backdrop-blur-md shadow-md border border-white/50 flex items-center justify-center text-gray-500 hover:text-green-500 hover:border-green-400 transition-all duration-200"
+          className="hidden md:flex absolute -left-4 top-[102px] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#00000080] backdrop-blur-md shadow-md border border-white/50 items-center justify-center text-gray-500 hover:text-green-500 hover:border-green-400 transition-all duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -231,7 +231,14 @@ function TrendingEvent({ events }) {
           modules={[Navigation, Mousewheel]}
           mousewheel={{ forceToAxis: true }}
           grabCursor
-          spaceBetween={104}
+          breakpoints={{
+            0: {
+              spaceBetween: 24,
+            },
+            768: {
+              spaceBetween: 40,
+            },
+          }}
           slidesPerView="auto"
           navigation={{ prevEl, nextEl }}
           onBeforeInit={(swiper) => {
@@ -241,23 +248,22 @@ function TrendingEvent({ events }) {
           className="!pb-4"
         >
           {events.slice(0, 10).map((item, index) => (
-            <SwiperSlide key={item.id} style={{ width: "256px" }}>
+            <SwiperSlide key={item.id} className="!w-[260px] sm:!w-[280px]">
               <div
                 key={item.id}
                 onClick={() => {
                   navigate(`/event/${item?.id}/details`);
                 }}
-                className="flex relative items-end group cursor-pointer"
-                style={{ width: "256px" }}
+                className="flex relative items-end group cursor-pointer w-full"
               >
-                <div className="absolute -left-5 bottom-10 z-10 w-14 h-20 flex items-center justify-center text-gray-300 group-hover:text-green-500 transition-colors duration-300 pointer-events-none">
+                <div className="absolute left-0 bottom-10 z-10 w-14 h-20 flex items-center justify-center text-gray-300 group-hover:text-green-500 transition-colors duration-300 pointer-events-none">
                   {RANK_NUMBERS[index] || (
                     <span className="text-4xl font-black">{index + 1}</span>
                   )}
                 </div>
 
-                <div className="pl-9 flex flex-col w-80 flex-shrink-0 group cursor-pointer">
-                  <div className="relative w-68 aspect-[4/3] overflow-hidden rounded-2xl shadow-md border border-gray-100 flex-shrink-0">
+                <div className="pl-9 flex flex-col w-full group cursor-pointer">
+                  <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl shadow-md border border-gray-100 flex-shrink-0">
                     <img
                       src={item?.posterUrl}
                       alt={item.name}
@@ -304,7 +310,7 @@ function TrendingEvent({ events }) {
         </Swiper>
         <button
           ref={setNextEl}
-          className="absolute -right-4 top-[102px] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#00000080] backdrop-blur-md shadow-md border border-white/50 flex items-center justify-center text-gray-500 hover:text-green-500 hover:border-green-400 transition-all duration-200"
+          className="hidden md:flex absolute -right-4 top-[102px] -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#00000080] backdrop-blur-md shadow-md border border-white/50 items-center justify-center text-gray-500 hover:text-green-500 hover:border-green-400 transition-all duration-200"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
