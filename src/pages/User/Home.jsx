@@ -384,7 +384,9 @@ function Home() {
         <main className="px-2 py-10 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
-              <WhatshotIcon className="text-orange-500" sx={{ fontSize: 35 }} />
+              <span className="animate-fire flex items-center justify-center">
+                <WhatshotIcon className="text-orange-500" sx={{ fontSize: 35 }} />
+              </span>
               <h3 className="text-xl font-bold text-white">Sự kiện nổi bật</h3>
             </div>
           </div>

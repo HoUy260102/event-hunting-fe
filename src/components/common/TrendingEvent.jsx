@@ -248,7 +248,7 @@ function TrendingEvent({ events }) {
           className="!pb-4"
         >
           {events.slice(0, 10).map((item, index) => (
-            <SwiperSlide key={item.id} className="!w-[260px] sm:!w-[280px]">
+            <SwiperSlide key={item.id} className="!w-[290px] sm:!w-[320px]">
               <div
                 key={item.id}
                 onClick={() => {
@@ -256,9 +256,9 @@ function TrendingEvent({ events }) {
                 }}
                 className="flex flex-col group cursor-pointer w-full"
               >
-                {/* Khối Poster và Số thứ hạng (Neo số thứ hạng theo cạnh dưới poster) */}
-                <div className="relative w-full pl-11 sm:pl-12">
-                  <div className="absolute left-0 bottom-2 z-10 w-12 sm:w-14 flex items-end justify-center text-gray-300 group-hover:text-green-500 transition-colors duration-300 pointer-events-none [&>svg]:h-[68px] [&>svg]:w-auto sm:[&>svg]:h-[75px]">
+                {/* Khối Poster và Số thứ hạng (Có khoảng cách tách biệt với ảnh, chân số ngang giữa tiêu đề) */}
+                <div className="relative w-full pl-14 sm:pl-16">
+                  <div className="absolute left-0 -bottom-6 z-10 flex items-end justify-center text-gray-300 group-hover:text-green-500 transition-colors duration-300 pointer-events-none [&>svg]:h-[68px] [&>svg]:w-auto sm:[&>svg]:h-[75px] [&>svg]:flex-shrink-0">
                     {RANK_NUMBERS[index] || (
                       <span className="text-4xl font-black">{index + 1}</span>
                     )}
@@ -289,10 +289,10 @@ function TrendingEvent({ events }) {
                   </div>
                 </div>
 
-                {/* Khối tiêu đề và ngày giờ (Nằm dưới hoàn toàn, thẳng hàng với poster) */}
-                <div className="mt-2.5 w-full pl-11 sm:pl-12 pr-1">
+                {/* Khối tiêu đề và ngày giờ (Chữ to rõ, màu sáng nổi bật trên nền tối) */}
+                <div className="mt-2.5 w-full pl-14 sm:pl-16 pr-1">
                   <h3
-                    className="font-bold text-gray-800 text-sm group-hover:text-green-600 transition-colors leading-snug"
+                    className="font-bold text-white text-[15px] sm:text-base group-hover:text-green-400 transition-colors leading-snug"
                     style={{
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
@@ -302,7 +302,7 @@ function TrendingEvent({ events }) {
                   >
                     {item?.name}
                   </h3>
-                  <p className="text-xs text-gray-400 mt-1 truncate">
+                  <p className="text-xs sm:text-[13px] text-gray-400 mt-1 truncate">
                     {formatDateVN(item?.startTime)}
                   </p>
                 </div>
