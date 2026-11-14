@@ -254,15 +254,16 @@ function TrendingEvent({ events }) {
                 onClick={() => {
                   navigate(`/event/${item?.id}/details`);
                 }}
-                className="flex relative items-end group cursor-pointer w-full"
+                className="flex flex-col group cursor-pointer w-full"
               >
-                <div className="absolute left-0 bottom-10 z-10 w-14 h-20 flex items-center justify-center text-gray-300 group-hover:text-green-500 transition-colors duration-300 pointer-events-none">
-                  {RANK_NUMBERS[index] || (
-                    <span className="text-4xl font-black">{index + 1}</span>
-                  )}
-                </div>
+                {/* Khối Poster và Số thứ hạng (Neo số thứ hạng theo cạnh dưới poster) */}
+                <div className="relative w-full pl-11 sm:pl-12">
+                  <div className="absolute left-0 bottom-2 z-10 w-12 sm:w-14 flex items-end justify-center text-gray-300 group-hover:text-green-500 transition-colors duration-300 pointer-events-none [&>svg]:h-[68px] [&>svg]:w-auto sm:[&>svg]:h-[75px]">
+                    {RANK_NUMBERS[index] || (
+                      <span className="text-4xl font-black">{index + 1}</span>
+                    )}
+                  </div>
 
-                <div className="pl-9 flex flex-col w-full group cursor-pointer">
                   <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl shadow-md border border-gray-100 flex-shrink-0">
                     <img
                       src={item?.posterUrl}
@@ -286,23 +287,24 @@ function TrendingEvent({ events }) {
                       #{index + 1} Trending
                     </div>
                   </div>
+                </div>
 
-                  <div className="mt-2 w-full px-1">
-                    <h3
-                      className="font-bold text-gray-800 text-sm group-hover:text-green-600 transition-colors leading-snug"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {item?.name}
-                    </h3>
-                    <p className="text-xs text-gray-400 mt-1 truncate">
-                      {formatDateVN(item?.startTime)}
-                    </p>
-                  </div>
+                {/* Khối tiêu đề và ngày giờ (Nằm dưới hoàn toàn, thẳng hàng với poster) */}
+                <div className="mt-2.5 w-full pl-11 sm:pl-12 pr-1">
+                  <h3
+                    className="font-bold text-gray-800 text-sm group-hover:text-green-600 transition-colors leading-snug"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {item?.name}
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-1 truncate">
+                    {formatDateVN(item?.startTime)}
+                  </p>
                 </div>
               </div>
             </SwiperSlide>
