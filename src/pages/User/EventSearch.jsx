@@ -76,7 +76,7 @@ function EventSearch() {
       ...currentParams,
       categoryIds: categories.length > 0 ? categories : undefined,
       size: currentParams.size || 4,
-      nextId: hasNext ? nextId : undefined,
+      nextId: isLoadMore && hasNext ? nextId : undefined,
     };
     try {
       const response = await axiosClient.get("/events/public/search", {
@@ -87,7 +87,7 @@ function EventSearch() {
       }
       const newData = response?.data?.content || [];
       const newNextId = response?.data?.nextId;
-      if (hasNext) {
+      if (isLoadMore) {
         setEvents((prev) => [...prev, ...newData]);
       } else {
         setEvents(newData);
