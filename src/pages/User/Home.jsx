@@ -103,6 +103,9 @@ function Home() {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [recLoading, setRecLoading] = useState(true);
+  const [recPage, setRecPage] = useState(1);
+  const [recHasMore, setRecHasMore] = useState(true);
+  const [recLoadingMore, setRecLoadingMore] = useState(false);
 
   const [timeTab, setTimeTab] = useState("week"); // "week" | "month" | "next3months" | "3months"
   const [timeEvents, setTimeEvents] = useState([]);
@@ -126,7 +129,7 @@ function Home() {
             params: { categoryIds: ["01KGJ1N6SG60BZD68S7W09QD6P"], size: 4 },
           }),
           axiosClient.get("/events/recommendations", {
-            params: { limit: 4 },
+            params: { page: 1, size: 4 },
           }).catch((err) => {
             console.error("Fetch recommendations error, fallback to empty list", err);
             return { data: [] };
@@ -135,7 +138,10 @@ function Home() {
         setTrending(resTrending?.data || []);
         setCat1(resCat1?.data?.content || []);
         setCat2(resCat2?.data?.content || []);
-        setRecommendations(resRec?.data || []);
+        const recData = resRec?.data || [];
+        setRecommendations(recData);
+        setRecPage(1);
+        setRecHasMore(recData.length >= 4);
       } catch (error) {
         console.error("Fetch trending error:", error);
       } finally {
@@ -145,6 +151,31 @@ function Home() {
     };
     getTrending();
   }, [user]);
+
+  const handleLoadMoreRecommendations = async () => {
+    if (recLoadingMore || !recHasMore) return;
+    try {
+      setRecLoadingMore(true);
+      const nextPage = recPage + 1;
+      const res = await axiosClient.get("/events/recommendations", {
+        params: { page: nextPage, size: 4 },
+      });
+      const newRecs = res?.data || [];
+      if (newRecs.length === 0) {
+        setRecHasMore(false);
+      } else {
+        setRecommendations((prev) => [...prev, ...newRecs]);
+        setRecPage(nextPage);
+        if (newRecs.length < 4) {
+          setRecHasMore(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading more recommendations:", error);
+    } finally {
+      setRecLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -418,6 +449,18 @@ function Home() {
                 <p className="text-xs text-gray-400 mt-0.5">Khám phá các sự kiện được đề xuất dựa trên sở thích của bạn</p>
               </div>
             </div>
+            {recHasMore && (
+              <button
+                onClick={handleLoadMoreRecommendations}
+                disabled={recLoadingMore}
+                className="text-gray-400 hover:text-white text-xs md:text-sm font-medium transition-colors flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+              >
+                {recLoadingMore ? (
+                  <span className="inline-block w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin mr-1"></span>
+                ) : null}
+                Xem thêm &gt;
+              </button>
+            )}
           </div>
 
           {recLoading ? (
@@ -429,17 +472,42 @@ function Home() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in fade-in duration-500">
-              {recommendations.map((item) => (
-                <EventCard
-                  key={item?.id}
-                  event={item}
-                  user={user}
-                  openLogin={openLogin}
-                  onSavedChange={handleSavedChange}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in fade-in duration-500">
+                {recommendations.map((item) => (
+                  <EventCard
+                    key={item?.id}
+                    event={item}
+                    user={user}
+                    openLogin={openLogin}
+                    onSavedChange={handleSavedChange}
+                  />
+                ))}
+              </div>
+
+              {/* Nút Xem thêm bên dưới danh sách sự kiện */}
+              {recHasMore && recommendations.length >= 4 && (
+                <div className="flex justify-center mt-8">
+                  <button
+                    onClick={handleLoadMoreRecommendations}
+                    disabled={recLoadingMore}
+                    className="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white text-xs md:text-sm font-medium border border-white/10 hover:border-green-500/50 transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm hover:shadow-green-500/10 cursor-pointer"
+                  >
+                    {recLoadingMore ? (
+                      <>
+                        <span className="inline-block w-4 h-4 border-2 border-green-400/20 border-t-green-400 rounded-full animate-spin"></span>
+                        <span>Đang tải thêm gợi ý...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Xem thêm sự kiện gợi ý</span>
+                        <span className="material-symbols-outlined text-sm">expand_more</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </main>
       )}
